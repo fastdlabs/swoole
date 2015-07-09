@@ -1,0 +1,24 @@
+{
+    "name": "fastd/swoole",
+    "description": "FastD swoole server component.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "janhuang",
+            "email": "bboyjanhuang@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.5"
+    },
+    "require-dev": {
+        "fastd/console": "dev-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "FastD\\": "src/FastD"
+        }
+    }
+}
