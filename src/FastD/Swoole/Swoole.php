@@ -14,27 +14,38 @@
 
 namespace FastD\Swoole;
 
-class FastSwoole
+class Swoole
 {
-    protected $protocol;
+    /**
+     * @var swoole_server
+     */
+    protected $server;
 
-    public function __construct($protocol, array $config = ['worker_num' => 1])
+    protected $context;
+
+    public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
-        $this->protocol = $protocol;
+        $this->server = new swoole_server($context->getSchema(), $context->getPort(), $mode, $sockType);
+
+        $this->context = $context;
     }
 
     public static function create($protocol, array $config = ['worker_num' => 1])
     {
-        return new static($protocol, $config);
+        return new static(new Context($protocol, $config));
     }
 
     public function run()
     {
+        $this->server->set($this->context->all());
 
+        $this->server->start();
     }
 
     public function daemonize()
     {
+        $this->context->set('daemonize', true);
 
+        return $this;
     }
 }
