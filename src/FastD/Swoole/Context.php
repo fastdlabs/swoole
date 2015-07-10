@@ -16,7 +16,7 @@ namespace FastD\Swoole;
 
 class Context
 {
-    protected $schema;
+    protected $scheme;
     protected $host;
     protected $port;
     protected $config;
@@ -24,23 +24,23 @@ class Context
 
     public function __construct($protocol, array $config = ['worker_num' => 1, 'daemonize' => false])
     {
-        list($schema, $host, $port) = parse_url($protocol);
-        $this->schema = $schema;
-        $this->host = $host;
-        $this->port = $port;
+        $protocol = parse_url($protocol);
+        $this->schema = $protocol['scheme'];
+        $this->host = $protocol['host'];
+        $this->port = $protocol['port'];
         $this->config = $config;
     }
 
-    public function getSchema()
+    public function getScheme()
     {
-        return $this->schema;
+        return $this->scheme;
     }
 
     /**
      * @param mixed $schema
      * @return $this
      */
-    public function setSchema($schema)
+    public function setScheme($schema)
     {
         $this->schema = $schema;
         return $this;

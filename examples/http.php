@@ -18,5 +18,5 @@ $server = \FastD\Swoole\Swoole::create('http://127.0.0.1:9321', [
 
 ]);
 
-var_dump($server);
+//var_dump($server);
 
