@@ -13,19 +13,50 @@
  */
 namespace FastD\Swoole;
 
+/**
+ * Interface SwooleInterface
+ *
+ * @package FastD\Swoole
+ */
 interface SwooleInterface
 {
+    /**
+     * @return mixed
+     */
     public function status();
 
+    /**
+     * @return mixed
+     */
     public function start();
 
+    /**
+     * @return mixed
+     */
     public function stop();
 
+    /**
+     * @return mixed
+     */
     public function reload();
 
+    /**
+     * @param      $name
+     * @param null $callback
+     * @return $this
+     */
     public function on($name, $callback = null);
 
+    /**
+     * @param      $name
+     * @param null $value
+     * @return $this
+     */
     public function setConfig($name, $value = null);
 
+    /**
+     * @param SwooleHandlerInterface $swooleHandlerInterface
+     * @return $this
+     */
     public function handle(SwooleHandlerInterface $swooleHandlerInterface);
 }

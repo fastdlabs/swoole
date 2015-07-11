@@ -14,8 +14,16 @@
 
 namespace FastD\Swoole;
 
+/**
+ * Class SwooleHandler
+ *
+ * @package FastD\Swoole
+ */
 class SwooleHandler implements SwooleHandlerInterface
 {
+    /**
+     * @var array
+     */
     protected $on;
 
     /**
@@ -40,11 +48,18 @@ class SwooleHandler implements SwooleHandlerInterface
         'request'       => 'onRequest',
     ];
 
+    /**
+     * @param array $on
+     */
     public function __construct(array $on = [])
     {
         $this->setPrepareBind($on);
     }
 
+    /**
+     * @param array $on
+     * @return $this
+     */
     public function setPrepareBind(array $on)
     {
         foreach ($on as $name) {
@@ -54,93 +69,18 @@ class SwooleHandler implements SwooleHandlerInterface
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getPrepareBind()
     {
         return $this->on;
     }
 
-    public function onStart(\swoole_server $server)
-    {
-        // TODO: Implement onStart() method.
-    }
-
-    public function onShutdown(\swoole_server $server)
-    {
-        // TODO: Implement onShutdown() method.
-    }
-
-    public function onWorkerStart(\swoole_server $server, $worker_id)
-    {
-        // TODO: Implement onWorkerStart() method.
-    }
-
-    public function onWorkerStop(\swoole_server $server, $worker_id)
-    {
-        // TODO: Implement onWorkerStop() method.
-    }
-
-    public function onTimer(\swoole_server $server, $interval)
-    {
-        // TODO: Implement onTimer() method.
-    }
-
-    public function onConnect(\swoole_server $server, $fd, $from_id)
-    {
-        // TODO: Implement onConnect() method.
-    }
-
-    public function onReceive(\swoole_server $server, $fd, $from_id, $data)
-    {
-        // TODO: Implement onReceive() method.
-    }
-
     /**
-     * swoole v1.7.18+
-     *
-     * @param \swoole_server $server
-     * @param                $data
-     * @param                $client_info
+     * @param \swoole_http_request  $request
+     * @param \swoole_http_response $response
      */
-    public function onPacket(\swoole_server $server, $data, $client_info)
-    {
-        // TODO: Implement onPacket() method.
-    }
-
-    public function onClose(\swoole_server $server, $fd, $from_id)
-    {
-        // TODO: Implement onClose() method.
-    }
-
-    public function onTask(\swoole_server $server, $task_id, $from_id, $data)
-    {
-        // TODO: Implement onTask() method.
-    }
-
-    public function onFinish(\swoole_server $server, $task_id, $data)
-    {
-        // TODO: Implement onFinish() method.
-    }
-
-    public function onPipeMessage(\swoole_server $server, $from_worker_id, $message)
-    {
-        // TODO: Implement onPipeMessage() method.
-    }
-
-    public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode)
-    {
-        // TODO: Implement onWorkerError() method.
-    }
-
-    public function onManagerStart(\swoole_server $server)
-    {
-        // TODO: Implement onManagerStart() method.
-    }
-
-    public function onManagerStop(\swoole_server $server)
-    {
-        // TODO: Implement onManagerStop() method.
-    }
-
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
         $response->end('hello world');
@@ -207,6 +147,10 @@ class SwooleHandler implements SwooleHandlerInterface
         reset($this->on);
     }
 
+    /**
+     * @param SwooleInterface $swooleInterface
+     * @return $this
+     */
     public function handle(SwooleInterface $swooleInterface)
     {
         foreach ($this as $name => $callback) {
@@ -214,5 +158,159 @@ class SwooleHandler implements SwooleHandlerInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @return mixed
+     */
+    public function onStart(\swoole_server $server)
+    {
+        // TODO: Implement onStart() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @return mixed
+     */
+    public function onShutdown(\swoole_server $server)
+    {
+        // TODO: Implement onShutdown() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $worker_id
+     * @return mixed
+     */
+    public function onWorkerStart(\swoole_server $server, $worker_id)
+    {
+        // TODO: Implement onWorkerStart() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $worker_id
+     * @return mixed
+     */
+    public function onWorkerStop(\swoole_server $server, $worker_id)
+    {
+        // TODO: Implement onWorkerStop() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $interval
+     * @return mixed
+     */
+    public function onTimer(\swoole_server $server, $interval)
+    {
+        // TODO: Implement onTimer() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $fd
+     * @param                $from_id
+     * @return mixed
+     */
+    public function onConnect(\swoole_server $server, $fd, $from_id)
+    {
+        // TODO: Implement onConnect() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $fd
+     * @param                $from_id
+     * @param                $data
+     * @return mixed
+     */
+    public function onReceive(\swoole_server $server, $fd, $from_id, $data)
+    {
+        // TODO: Implement onReceive() method.
+    }
+
+    /**
+     * swoole v1.7.18+
+     */
+    public function onPacket(\swoole_server $server, $data, $client_info)
+    {
+        // TODO: Implement onPacket() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $fd
+     * @param                $from_id
+     * @return mixed
+     */
+    public function onClose(\swoole_server $server, $fd, $from_id)
+    {
+        // TODO: Implement onClose() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $task_id
+     * @param                $from_id
+     * @param                $data
+     * @return mixed
+     */
+    public function onTask(\swoole_server $server, $task_id, $from_id, $data)
+    {
+        // TODO: Implement onTask() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $task_id
+     * @param                $data
+     * @return mixed
+     */
+    public function onFinish(\swoole_server $server, $task_id, $data)
+    {
+        // TODO: Implement onFinish() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $from_worker_id
+     * @param                $message
+     * @return mixed
+     */
+    public function onPipeMessage(\swoole_server $server, $from_worker_id, $message)
+    {
+        // TODO: Implement onPipeMessage() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $worker_id
+     * @param                $worker_pid
+     * @param                $exit_mode
+     * @return mixed
+     */
+    public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode)
+    {
+        // TODO: Implement onWorkerError() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @return mixed
+     */
+    public function onManagerStart(\swoole_server $server)
+    {
+        // TODO: Implement onManagerStart() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @return mixed
+     */
+    public function onManagerStop(\swoole_server $server)
+    {
+        // TODO: Implement onManagerStop() method.
     }
 }
