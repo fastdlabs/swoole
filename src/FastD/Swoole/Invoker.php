@@ -42,12 +42,53 @@ class Invoker
         return $this->swoole->start();
     }
 
+    /**
+     * @return array|null
+     */
     public function status()
-    {}
+    {
+        return $this->swoole->status();
+    }
 
+    /**
+     * @return mixed
+     */
     public function stop()
-    {}
+    {
+        $swoole = $this->swoole->getLastSwoole();
 
+        set_error_handler(function ($code, $message, $file, $line) use ($swoole) {
+            if (function_exists('shell_exec')) {
+                shell_exec('kill -15 ' . $swoole->pid);
+            }
+            echo 'server pid:' . $swoole->pid . ' stop...' . PHP_EOL;
+        });
+
+        $result = $this->swoole->stop();
+
+        restore_error_handler();
+
+        return $result;
+    }
+
+    /**
+     * @return mixed
+     */
     public function reload()
-    {}
+    {
+        $swoole = $this->swoole->getLastSwoole();
+
+        set_error_handler(function ($code, $message, $file, $line) use ($swoole) {
+            if (function_exists('shell_exec')) {
+                shell_exec('kill -USR1 ' . $swoole->pid);
+            }
+            echo 'server pid:' . $swoole->pid . ' reloading...' . PHP_EOL;
+        });
+
+        $result = $this->swoole->reload();
+
+        restore_error_handler();
+
+        return 0;
+    }
 }

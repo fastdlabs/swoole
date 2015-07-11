@@ -174,7 +174,7 @@ class SwooleHandler implements SwooleHandlerInterface
                 'server' => serialize($server),
             ];
 
-            file_put_contents($pid, json_encode($serverInfo, JSON_UNESCAPED_UNICODE));
+            file_put_contents($pid, json_encode($serverInfo, JSON_UNESCAPED_UNICODE) . PHP_EOL);
         }
     }
 

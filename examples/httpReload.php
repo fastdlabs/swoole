@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/10
- * Time: 上午11:13
+ * Date: 15/7/11
+ * Time: 下午4:57
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,12 +12,8 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../vendor/autoload.php';
+$invoker = include __DIR__ . '/http/boot.php';
 
-$server = \FastD\Swoole\HttpServer\Http::create('http://127.0.0.1:9321', [], new \FastD\Swoole\SwooleHandler(['start', 'request']));
-
-$invoker = new \FastD\Swoole\Invoker($server);
-
-$result = $invoker->start();
+$result = $invoker->reload();
 
 var_dump($result);

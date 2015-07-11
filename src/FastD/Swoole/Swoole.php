@@ -141,7 +141,7 @@ class Swoole implements SwooleInterface
      */
     public function stop()
     {
-        return $this->lastSwoole->server->stop();
+        return $this->lastSwoole->server->shutdown();
     }
 
     /**
@@ -183,6 +183,44 @@ class Swoole implements SwooleInterface
     public function setConfig($name, $value = null)
     {
         $this->context->set($name, $value);
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUser()
+    {
+        return $this->context->get('user');
+    }
+
+    /**
+     * @param $user
+     * @return $this
+     */
+    public function setUser($user)
+    {
+        $this->context->set('user', $user);
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGroup()
+    {
+        return $this->context->get('group');
+    }
+
+    /**
+     * @param $group
+     * @return $this
+     */
+    public function setGroup($group)
+    {
+        $this->context->set('group', $group);
 
         return $this;
     }

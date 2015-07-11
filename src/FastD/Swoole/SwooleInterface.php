@@ -66,6 +66,28 @@ interface SwooleInterface
     public function getContext();
 
     /**
+     * @return string
+     */
+    public function getUser();
+
+    /**
+     * @param $user
+     * @return $this
+     */
+    public function setUser($user);
+
+    /**
+     * @return string
+     */
+    public function getGroup();
+
+    /**
+     * @param $group
+     * @return $this
+     */
+    public function setGroup($group);
+
+    /**
      * @param SwooleHandlerInterface $swooleHandlerInterface
      * @return $this
      */
