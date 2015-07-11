@@ -17,12 +17,24 @@ namespace FastD\Swoole\HttpServer;
 use FastD\Swoole\Swoole;
 use FastD\Swoole\Context;
 
+/**
+ * The swoole http server
+ *
+ * Class Http
+ *
+ * @package FastD\Swoole\HttpServer
+ */
 class Http extends Swoole
 {
+    /**
+     * @param Context $context
+     * @param         $mode
+     * @param         $sockType
+     */
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
-        $this->server = new \swoole_http_server($context->getHost(), $context->getPort(), $mode, $sockType);
+        parent::__construct($context, $mode, $sockType);
 
-        $this->context = $context;
+        $this->server = new \swoole_http_server($context->getHost(), $context->getPort(), $mode, $sockType);
     }
 }

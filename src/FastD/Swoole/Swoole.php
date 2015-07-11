@@ -37,12 +37,27 @@ class Swoole implements SwooleInterface
     protected $handler;
 
     /**
+     * The last time start swoole server.
+     *
+     * @var \stdClass|\swoole_server
+     */
+    protected $lastSwoole;
+
+    /**
      * @param Context $context
      * @param         $mode
      * @param         $sockType
      */
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
+        if (null !== ($pid = $context->get('pid'))) {
+            $swooleInfo = json_decode(file_get_contents($pid), true);
+            $this->lastSwoole = new \stdClass();
+            $this->lastSwoole->server = unserialize($swooleInfo['server']);
+            $this->lastSwoole->pid = $swooleInfo['pid'];
+            unset($swooleInfo);
+        }
+
         $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
 
         $this->context = $context;
@@ -63,6 +78,14 @@ class Swoole implements SwooleInterface
         }
 
         return $swoole;
+    }
+
+    /**
+     * @return \stdClass|\swoole_server
+     */
+    public function getLastSwoole()
+    {
+        return $this->lastSwoole;
     }
 
     /**
@@ -93,11 +116,17 @@ class Swoole implements SwooleInterface
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
     public function status()
     {
-        // TODO: Implement status() method.
+        return $this->lastSwoole->server->stats();
     }
 
+    /**
+     * @return mixed
+     */
     public function start()
     {
         $this->server->set($this->context->all());
@@ -107,14 +136,20 @@ class Swoole implements SwooleInterface
         return $this->server->start();
     }
 
+    /**
+     * @return mixed
+     */
     public function stop()
     {
-        // TODO: Implement stop() method.
+        return $this->lastSwoole->server->stop();
     }
 
+    /**
+     * @return mixed
+     */
     public function reload()
     {
-        // TODO: Implement reload() method.
+        return $this->lastSwoole->server->reload();
     }
 
     /**
@@ -128,6 +163,11 @@ class Swoole implements SwooleInterface
         return $this;
     }
 
+    /**
+     * @param      $name
+     * @param null $callback
+     * @return $this
+     */
     public function on($name, $callback = null)
     {
         $this->server->on($name, $callback);
@@ -135,8 +175,15 @@ class Swoole implements SwooleInterface
         return $this;
     }
 
+    /**
+     * @param      $name
+     * @param null $value
+     * @return $this
+     */
     public function setConfig($name, $value = null)
     {
         $this->context->set($name, $value);
+
+        return $this;
     }
 }

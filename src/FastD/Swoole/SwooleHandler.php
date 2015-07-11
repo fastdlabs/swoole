@@ -27,6 +27,11 @@ class SwooleHandler implements SwooleHandlerInterface
     protected $on;
 
     /**
+     * @var Swoole
+     */
+    protected $swoole;
+
+    /**
      * @var array
      */
     protected $prepareBind = [
@@ -75,15 +80,6 @@ class SwooleHandler implements SwooleHandlerInterface
     public function getPrepareBind()
     {
         return $this->on;
-    }
-
-    /**
-     * @param \swoole_http_request  $request
-     * @param \swoole_http_response $response
-     */
-    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
-    {
-        $response->end('hello world');
     }
 
     /**
@@ -153,6 +149,8 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function handle(SwooleInterface $swooleInterface)
     {
+        $this->swoole = $swooleInterface;
+
         foreach ($this as $name => $callback) {
             $swooleInterface->on($name, [$this, $callback]);
         }
@@ -166,7 +164,18 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onStart(\swoole_server $server)
     {
-        // TODO: Implement onStart() method.
+        if (null !== ($pid = $this->swoole->getContext()->get('pid'))) {
+            if (!is_dir($dir = dirname($pid))) {
+                mkdir($dir, 0755, true);
+            }
+
+            $serverInfo = [
+                'pid' => $server->master_pid,
+                'server' => serialize($server),
+            ];
+
+            file_put_contents($pid, json_encode($serverInfo, JSON_UNESCAPED_UNICODE));
+        }
     }
 
     /**
@@ -312,5 +321,15 @@ class SwooleHandler implements SwooleHandlerInterface
     public function onManagerStop(\swoole_server $server)
     {
         // TODO: Implement onManagerStop() method.
+    }
+
+    /**
+     * @param \swoole_http_request  $request
+     * @param \swoole_http_response $response
+     * @return void
+     */
+    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        $response->end('hello world');
     }
 }

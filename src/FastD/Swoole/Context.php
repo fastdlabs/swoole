@@ -38,7 +38,9 @@ class Context
     /**
      * @var array
      */
-    protected $config;
+    protected $config = [
+        'pid' => '/tmp/swoole.pid'
+    ];
 
     /**
      * @param       $protocol
@@ -50,7 +52,7 @@ class Context
         $this->scheme = $protocol['scheme'];
         $this->host = $protocol['host'];
         $this->port = $protocol['port'];
-        $this->config = $config;
+        $this->config = array_merge($this->config, $config);
         unset($protocol, $config);
     }
 

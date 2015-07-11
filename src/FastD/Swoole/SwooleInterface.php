@@ -55,6 +55,17 @@ interface SwooleInterface
     public function setConfig($name, $value = null);
 
     /**
+     * @param Context $context
+     * @return $this
+     */
+    public function setContext(Context $context);
+
+    /**
+     * @return Context
+     */
+    public function getContext();
+
+    /**
      * @param SwooleHandlerInterface $swooleHandlerInterface
      * @return $this
      */
