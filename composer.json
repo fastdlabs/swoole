@@ -13,9 +13,6 @@
     "require": {
         "php": ">=5.5"
     },
-    "require-dev": {
-        "fastd/console": "dev-dev"
-    },
     "autoload": {
         "psr-4": {
             "FastD\\": "src/FastD"

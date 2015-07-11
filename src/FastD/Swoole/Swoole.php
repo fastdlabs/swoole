@@ -50,12 +50,12 @@ class Swoole implements SwooleInterface
      */
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
-        if (null !== ($pid = $context->get('pid'))) {
-            $swooleInfo = json_decode(file_get_contents($pid), true);
-            $this->lastSwoole = new \stdClass();
-            $this->lastSwoole->server = unserialize($swooleInfo['server']);
-            $this->lastSwoole->pid = $swooleInfo['pid'];
-            unset($swooleInfo);
+        if (null !== ($sock = $context->get('sock_file'))) {
+            if (file_exists($sock)) {
+                $this->lastSwoole = new \stdClass();
+                $this->lastSwoole->pid = (int)file_get_contents($sock);
+                unset($sock);
+            }
         }
 
         $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
@@ -221,7 +221,7 @@ class Swoole implements SwooleInterface
      */
     public function setUser($user)
     {
-        $this->context->set('user', $user);
+        $this->setConfig('user', $user);
 
         return $this;
     }
@@ -240,7 +240,7 @@ class Swoole implements SwooleInterface
      */
     public function setGroup($group)
     {
-        $this->context->set('group', $group);
+        $this->setConfig('group', $group);
 
         return $this;
     }
@@ -251,7 +251,7 @@ class Swoole implements SwooleInterface
      */
     public function rename($master_name)
     {
-        $this->context->set('master_name', $master_name);
+        $this->setConfig('process_name', $master_name);
 
         return $this;
     }

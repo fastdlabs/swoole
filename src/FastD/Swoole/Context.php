@@ -39,7 +39,7 @@ class Context
      * @var array
      */
     protected $config = [
-        'pid' => '/tmp/swoole.pid'
+        'sock_file' => '/tmp/swoole.sock'
     ];
 
     /**

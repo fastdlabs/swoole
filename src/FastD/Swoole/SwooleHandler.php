@@ -145,7 +145,7 @@ class SwooleHandler implements SwooleHandlerInterface
 
     /**
      * @param $name
-     * @return mixed
+     * @return void
      */
     public function rename($name)
     {
@@ -154,8 +154,6 @@ class SwooleHandler implements SwooleHandlerInterface
         } else if (function_exists('swoole_set_process_name')) {
             swoole_set_process_name($name);
         }
-
-        return $name;
     }
 
     /**
@@ -179,20 +177,15 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onStart(\swoole_server $server)
     {
-        if (null !== ($pid = $this->swoole->getContext()->get('pid'))) {
-            if (!is_dir($dir = dirname($pid))) {
+        if (null !== ($sock = $this->swoole->getContext()->get('sock_file'))) {
+            if (!is_dir($dir = dirname($sock))) {
                 mkdir($dir, 0755, true);
             }
 
-            $serverInfo = [
-                'pid' => $server->master_pid,
-                'server' => serialize($server),
-            ];
-
-            file_put_contents($pid, json_encode($serverInfo, JSON_UNESCAPED_UNICODE) . PHP_EOL);
+            file_put_contents($sock, $server->master_pid . PHP_EOL);
         }
 
-        $this->rename($this->swoole->getContext()->hasGet('master_name', 'swoole') . ' master');
+        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' master');
     }
 
     /**
@@ -201,7 +194,7 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onShutdown(\swoole_server $server)
     {
-        // TODO: Implement onShutdown() method.
+
     }
 
     /**
@@ -211,7 +204,7 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
-        $this->rename($this->swoole->getContext()->hasGet('master_name', 'swoole') . ' worker');
+        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' worker');
     }
 
     /**
@@ -328,7 +321,7 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onManagerStart(\swoole_server $server)
     {
-        $this->rename($this->swoole->getContext()->hasGet('master_name', 'swoole') . ' manager');
+        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' manager');
     }
 
     /**

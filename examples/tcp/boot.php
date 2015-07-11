@@ -14,11 +14,11 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$server = \FastD\Swoole\Rpc\Rpc::create('http://127.0.0.1:9321');
+$server = \FastD\Swoole\TcpServer\Tcp::create('tcp://127.0.0.1:9321', [], new \FastD\Swoole\TcpServer\TcpHandler());
 
 $server->setUser('vagrant');
 $server->setGroup('vagrant');
-$server->rename('demo swoole');
+$server->rename('swoole-tcp');
 
 $invoker = new \FastD\Swoole\Invoker($server);
 
