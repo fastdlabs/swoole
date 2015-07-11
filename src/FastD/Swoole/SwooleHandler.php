@@ -144,6 +144,21 @@ class SwooleHandler implements SwooleHandlerInterface
     }
 
     /**
+     * @param $name
+     * @return mixed
+     */
+    public function rename($name)
+    {
+        if (function_exists('cli_set_process_title')) {
+            cli_set_process_title($name);
+        } else if (function_exists('swoole_set_process_name')) {
+            swoole_set_process_name($name);
+        }
+
+        return $name;
+    }
+
+    /**
      * @param SwooleInterface $swooleInterface
      * @return $this
      */
@@ -176,6 +191,8 @@ class SwooleHandler implements SwooleHandlerInterface
 
             file_put_contents($pid, json_encode($serverInfo, JSON_UNESCAPED_UNICODE) . PHP_EOL);
         }
+
+        $this->rename($this->swoole->getContext()->hasGet('master_name', 'swoole') . ' master');
     }
 
     /**
@@ -194,7 +211,7 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
-        // TODO: Implement onWorkerStart() method.
+        $this->rename($this->swoole->getContext()->hasGet('master_name', 'swoole') . ' worker');
     }
 
     /**
@@ -311,7 +328,7 @@ class SwooleHandler implements SwooleHandlerInterface
      */
     public function onManagerStart(\swoole_server $server)
     {
-        // TODO: Implement onManagerStart() method.
+        $this->rename($this->swoole->getContext()->hasGet('master_name', 'swoole') . ' manager');
     }
 
     /**

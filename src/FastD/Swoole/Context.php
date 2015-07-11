@@ -141,6 +141,20 @@ class Context
     }
 
     /**
+     * @param $name
+     * @param $default
+     * @return mixed
+     */
+    public function hasGet($name, $default)
+    {
+        if (!$this->has($name)) {
+            return $default;
+        }
+
+        return $this->get($name);
+    }
+
+    /**
      * @return array
      */
     public function all()

@@ -224,4 +224,15 @@ class Swoole implements SwooleInterface
 
         return $this;
     }
+
+    /**
+     * @param $master_name
+     * @return $this
+     */
+    public function rename($master_name)
+    {
+        $this->context->set('master_name', $master_name);
+
+        return $this;
+    }
 }
