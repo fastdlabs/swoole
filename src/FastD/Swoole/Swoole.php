@@ -101,76 +101,28 @@ class Swoole implements SwooleInterface
         file_put_contents($server->pid, $this->getPidFile());
     }
 
-    public function onShutdown(\swoole_server $server)
+    public function status()
     {
-        // TODO: Implement onShutdown() method.
+        // TODO: Implement status() method.
     }
 
-    public function onWorkerStart(\swoole_server $server, $worker_id)
+    public function start()
     {
-        // TODO: Implement onWorkerStart() method.
+        // TODO: Implement start() method.
     }
 
-    public function onWorkerStop(\swoole_server $server, $worker_id)
+    public function stop()
     {
-        // TODO: Implement onWorkerStop() method.
+        // TODO: Implement stop() method.
     }
 
-    public function onTimer(\swoole_server $server, $interval)
+    public function reload()
     {
-        // TODO: Implement onTimer() method.
+        // TODO: Implement reload() method.
     }
 
-    public function onConnect(\swoole_server $server, $fd, $from_id)
+    public function handle(SwooleHandlerInterface $swooleHandlerInterface = null, array $on = ['onStart', 'onStop'])
     {
-        // TODO: Implement onConnect() method.
-    }
-
-    public function onReceive(\swoole_server $server, $fd, $from_id, $data)
-    {
-        // TODO: Implement onReceive() method.
-    }
-
-    /**
-     * swoole v1.7.18+
-     */
-    public function onPacket(\swoole_server $server, $data, $client_info)
-    {
-        // TODO: Implement onPacket() method.
-    }
-
-    public function onClose(\swoole_server $server, $fd, $from_id)
-    {
-        // TODO: Implement onClose() method.
-    }
-
-    public function onTask(\swoole_server $server, $task_id, $from_id, $data)
-    {
-        // TODO: Implement onTask() method.
-    }
-
-    public function onFinish(\swoole_server $server, $task_id, $data)
-    {
-        // TODO: Implement onFinish() method.
-    }
-
-    public function onPipeMessage(\swoole_server $server, $from_worker_id, $message)
-    {
-        // TODO: Implement onPipeMessage() method.
-    }
-
-    public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode)
-    {
-        // TODO: Implement onWorkerError() method.
-    }
-
-    public function onManagerStart(\swoole_server $server)
-    {
-        // TODO: Implement onManagerStart() method.
-    }
-
-    public function onManagerStop(\swoole_server $server)
-    {
-        // TODO: Implement onManagerStop() method.
+        // TODO: Implement handle() method.
     }
 }
