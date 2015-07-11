@@ -11,7 +11,6 @@
  * Gmail: bboyjanhuang@gmail.com
  * WebSite: http://www.janhuang.me
  */
-
 namespace FastD\Swoole;
 
 interface SwooleInterface

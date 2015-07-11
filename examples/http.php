@@ -14,9 +14,11 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-$server = \FastD\Swoole\Swoole::create('http://127.0.0.1:9321', [
+$server = \FastD\Swoole\HttpServer\Http::create('http://127.0.0.1:9321', [
 
 ]);
 
-//var_dump($server);
+$invoker = new \FastD\Swoole\Invoker($server);
+
+var_dump($server);
 

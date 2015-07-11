@@ -11,7 +11,6 @@
  * Gmail: bboyjanhuang@gmail.com
  * WebSite: http://www.janhuang.me
  */
-
 namespace FastD\Swoole;
 
 class Context
@@ -20,7 +19,6 @@ class Context
     protected $host;
     protected $port;
     protected $config;
-    protected $pid = './run/swoole.pid';
 
     public function __construct($protocol, array $config = ['worker_num' => 1, 'daemonize' => false])
     {
@@ -96,23 +94,5 @@ class Context
     public function all()
     {
         return $this->config;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPid()
-    {
-        return $this->pid;
-    }
-
-    /**
-     * @param string $pid
-     * @return $this
-     */
-    public function setPid($pid)
-    {
-        $this->pid = $pid;
-        return $this;
     }
 }

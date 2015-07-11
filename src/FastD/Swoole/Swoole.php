@@ -41,11 +41,31 @@ class Swoole implements SwooleInterface
         'managerStop' => 'onManagerStop',
     ];
 
+    protected $pid_file = './run/swoole.pid';
+
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
         $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
 
         $this->context = $context;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPidFile()
+    {
+        return $this->pid_file;
+    }
+
+    /**
+     * @param string $pid_file
+     * @return $this
+     */
+    public function setPidFile($pid_file)
+    {
+        $this->pid_file = $pid_file;
+        return $this;
     }
 
     public static function create($protocol, array $config = [])
@@ -73,7 +93,12 @@ class Swoole implements SwooleInterface
 
     public function onStart(\swoole_server $server)
     {
-        // TODO: Implement onStart() method.
+        $dir = dirname($this->getPidFile());
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        file_put_contents($server->pid, $this->getPidFile());
     }
 
     public function onShutdown(\swoole_server $server)
