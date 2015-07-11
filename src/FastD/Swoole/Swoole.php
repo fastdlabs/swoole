@@ -14,6 +14,11 @@
 
 namespace FastD\Swoole;
 
+/**
+ * Class Swoole
+ *
+ * @package FastD\Swoole
+ */
 class Swoole implements SwooleInterface
 {
     /**
@@ -21,28 +26,21 @@ class Swoole implements SwooleInterface
      */
     protected $server;
 
+    /**
+     * @var Context
+     */
     protected $context;
 
-    protected $prepareBind = [
-        'start' => 'onStart',
-        'shutdown' => 'onShutdown',
-        'workerStart' => 'onWorkerStart',
-        'workerStop' => 'onWorkerStop',
-        'timer' => 'onTimer',
-        'connect' => 'onConnect',
-        'receive' => 'onReceive',
-        'packet' => 'onPacket',
-        'close' => 'onClose',
-        'task' => 'onTask',
-        'finish' => 'onFinish',
-        'pipeMessage' => 'onPipeMessage',
-        'workerError' => 'onWorkerError',
-        'managerStart' => 'onManagerStart',
-        'managerStop' => 'onManagerStop',
-    ];
+    /**
+     * @var SwooleHandlerInterface
+     */
+    protected $handler;
 
-    protected $pid_file = './run/swoole.pid';
-
+    /**
+     * @param Context $context
+     * @param         $mode
+     * @param         $sockType
+     */
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
         $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
@@ -51,54 +49,48 @@ class Swoole implements SwooleInterface
     }
 
     /**
-     * @return string
+     * @param                             $protocol
+     * @param array                       $config
+     * @param SwooleHandlerInterface|null $swooleHandlerInterface
+     * @return static
      */
-    public function getPidFile()
+    public static function create($protocol, array $config = null, SwooleHandlerInterface $swooleHandlerInterface = null)
     {
-        return $this->pid_file;
+        $swoole = new static(new Context($protocol, $config));
+
+        if (null !== $swooleHandlerInterface) {
+            $swoole->handle($swooleHandlerInterface);
+        }
+
+        return $swoole;
     }
 
     /**
-     * @param string $pid_file
+     * @return Context
+     */
+    public function getContext()
+    {
+        return $this->context;
+    }
+
+    /**
+     * @param Context $context
      * @return $this
      */
-    public function setPidFile($pid_file)
+    public function setContext(Context $context)
     {
-        $this->pid_file = $pid_file;
+        $this->context = $context;
         return $this;
     }
 
-    public static function create($protocol, array $config = [])
-    {
-        return new static(new Context($protocol, $config));
-    }
-
-    public function run()
-    {
-        $this->server->set($this->context->all());
-
-        foreach ($this->prepareBind as $name => $callback) {
-            $this->server->on($name, [$this, $callback]);
-        }
-
-        $this->server->start();
-    }
-
+    /**
+     * @return $this
+     */
     public function daemonize()
     {
         $this->context->set('daemonize', true);
 
         return $this;
-    }
-
-    public function onStart(\swoole_server $server)
-    {
-        $dir = dirname($this->getPidFile());
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        file_put_contents($server->pid, $this->getPidFile());
     }
 
     public function status()
@@ -108,7 +100,11 @@ class Swoole implements SwooleInterface
 
     public function start()
     {
-        // TODO: Implement start() method.
+        $this->server->set($this->context->all());
+
+        $this->handler->handle($this);
+
+        return $this->server->start();
     }
 
     public function stop()
@@ -121,8 +117,26 @@ class Swoole implements SwooleInterface
         // TODO: Implement reload() method.
     }
 
-    public function handle(SwooleHandlerInterface $swooleHandlerInterface = null, array $on = ['onStart', 'onStop'])
+    /**
+     * @param SwooleHandlerInterface $swooleHandlerInterface
+     * @return $this
+     */
+    public function handle(SwooleHandlerInterface $swooleHandlerInterface)
     {
-        // TODO: Implement handle() method.
+        $this->handler = $swooleHandlerInterface;
+
+        return $this;
+    }
+
+    public function on($name, $callback = null)
+    {
+        $this->server->on($name, $callback);
+
+        return $this;
+    }
+
+    public function setConfig($name, $value = null)
+    {
+        $this->context->set($name, $value);
     }
 }

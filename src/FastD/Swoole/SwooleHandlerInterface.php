@@ -14,8 +14,14 @@
 
 namespace FastD\Swoole;
 
-interface SwooleHandlerInterface
+interface SwooleHandlerInterface extends \Iterator
 {
+    public function setPrepareBind(array $on);
+
+    public function getPrepareBind();
+
+    public function handle(SwooleInterface $swooleInterface);
+
     public function onStart(\swoole_server $server);
 
     public function onShutdown(\swoole_server $server);
@@ -48,4 +54,6 @@ interface SwooleHandlerInterface
     public function onManagerStart(\swoole_server $server);
 
     public function onManagerStop(\swoole_server $server);
+
+    public function onRequest(\swoole_http_request $request, \swoole_http_response $response);
 }

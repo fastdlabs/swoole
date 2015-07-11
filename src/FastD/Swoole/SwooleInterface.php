@@ -23,5 +23,9 @@ interface SwooleInterface
 
     public function reload();
 
-    public function handle(SwooleHandlerInterface $swooleHandlerInterface = null, array $on = ['onStart', 'onStop']);
+    public function on($name, $callback = null);
+
+    public function setConfig($name, $value = null);
+
+    public function handle(SwooleHandlerInterface $swooleHandlerInterface);
 }

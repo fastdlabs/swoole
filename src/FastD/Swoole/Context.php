@@ -13,22 +13,50 @@
  */
 namespace FastD\Swoole;
 
+/**
+ * Class Context
+ *
+ * @package FastD\Swoole
+ */
 class Context
 {
+    /**
+     * @var string
+     */
     protected $scheme;
+
+    /**
+     * @var string
+     */
     protected $host;
+
+    /**
+     * @var string
+     */
     protected $port;
+
+    /**
+     * @var array
+     */
     protected $config;
 
+    /**
+     * @param       $protocol
+     * @param array $config
+     */
     public function __construct($protocol, array $config = ['worker_num' => 1, 'daemonize' => false])
     {
         $protocol = parse_url($protocol);
-        $this->schema = $protocol['scheme'];
+        $this->scheme = $protocol['scheme'];
         $this->host = $protocol['host'];
         $this->port = $protocol['port'];
         $this->config = $config;
+        unset($protocol, $config);
     }
 
+    /**
+     * @return string
+     */
     public function getScheme()
     {
         return $this->scheme;
@@ -40,10 +68,13 @@ class Context
      */
     public function setScheme($schema)
     {
-        $this->schema = $schema;
+        $this->scheme = $schema;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getHost()
     {
         return $this->host;
@@ -69,11 +100,19 @@ class Context
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getPort()
     {
         return $this->port;
     }
 
+    /**
+     * @param $name
+     * @param $value
+     * @return $this
+     */
     public function set($name, $value)
     {
         $this->config[$name] = $value;
@@ -81,16 +120,27 @@ class Context
         return $this;
     }
 
+    /**
+     * @param $name
+     * @return null
+     */
     public function get($name)
     {
         return isset($this->config[$name]) ? $this->config[$name] : null;
     }
 
+    /**
+     * @param $name
+     * @return bool
+     */
     public function has($name)
     {
         return isset($this->config[$name]);
     }
 
+    /**
+     * @return array
+     */
     public function all()
     {
         return $this->config;
