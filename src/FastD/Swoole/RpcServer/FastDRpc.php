@@ -14,7 +14,9 @@
 
 namespace FastD\Swoole\Rpc;
 
-class FastDRpc implements \Iterator
+use FastD\Swoole\Swoole;
+
+class FastDRpc extends Swoole implements \Iterator
 {
     protected $functions;
 

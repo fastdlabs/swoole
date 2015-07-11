@@ -131,6 +131,26 @@ class Swoole implements SwooleInterface
     {
         $this->server->set($this->context->all());
 
+        if (null === $this->handler) {
+            $this->handler = new SwooleHandler([
+                'start',
+                'shutdown',
+                'workerStart',
+                'workerStop',
+                'timer',
+                'connect',
+                'receive',
+                'packet',
+                'close',
+                'task',
+                'finish',
+                'pipeMessage',
+                'workerError',
+                'managerStart',
+                'managerStop',
+                'request',
+            ]);
+        }
         $this->handler->handle($this);
 
         return $this->server->start();
