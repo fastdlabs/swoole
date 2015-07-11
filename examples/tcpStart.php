@@ -12,6 +12,6 @@
  * WebSite: http://www.janhuang.me
  */
 
-$invoker = include __DIR__ . '/rpc/boot.php';
+$invoker = include __DIR__ . '/tcp/boot.php';
 
 $invoker->start();

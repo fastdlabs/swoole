@@ -30,16 +30,16 @@ class TcpHandler extends SwooleHandler
 
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
-        echo 'receive';
+        echo 'receive' . PHP_EOL;
     }
 
     public function onConnect(\swoole_server $server, $fd, $from_id)
     {
-
+        echo 'connection' . PHP_EOL;
     }
 
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
-
+        echo 'close' . PHP_EOL;
     }
 }
