@@ -27,3 +27,13 @@ $result = $client->receive();
 $client->close();
 
 var_dump($result);
+
+$client->connect('tcp://127.0.0.1:9222');
+
+$client->send('demo', ['janhuang']);
+
+$result = $client->receive();
+
+$client->close();
+
+var_dump($result);

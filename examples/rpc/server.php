@@ -22,9 +22,18 @@ $server = FastD\Swoole\Rpc\RpcServer::create(
 
 $server->setProtocol(new \FastD\Swoole\Protocols\Json());
 
+class B {
+    function demoB($name)
+    {
+        return 'helle class B: ' . $name;
+    }
+}
+
 $server->addCallback('hello', function ($name) {
     return 'hello ' . $name;
 });
+
+$server->addCallback('demo', [new B(), 'demoB']);
 
 $server->start();
 
