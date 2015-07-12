@@ -52,7 +52,7 @@ class ServerHandler implements ServerHandlerInterface
         'workerError'   => 'onWorkerError',
         'managerStart'  => 'onManagerStart',
         'managerStop'   => 'onManagerStop',
-        'request'       => 'onRequest',
+//        'request'       => 'onRequest',
     ];
 
     /**

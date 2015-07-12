@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole;
 
+use FastD\Swoole\Server\ServerHandler;
 use FastD\Swoole\Server\ServerInterface;
 
 /**
@@ -134,7 +135,7 @@ class Swoole implements ServerInterface
         $this->server->set($this->context->all());
 
         if (null === $this->handler) {
-            $this->handler = new SwooleHandler([
+            $this->handler = new ServerHandler([
                 'start',
                 'shutdown',
                 'workerStart',
@@ -150,7 +151,6 @@ class Swoole implements ServerInterface
                 'workerError',
                 'managerStart',
                 'managerStop',
-                'request',
             ]);
         }
         $this->handler->handle($this);
