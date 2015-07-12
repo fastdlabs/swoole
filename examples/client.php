@@ -19,7 +19,7 @@ use FastD\Swoole\Client\ClientHandler as Handler;
 
 $client = new Client();
 
-$client->connect('tcp://127.0.0.1:9321');
+var_dump($client->connect('tcp://127.0.0.1:9321'));
 
 $client->send('hello world');
 

@@ -30,7 +30,11 @@ class Client implements ClientInterface
 
     protected $isHandle = false;
 
-    public function __construct($mode = SWOOLE_SOCK_TCP, $async = SWOOLE_SOCK_ASYNC)
+    const ASYNC = SWOOLE_SOCK_ASYNC;
+
+    const SYNC = SWOOLE_SOCK_SYNC|null;
+
+    public function __construct($mode = SWOOLE_SOCK_TCP, $async = Client::SYNC)
     {
         $this->client = new \swoole_client($mode, $async);
     }

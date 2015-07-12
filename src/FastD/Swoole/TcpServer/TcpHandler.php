@@ -31,6 +31,8 @@ class TcpHandler extends ServerHandler
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
         echo 'receive' . PHP_EOL;
+        $server->send($fd, $data);
+        $server->close($fd);
     }
 
     public function onConnect(\swoole_server $server, $fd, $from_id)
