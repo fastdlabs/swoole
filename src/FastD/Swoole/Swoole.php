@@ -14,12 +14,14 @@
 
 namespace FastD\Swoole;
 
+use FastD\Swoole\Server\ServerInterface;
+
 /**
  * Class Swoole
  *
  * @package FastD\Swoole
  */
-class Swoole implements SwooleInterface
+class Swoole implements ServerInterface
 {
     /**
      * @var \swoole_server

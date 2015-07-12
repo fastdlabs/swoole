@@ -14,9 +14,9 @@
 
 namespace FastD\Swoole\TcpServer;
 
-use FastD\Swoole\SwooleHandler;
+use FastD\Swoole\Server\ServerHandler;
 
-class TcpHandler extends SwooleHandler
+class TcpHandler extends ServerHandler
 {
     public function __construct()
     {

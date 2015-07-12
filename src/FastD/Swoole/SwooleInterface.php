@@ -21,38 +21,11 @@ namespace FastD\Swoole;
 interface SwooleInterface
 {
     /**
-     * @return mixed
-     */
-    public function status();
-
-    /**
-     * @return mixed
-     */
-    public function start();
-
-    /**
-     * @return mixed
-     */
-    public function stop();
-
-    /**
-     * @return mixed
-     */
-    public function reload();
-
-    /**
      * @param      $name
      * @param null $callback
      * @return $this
      */
     public function on($name, $callback = null);
-
-    /**
-     * @param      $name
-     * @param null $value
-     * @return $this
-     */
-    public function setConfig($name, $value = null);
 
     /**
      * @param Context $context
@@ -64,28 +37,6 @@ interface SwooleInterface
      * @return Context
      */
     public function getContext();
-
-    /**
-     * @return string
-     */
-    public function getUser();
-
-    /**
-     * @param $user
-     * @return $this
-     */
-    public function setUser($user);
-
-    /**
-     * @return string
-     */
-    public function getGroup();
-
-    /**
-     * @param $group
-     * @return $this
-     */
-    public function setGroup($group);
 
     /**
      * @param SwooleHandlerInterface $swooleHandlerInterface

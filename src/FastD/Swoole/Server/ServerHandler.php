@@ -12,14 +12,16 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Server;
+
+use FastD\Swoole\SwooleInterface;
 
 /**
  * Class SwooleHandler
  *
  * @package FastD\Swoole
  */
-class SwooleHandler implements SwooleHandlerInterface
+class ServerHandler implements ServerHandlerInterface
 {
     /**
      * @var array
@@ -56,8 +58,12 @@ class SwooleHandler implements SwooleHandlerInterface
     /**
      * @param array $on
      */
-    public function __construct(array $on = [])
+    public function __construct(array $on = null)
     {
+        if (null === $on) {
+            $on = array_keys($this->prepareBind);
+        }
+
         $this->setPrepareBind($on);
     }
 
@@ -156,20 +162,7 @@ class SwooleHandler implements SwooleHandlerInterface
         }
     }
 
-    /**
-     * @param SwooleInterface $swooleInterface
-     * @return $this
-     */
-    public function handle(SwooleInterface $swooleInterface)
-    {
-        $this->swoole = $swooleInterface;
 
-        foreach ($this as $name => $callback) {
-            $swooleInterface->on($name, [$this, $callback]);
-        }
-
-        return $this;
-    }
 
     /**
      * @param \swoole_server $server
@@ -341,5 +334,20 @@ class SwooleHandler implements SwooleHandlerInterface
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
         $response->end('hello world');
+    }
+
+    /**
+     * @param SwooleInterface $swooleInterface
+     * @return $this
+     */
+    public function handle(SwooleInterface $swooleInterface)
+    {
+        $this->swoole = $swooleInterface;
+
+        foreach ($this as $name => $callback) {
+            $swooleInterface->on($name, [$this, $callback]);
+        }
+
+        return $this;
     }
 }
