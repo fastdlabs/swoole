@@ -1,3 +1,4 @@
 /vendor/
 .idea
 *.orig
+composer.lock
