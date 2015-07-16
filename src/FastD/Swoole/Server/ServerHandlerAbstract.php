@@ -95,7 +95,7 @@ abstract class ServerHandlerAbstract implements ServerHandlerInterface
     {
         $this->swoole = $swooleInterface;
 
-        foreach ($this as $name => $callback) {
+        foreach ($this->on as $name => $callback) {
             $swooleInterface->on($name, [$this, $callback]);
         }
 

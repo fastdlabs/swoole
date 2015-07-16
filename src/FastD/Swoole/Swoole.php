@@ -14,8 +14,8 @@
 
 namespace FastD\Swoole;
 
-use FastD\Swoole\Server\ServerHandler;
 use FastD\Swoole\Server\ServerInterface;
+use FastD\Swoole\TcpServer\TcpHandler;
 
 /**
  * Class Swoole
@@ -135,7 +135,7 @@ class Swoole implements ServerInterface
         $this->server->set($this->context->all());
 
         if (null === $this->handler) {
-            $this->handler = new ServerHandler([
+            $this->handler = new TcpHandler([
                 'start',
                 'shutdown',
                 'workerStart',
