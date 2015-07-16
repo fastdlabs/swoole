@@ -25,6 +25,9 @@ class TcpHandler extends ServerHandler
             'start',
             'connect',
             'close',
+            'workerStart',
+            'managerStart',
+            'workerStop',
         ]);
     }
 

@@ -22,4 +22,4 @@ $server->rename('swoole-tcp');
 
 $invoker = new \FastD\Swoole\Invoker($server);
 
-return $invoker;
+$invoker->start();
