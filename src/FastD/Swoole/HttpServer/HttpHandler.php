@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: janhuang
  * Date: 15/7/16
- * Time: 下午7:15
+ * Time: 下午7:33
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,14 +12,19 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole\HttpServer;
 
-abstract class HttpHandler extends ServerHandler
+use FastD\Swoole\Server\HttpHandlerAbstract;
+
+class HttpHandler extends HttpHandlerAbstract
 {
     /**
      * @param \swoole_http_request  $request
      * @param \swoole_http_response $response
      * @return mixed
      */
-    abstract public function onRequest(\swoole_http_request $request, \swoole_http_response $response);
+    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        // TODO: Implement onRequest() method.
+    }
 }

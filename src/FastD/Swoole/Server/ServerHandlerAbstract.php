@@ -21,7 +21,7 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole
  */
-abstract class ServerHandler implements ServerHandlerInterface
+abstract class ServerHandlerAbstract implements ServerHandlerInterface
 {
     /**
      * @var array
@@ -153,26 +153,6 @@ abstract class ServerHandler implements ServerHandlerInterface
 
     /**
      * @param \swoole_server $server
-     * @return mixed
-     */
-    abstract public function onShutdown(\swoole_server $server);
-
-    /**
-     * @param \swoole_server $server
-     * @param                $worker_id
-     * @return mixed
-     */
-    abstract public function onWorkerStop(\swoole_server $server, $worker_id);
-
-    /**
-     * @param \swoole_server $server
-     * @param                $interval
-     * @return mixed
-     */
-    abstract public function onTimer(\swoole_server $server, $interval);
-
-    /**
-     * @param \swoole_server $server
      * @param                $fd
      * @param                $from_id
      * @return mixed
@@ -189,15 +169,6 @@ abstract class ServerHandler implements ServerHandlerInterface
     abstract public function onReceive(\swoole_server $server, $fd, $from_id, $data);
 
     /**
-     * swoole v1.7.18+
-     *
-     * @param $server
-     * @param $data
-     * @param $client_info;
-     */
-    abstract public function onPacket(\swoole_server $server, $data, $client_info);
-
-    /**
      * @param \swoole_server $server
      * @param                $fd
      * @param                $from_id
@@ -207,12 +178,56 @@ abstract class ServerHandler implements ServerHandlerInterface
 
     /**
      * @param \swoole_server $server
+     * @return mixed
+     */
+    public function onShutdown(\swoole_server $server)
+    {
+        // TODO: Implement onShutdown() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $worker_id
+     * @return mixed
+     */
+    public function onWorkerStop(\swoole_server $server, $worker_id)
+    {
+        // TODO: Implement onWorkerStop() method.
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param                $interval
+     * @return mixed
+     */
+    public function onTimer(\swoole_server $server, $interval)
+    {
+        // TODO: Implement onTimer() method.
+    }
+
+    /**
+     * swoole v1.7.18+
+     *
+     * @param $server
+     * @param $data
+     * @param $client_info ;
+     */
+    public function onPacket(\swoole_server $server, $data, $client_info)
+    {
+        // TODO: Implement onPacket() method.
+    }
+
+    /**
+     * @param \swoole_server $server
      * @param                $task_id
      * @param                $from_id
      * @param                $data
      * @return mixed
      */
-    abstract public function onTask(\swoole_server $server, $task_id, $from_id, $data);
+    public function onTask(\swoole_server $server, $task_id, $from_id, $data)
+    {
+        // TODO: Implement onTask() method.
+    }
 
     /**
      * @param \swoole_server $server
@@ -220,7 +235,10 @@ abstract class ServerHandler implements ServerHandlerInterface
      * @param                $data
      * @return mixed
      */
-    abstract public function onFinish(\swoole_server $server, $task_id, $data);
+    public function onFinish(\swoole_server $server, $task_id, $data)
+    {
+        // TODO: Implement onFinish() method.
+    }
 
     /**
      * @param \swoole_server $server
@@ -228,7 +246,10 @@ abstract class ServerHandler implements ServerHandlerInterface
      * @param                $message
      * @return mixed
      */
-    abstract public function onPipeMessage(\swoole_server $server, $from_worker_id, $message);
+    public function onPipeMessage(\swoole_server $server, $from_worker_id, $message)
+    {
+        // TODO: Implement onPipeMessage() method.
+    }
 
     /**
      * @param \swoole_server $server
@@ -237,11 +258,17 @@ abstract class ServerHandler implements ServerHandlerInterface
      * @param                $exit_mode
      * @return mixed
      */
-    abstract public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode);
+    public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode)
+    {
+        // TODO: Implement onWorkerError() method.
+    }
 
     /**
      * @param \swoole_server $server
      * @return mixed
      */
-    abstract public function onManagerStop(\swoole_server $server);
+    public function onManagerStop(\swoole_server $server)
+    {
+        // TODO: Implement onManagerStop() method.
+    }
 }
