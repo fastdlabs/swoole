@@ -21,7 +21,7 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole
  */
-class ServerHandler implements ServerHandlerInterface
+abstract class ServerHandler implements ServerHandlerInterface
 {
     /**
      * @var array
@@ -52,7 +52,6 @@ class ServerHandler implements ServerHandlerInterface
         'workerError'   => 'onWorkerError',
         'managerStart'  => 'onManagerStart',
         'managerStop'   => 'onManagerStop',
-//        'request'       => 'onRequest',
     ];
 
     /**
@@ -89,64 +88,18 @@ class ServerHandler implements ServerHandlerInterface
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Return the current element
-     *
-     * @link http://php.net/manual/en/iterator.current.php
-     * @return mixed Can return any type.
+     * @param SwooleInterface $swooleInterface
+     * @return $this
      */
-    public function current()
+    public function handle(SwooleInterface $swooleInterface)
     {
-        return current($this->on);
-    }
+        $this->swoole = $swooleInterface;
 
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Move forward to next element
-     *
-     * @link http://php.net/manual/en/iterator.next.php
-     * @return void Any returned value is ignored.
-     */
-    public function next()
-    {
-        next($this->on);
-    }
+        foreach ($this as $name => $callback) {
+            $swooleInterface->on($name, [$this, $callback]);
+        }
 
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Return the key of the current element
-     *
-     * @link http://php.net/manual/en/iterator.key.php
-     * @return mixed scalar on success, or null on failure.
-     */
-    public function key()
-    {
-        return key($this->on);
-    }
-
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Checks if current position is valid
-     *
-     * @link http://php.net/manual/en/iterator.valid.php
-     * @return boolean The return value will be casted to boolean and then evaluated.
-     * Returns true on success or false on failure.
-     */
-    public function valid()
-    {
-        return isset($this->on[$this->key()]);
-    }
-
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Rewind the Iterator to the first element
-     *
-     * @link http://php.net/manual/en/iterator.rewind.php
-     * @return void Any returned value is ignored.
-     */
-    public function rewind()
-    {
-        reset($this->on);
+        return $this;
     }
 
     /**
@@ -161,8 +114,6 @@ class ServerHandler implements ServerHandlerInterface
             swoole_set_process_name($name);
         }
     }
-
-
 
     /**
      * @param \swoole_server $server
@@ -185,9 +136,9 @@ class ServerHandler implements ServerHandlerInterface
      * @param \swoole_server $server
      * @return mixed
      */
-    public function onShutdown(\swoole_server $server)
+    public function onManagerStart(\swoole_server $server)
     {
-
+        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' manager');
     }
 
     /**
@@ -202,23 +153,23 @@ class ServerHandler implements ServerHandlerInterface
 
     /**
      * @param \swoole_server $server
+     * @return mixed
+     */
+    abstract public function onShutdown(\swoole_server $server);
+
+    /**
+     * @param \swoole_server $server
      * @param                $worker_id
      * @return mixed
      */
-    public function onWorkerStop(\swoole_server $server, $worker_id)
-    {
-        // TODO: Implement onWorkerStop() method.
-    }
+    abstract public function onWorkerStop(\swoole_server $server, $worker_id);
 
     /**
      * @param \swoole_server $server
      * @param                $interval
      * @return mixed
      */
-    public function onTimer(\swoole_server $server, $interval)
-    {
-        // TODO: Implement onTimer() method.
-    }
+    abstract public function onTimer(\swoole_server $server, $interval);
 
     /**
      * @param \swoole_server $server
@@ -226,10 +177,7 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $from_id
      * @return mixed
      */
-    public function onConnect(\swoole_server $server, $fd, $from_id)
-    {
-        // TODO: Implement onConnect() method.
-    }
+    abstract public function onConnect(\swoole_server $server, $fd, $from_id);
 
     /**
      * @param \swoole_server $server
@@ -238,18 +186,16 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $data
      * @return mixed
      */
-    public function onReceive(\swoole_server $server, $fd, $from_id, $data)
-    {
-        // TODO: Implement onReceive() method.
-    }
+    abstract public function onReceive(\swoole_server $server, $fd, $from_id, $data);
 
     /**
      * swoole v1.7.18+
+     *
+     * @param $server
+     * @param $data
+     * @param $client_info;
      */
-    public function onPacket(\swoole_server $server, $data, $client_info)
-    {
-        // TODO: Implement onPacket() method.
-    }
+    abstract public function onPacket(\swoole_server $server, $data, $client_info);
 
     /**
      * @param \swoole_server $server
@@ -257,10 +203,7 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $from_id
      * @return mixed
      */
-    public function onClose(\swoole_server $server, $fd, $from_id)
-    {
-        // TODO: Implement onClose() method.
-    }
+    abstract public function onClose(\swoole_server $server, $fd, $from_id);
 
     /**
      * @param \swoole_server $server
@@ -269,10 +212,7 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $data
      * @return mixed
      */
-    public function onTask(\swoole_server $server, $task_id, $from_id, $data)
-    {
-        // TODO: Implement onTask() method.
-    }
+    abstract public function onTask(\swoole_server $server, $task_id, $from_id, $data);
 
     /**
      * @param \swoole_server $server
@@ -280,10 +220,7 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $data
      * @return mixed
      */
-    public function onFinish(\swoole_server $server, $task_id, $data)
-    {
-        // TODO: Implement onFinish() method.
-    }
+    abstract public function onFinish(\swoole_server $server, $task_id, $data);
 
     /**
      * @param \swoole_server $server
@@ -291,10 +228,7 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $message
      * @return mixed
      */
-    public function onPipeMessage(\swoole_server $server, $from_worker_id, $message)
-    {
-        // TODO: Implement onPipeMessage() method.
-    }
+    abstract public function onPipeMessage(\swoole_server $server, $from_worker_id, $message);
 
     /**
      * @param \swoole_server $server
@@ -303,51 +237,11 @@ class ServerHandler implements ServerHandlerInterface
      * @param                $exit_mode
      * @return mixed
      */
-    public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode)
-    {
-        // TODO: Implement onWorkerError() method.
-    }
+    abstract public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_mode);
 
     /**
      * @param \swoole_server $server
      * @return mixed
      */
-    public function onManagerStart(\swoole_server $server)
-    {
-        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' manager');
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @return mixed
-     */
-    public function onManagerStop(\swoole_server $server)
-    {
-        // TODO: Implement onManagerStop() method.
-    }
-
-    /**
-     * @param \swoole_http_request  $request
-     * @param \swoole_http_response $response
-     * @return void
-     */
-    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
-    {
-        $response->end('hello world');
-    }
-
-    /**
-     * @param SwooleInterface $swooleInterface
-     * @return $this
-     */
-    public function handle(SwooleInterface $swooleInterface)
-    {
-        $this->swoole = $swooleInterface;
-
-        foreach ($this as $name => $callback) {
-            $swooleInterface->on($name, [$this, $callback]);
-        }
-
-        return $this;
-    }
+    abstract public function onManagerStop(\swoole_server $server);
 }

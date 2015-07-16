@@ -17,7 +17,7 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\SwooleHandlerInterface as SwooleHandler;
 
-interface ServerHandlerInterface extends SwooleHandler, \Iterator
+interface ServerHandlerInterface extends SwooleHandler
 {
     /**
      * @param \swoole_server $server
@@ -127,11 +127,4 @@ interface ServerHandlerInterface extends SwooleHandler, \Iterator
      * @return mixed
      */
     public function onManagerStop(\swoole_server $server);
-
-    /**
-     * @param \swoole_http_request  $request
-     * @param \swoole_http_response $response
-     * @return mixed
-     */
-    public function onRequest(\swoole_http_request $request, \swoole_http_response $response);
 }
