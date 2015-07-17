@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: janhuang
  * Date: 15/7/12
- * Time: 下午4:09
+ * Time: 下午4:29
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -14,9 +14,10 @@
 
 namespace FastD\Swoole\Client;
 
+use FastD\Swoole\SwooleHandlerInterface;
 use FastD\Swoole\SwooleInterface;
 
-class ClientHandler implements ClientHandlerInterface
+abstract class ClientHandlerAbstract implements SwooleHandlerInterface
 {
     protected $prepareBind = [
         'connect'   => 'onConnect',
@@ -74,23 +75,11 @@ class ClientHandler implements ClientHandlerInterface
         return $this;
     }
 
-    public function onConnect(\swoole_client $client)
-    {
-        echo 'connect';
-    }
+    abstract public function onConnect(\swoole_client $client);
 
-    public function onReceive(\swoole_client $client, $data)
-    {
-        echo 'receive';
-    }
+    abstract public function onReceive(\swoole_client $client, $data);
 
-    public function onError(\swoole_client $client)
-    {
-        echo 'error';
-    }
+    abstract public function onError(\swoole_client $client);
 
-    public function onClose(\swoole_client $client)
-    {
-        echo 'close';
-    }
+    abstract public function onClose(\swoole_client $client);
 }

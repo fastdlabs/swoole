@@ -22,9 +22,9 @@ class TcpHandler extends ServerHandlerAbstract
     {
         parent::__construct([
             'receive',
-            'start',
             'connect',
             'close',
+            'start',
             'workerStart',
             'managerStart',
             'workerStop',
