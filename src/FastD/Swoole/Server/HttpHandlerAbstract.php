@@ -17,6 +17,28 @@ namespace FastD\Swoole\Server;
 abstract class HttpHandlerAbstract extends ServerHandlerAbstract
 {
     /**
+     * @var array
+     */
+    protected $prepareBind = [
+        'start'         => 'onStart',
+        'shutdown'      => 'onShutdown',
+        'workerStart'   => 'onWorkerStart',
+        'workerStop'    => 'onWorkerStop',
+        'timer'         => 'onTimer',
+        'connect'       => 'onConnect',
+        'receive'       => 'onReceive',
+        'packet'        => 'onPacket',
+        'close'         => 'onClose',
+        'task'          => 'onTask',
+        'finish'        => 'onFinish',
+        'pipeMessage'   => 'onPipeMessage',
+        'workerError'   => 'onWorkerError',
+        'managerStart'  => 'onManagerStart',
+        'managerStop'   => 'onManagerStop',
+        'request'       => 'onRequest',
+    ];
+
+    /**
      * @param \swoole_http_request  $request
      * @param \swoole_http_response $response
      * @return mixed
