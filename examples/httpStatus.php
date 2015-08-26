@@ -15,5 +15,3 @@
 $invoker = include __DIR__ . '/http/boot.php';
 
 $result = $invoker->status();
-
-var_dump($result);

@@ -49,10 +49,10 @@ class Invoker
     {
         $pid = $this->swoole->getPid();
         if (empty($pid)) {
-            echo "Server not running..." . PHP_EOL;
+            echo "Server [' . $this->swoole->getContext()->get('process_name') . '] not running..." . PHP_EOL;
             return 0;
         }
-        echo "Server is running..." . PHP_EOL;
+        echo 'Server [' . $this->swoole->getContext()->get('process_name') . ' pid: ' . $pid . '] is running...' . PHP_EOL;
         return 0;
     }
 
@@ -64,12 +64,12 @@ class Invoker
         $pid = $this->swoole->getPid();
 
         if (empty($pid)) {
-            echo 'Server not running...' . PHP_EOL;
+            echo 'Server [' . $this->swoole->getContext()->get('process_name') . '] not running...' . PHP_EOL;
             return 1;
         }
 
         exec("kill -15 {$pid}");
-        echo 'Server is stop...' . PHP_EOL;
+        echo 'Server [' . $this->swoole->getContext()->get('process_name') . ' pid: ' . $pid . '] is stop...' . PHP_EOL;
         return 0;
     }
 
@@ -81,10 +81,10 @@ class Invoker
         $pid = $this->swoole->getPid();
 
         if (empty($pid)) {
-            echo "Server not running..." . PHP_EOL;
+            echo 'Server [' . $this->swoole->getContext()->get('process_name') . '] not running...' . PHP_EOL;
         }
         exec("kill -USR1 {$pid}");
-        echo "Server is reload..." . PHP_EOL;
+        echo 'Server [' . $this->swoole->getContext()->get('process_name') . ' pid: ' . $pid . '] reload...' . PHP_EOL;
 
         return 0;
     }
