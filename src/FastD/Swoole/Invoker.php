@@ -91,7 +91,7 @@ class Invoker
 
     public function usage()
     {
-        echo 'Usage: Server {start|stop|restart|reload|status} ';
+        echo 'Usage: Server {start|stop|restart|reload|status} ' . PHP_EOL;
         return 0;
     }
 }
