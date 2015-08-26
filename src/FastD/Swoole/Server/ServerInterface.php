@@ -16,27 +16,22 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\SwooleInterface;
 
+/**
+ * Interface ServerInterface
+ *
+ * @package FastD\Swoole\Server
+ */
 interface ServerInterface extends SwooleInterface
 {
     /**
-     * @return mixed
+     * @return int
      */
-    public function status();
+    public function getPid();
 
     /**
      * @return mixed
      */
     public function start();
-
-    /**
-     * @return mixed
-     */
-    public function stop();
-
-    /**
-     * @return mixed
-     */
-    public function reload();
 
     /**
      * @return string

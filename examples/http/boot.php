@@ -15,14 +15,14 @@
 include __DIR__ . '/../../vendor/autoload.php';
 
 $server = \FastD\Swoole\HttpServer\Http::create(
-    'http://127.0.0.1:9321',
+    'http://0.0.0.0:9321',
     [],
-    new \FastD\Swoole\SwooleHandler(['start', 'request', 'workerStart', 'managerStart'])
+    new \FastD\Swoole\HttpServer\HttpHandler(['start', 'request', 'shutdown', 'workerStart', 'managerStart'])
 );
 
 $server->setUser('vagrant');
 $server->setGroup('vagrant');
-$server->rename('demo swoole');
+$server->rename('swoole');
 
 $invoker = new \FastD\Swoole\Invoker($server);
 

@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Server;
 
+use FastD\Swoole\Swoole;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -76,6 +77,10 @@ abstract class ServerHandlerAbstract implements ServerHandlerInterface
             $this->on[$name] = $this->prepareBind[$name];
         }
 
+        if (!isset($this->on['shutdown'])) {
+            $this->on['shutdown'] = $this->prepareBind['shutdown'];
+        }
+
         return $this;
     }
 
@@ -121,12 +126,12 @@ abstract class ServerHandlerAbstract implements ServerHandlerInterface
      */
     public function onStart(\swoole_server $server)
     {
-        if (null !== ($sock = $this->swoole->getContext()->get('sock_file'))) {
-            if (!is_dir($dir = dirname($sock))) {
+        if (null !== ($pid = $this->swoole->getContext()->get('pid_file'))) {
+            if (!is_dir($dir = dirname($pid))) {
                 mkdir($dir, 0755, true);
             }
 
-            file_put_contents($sock, $server->master_pid . PHP_EOL);
+            file_put_contents($pid, $server->master_pid . PHP_EOL);
         }
 
         $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' master');
@@ -182,7 +187,10 @@ abstract class ServerHandlerAbstract implements ServerHandlerInterface
      */
     public function onShutdown(\swoole_server $server)
     {
-        // TODO: Implement onShutdown() method.
+        $pidFile = $this->swoole->getContext()->get('pid_file');
+        if (null !== $pidFile && file_exists($pidFile)) {
+            unlink($pidFile);
+        }
     }
 
     /**

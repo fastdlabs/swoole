@@ -39,12 +39,7 @@ class Swoole implements ServerInterface
      */
     protected $handler;
 
-    /**
-     * The last time start swoole server.
-     *
-     * @var \stdClass|\swoole_server
-     */
-    protected $lastSwoole;
+    protected $pid;
 
     /**
      * @param Context $context
@@ -53,10 +48,9 @@ class Swoole implements ServerInterface
      */
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
-        if (null !== ($sock = $context->get('sock_file'))) {
+        if (null !== ($sock = $context->get('pid_file'))) {
             if (file_exists($sock)) {
-                $this->lastSwoole = new \stdClass();
-                $this->lastSwoole->pid = (int)file_get_contents($sock);
+                $this->pid = file_get_contents($sock);
                 unset($sock);
             }
         }
@@ -64,6 +58,11 @@ class Swoole implements ServerInterface
         $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
 
         $this->context = $context;
+    }
+
+    public function getPid()
+    {
+        return (int)$this->pid;
     }
 
     /**
@@ -81,14 +80,6 @@ class Swoole implements ServerInterface
         }
 
         return $swoole;
-    }
-
-    /**
-     * @return \stdClass|\swoole_server
-     */
-    public function getLastSwoole()
-    {
-        return $this->lastSwoole;
     }
 
     /**
@@ -120,14 +111,6 @@ class Swoole implements ServerInterface
     }
 
     /**
-     * @return array|null
-     */
-    public function status()
-    {
-        return $this->lastSwoole->server->stats();
-    }
-
-    /**
      * @return mixed
      */
     public function start()
@@ -153,25 +136,10 @@ class Swoole implements ServerInterface
                 'managerStop',
             ]);
         }
+
         $this->handler->handle($this);
 
         return $this->server->start();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function stop()
-    {
-        return $this->lastSwoole->server->shutdown();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function reload()
-    {
-        return $this->lastSwoole->server->reload();
     }
 
     /**

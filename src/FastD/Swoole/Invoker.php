@@ -47,7 +47,13 @@ class Invoker
      */
     public function status()
     {
-        return $this->swoole->status();
+        $pid = $this->swoole->getPid();
+        if (empty($pid)) {
+            echo "Server not running..." . PHP_EOL;
+            return 0;
+        }
+        echo "Server is running..." . PHP_EOL;
+        return 0;
     }
 
     /**
@@ -55,20 +61,16 @@ class Invoker
      */
     public function stop()
     {
-        $swoole = $this->swoole->getLastSwoole();
+        $pid = $this->swoole->getPid();
 
-        set_error_handler(function ($code, $message, $file, $line) use ($swoole) {
-            if (function_exists('shell_exec')) {
-                shell_exec('kill -15 ' . $swoole->pid);
-            }
-            echo 'server pid:' . $swoole->pid . ' stop...' . PHP_EOL;
-        });
+        if (empty($pid)) {
+            echo 'Server not running...' . PHP_EOL;
+            return 1;
+        }
 
-        $result = $this->swoole->stop();
-
-        restore_error_handler();
-
-        return $result;
+        exec("kill -15 {$pid}");
+        echo 'Server is stop...' . PHP_EOL;
+        return 0;
     }
 
     /**
@@ -76,19 +78,20 @@ class Invoker
      */
     public function reload()
     {
-        $swoole = $this->swoole->getLastSwoole();
+        $pid = $this->swoole->getPid();
 
-        set_error_handler(function ($code, $message, $file, $line) use ($swoole) {
-            if (function_exists('shell_exec')) {
-                shell_exec('kill -USR1 ' . $swoole->pid);
-            }
-            echo 'server pid:' . $swoole->pid . ' reloading...' . PHP_EOL;
-        });
+        if (empty($pid)) {
+            echo "Server not running..." . PHP_EOL;
+        }
+        exec("kill -USR1 {$pid}");
+        echo "Server is reload..." . PHP_EOL;
 
-        $result = $this->swoole->reload();
+        return 0;
+    }
 
-        restore_error_handler();
-
+    public function usage()
+    {
+        echo 'Usage: Server {start|stop|restart|reload|status} ';
         return 0;
     }
 }

@@ -25,6 +25,6 @@ class HttpHandler extends HttpHandlerAbstract
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
-        // TODO: Implement onRequest() method.
+        $response->end('hello swoole');
     }
 }
