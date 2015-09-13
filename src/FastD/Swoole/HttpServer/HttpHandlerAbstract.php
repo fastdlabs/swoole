@@ -12,7 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole\HttpServer;
+
+use FastD\Swoole\Server\ServerHandlerAbstract;
 
 abstract class HttpHandlerAbstract extends ServerHandlerAbstract
 {

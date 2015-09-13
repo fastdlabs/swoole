@@ -14,8 +14,6 @@
 
 namespace FastD\Swoole\HttpServer;
 
-use FastD\Swoole\Server\HttpHandlerAbstract;
-
 class HttpHandler extends HttpHandlerAbstract
 {
     /**

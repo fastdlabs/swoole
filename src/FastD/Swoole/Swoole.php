@@ -48,16 +48,25 @@ class Swoole implements ServerInterface
      */
     public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
+        $this->initPid($context);
+
+        $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
+
+        $this->context = $context;
+    }
+
+    /**
+     * @param Context $context
+     * @return void
+     */
+    public function initPid(Context $context)
+    {
         if (null !== ($sock = $context->get('pid_file'))) {
             if (file_exists($sock)) {
                 $this->pid = file_get_contents($sock);
                 unset($sock);
             }
         }
-
-        $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
-
-        $this->context = $context;
     }
 
     public function getPid()
