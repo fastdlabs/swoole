@@ -12,17 +12,17 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Server\ServerInterface;
-use FastD\Swoole\TcpServer\TcpHandler;
+use FastD\Swoole\Context;
+use FastD\Swoole\Handler\SwooleHandlerInterface;
 
 /**
  * Class Swoole
  *
  * @package FastD\Swoole
  */
-class Swoole implements ServerInterface
+class SwooleServer implements SwooleServerInterface
 {
     /**
      * @var \swoole_server
@@ -41,18 +41,18 @@ class Swoole implements ServerInterface
 
     protected $pid;
 
-    /**
-     * @param Context $context
-     * @param         $mode
-     * @param         $sockType
-     */
-    public function __construct(Context $context, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
+    public function __construct($protocol, array $config = [])
     {
-        $this->initPid($context);
+        $this->context = new Context($protocol, $config);
 
-        $this->server = new \swoole_server($context->getScheme(), $context->getPort(), $mode, $sockType);
+        print_r($this->context);die;
 
-        $this->context = $context;
+        $this->server = new \swoole_server($context->getScheme(), $context->getPort(), SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+    }
+
+    public static function create($protocol, array $config = [])
+    {
+        return new static($protocol, $config);
     }
 
     /**
@@ -72,23 +72,6 @@ class Swoole implements ServerInterface
     public function getPid()
     {
         return (int)$this->pid;
-    }
-
-    /**
-     * @param                             $protocol
-     * @param array                       $config
-     * @param SwooleHandlerInterface|null $swooleHandlerInterface
-     * @return static
-     */
-    public static function create($protocol, array $config = null, SwooleHandlerInterface $swooleHandlerInterface = null)
-    {
-        $swoole = new static(new Context($protocol, $config));
-
-        if (null !== $swooleHandlerInterface) {
-            $swoole->handle($swooleHandlerInterface);
-        }
-
-        return $swoole;
     }
 
     /**
@@ -233,5 +216,35 @@ class Swoole implements ServerInterface
         $this->setConfig('process_name', $master_name);
 
         return $this;
+    }
+
+    /**
+     * Get server pid file absolute path.
+     *
+     * @return string
+     */
+    public function getPidPath()
+    {
+        // TODO: Implement getPidPath() method.
+    }
+
+    /**
+     * Get server running status.
+     *
+     * @return string
+     */
+    public function status()
+    {
+        // TODO: Implement status() method.
+    }
+
+    /**
+     * Shutdown running server.
+     *
+     * @return int
+     */
+    public function shutdown()
+    {
+        // TODO: Implement shutdown() method.
     }
 }

@@ -12,29 +12,20 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Handler;
+
+use FastD\Swoole\Server\SwooleServerInterface;
 
 /**
  * Interface SwooleHandlerInterface
  *
- * @package FastD\Swoole
+ * @package FastD\Swoole\Handler
  */
 interface SwooleHandlerInterface
 {
     /**
-     * @param array $on
-     * @return $this
+     * @param SwooleServerInterface $swooleServerInterface
+     * @return mixed
      */
-    public function setPrepareBind(array $on);
-
-    /**
-     * @return array
-     */
-    public function getPrepareBind();
-
-    /**
-     * @param SwooleInterface $swooleInterface
-     * @return $this
-     */
-    public function handle(SwooleInterface $swooleInterface);
+    public function handle(SwooleServerInterface $swooleServerInterface);
 }
