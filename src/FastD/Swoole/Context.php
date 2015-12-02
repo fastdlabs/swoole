@@ -40,7 +40,7 @@ class Context
      * @var array
      */
     protected $config = [
-        'pid_file' => '/tmp/swoole.pid',
+        'pid_file' => '/tmp/fd_swoole.pid',
         'process_name' => 'fd_swoole'
     ];
 

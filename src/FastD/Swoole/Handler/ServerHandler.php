@@ -63,15 +63,30 @@ class ServerHandler implements ServerHandlerInterface
      */
     public function onStart(\swoole_server $server)
     {
-        if (null !== ($pid = @$this->swoole->getContext()->get('pid_file'))) {
-            if (!is_dir($dir = dirname($pid))) {
+        if (null !== ($file = $this->swoole->getPidFile())) {
+            if (!is_dir($dir = dirname($file))) {
                 mkdir($dir, 0755, true);
             }
 
-            file_put_contents($pid, $server->master_pid . PHP_EOL);
+            file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
         $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' master');
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @return void
+     */
+    public function onShutdown(\swoole_server $server)
+    {
+        $file = $this->swoole->getPidFile();
+
+        if (null !== $file && file_exists($file)) {
+            @unlink($file);
+        }
+
+        $server->shutdown();
     }
 
     /**
@@ -129,24 +144,13 @@ class ServerHandler implements ServerHandlerInterface
     }
 
     /**
-     * @param \swoole_server $server
-     * @return mixed
-     */
-    public function onShutdown(\swoole_server $server)
-    {
-        $pidFile = $this->swoole->getContext()->has('pid_file') ? $this->swoole->getContext()->get('pid_file') : null;
-
-        if (null !== $pidFile && file_exists($pidFile)) {
-            unlink($pidFile);
-        }
-    }
-
-    /**
      * @return array
      */
     public function registerHandles()
     {
         return [
+            'Start'     => [$this, 'onStart'],
+            'Shutdown'  => [$this, 'onShutdown'],
             'Connect'   => [$this, 'onConnect'],
             'Receive'   => [$this, 'onReceive'],
             'Close'     => [$this, 'onClose'],

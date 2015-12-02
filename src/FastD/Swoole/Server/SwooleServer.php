@@ -174,6 +174,10 @@ class SwooleServer implements SwooleServerInterface
         return $this;
     }
 
+    /**
+     * @param $name
+     * @return null
+     */
     public function getConfig($name)
     {
         return $this->context->get($name);
@@ -230,22 +234,58 @@ class SwooleServer implements SwooleServerInterface
     }
 
     /**
-     * Get server running status.
-     *
-     * @return string
+     * @return array|null
      */
     public function status()
     {
-        // TODO: Implement status() method.
+        $pid = $this->getPid();
+        if (empty($pid)) {
+            echo 'Server [' . $this->getContext()->get('process_name') . '] not running...' . PHP_EOL;
+            return 0;
+        }
+        echo 'Server [' . $this->getContext()->get('process_name') . ' pid: ' . $pid . '] is running...' . PHP_EOL;
+        return 0;
     }
 
     /**
-     * Shutdown running server.
-     *
-     * @return int
+     * @return mixed
      */
     public function shutdown()
     {
-        // TODO: Implement shutdown() method.
+        $pid = $this->getPid();
+
+        if (empty($pid)) {
+            echo 'Server [' . $this->getContext()->get('process_name') . '] not running...' . PHP_EOL;
+            return 1;
+        }
+
+        exec("kill -15 {$pid}");
+        echo 'Server [' . $this->getContext()->get('process_name') . ' pid: ' . $pid . '] is stop...' . PHP_EOL;
+        return 0;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function reload()
+    {
+        $pid = $this->getPid();
+
+        if (empty($pid)) {
+            echo 'Server [' . $this->getContext()->get('process_name') . '] not running...' . PHP_EOL;
+        }
+        exec("kill -USR1 {$pid}");
+        echo 'Server [' . $this->getContext()->get('process_name') . ' pid: ' . $pid . '] reload...' . PHP_EOL;
+
+        return 0;
+    }
+
+    /**
+     * @return int
+     */
+    public function usage()
+    {
+        echo 'Usage: Server {start|stop|restart|reload|status} ' . PHP_EOL;
+        return 0;
     }
 }
