@@ -36,7 +36,7 @@ interface SwooleServerInterface
      *
      * @return string
      */
-    public function getPidPath();
+    public function getPidFile();
 
     /**
      * Run server.
@@ -86,6 +86,12 @@ interface SwooleServerInterface
     public function setGroup($group);
 
     /**
+     * @param $name
+     * @return mixed
+     */
+    public function getConfig($name);
+
+    /**
      * @param      $name
      * @param null $value
      * @return $this
@@ -105,10 +111,10 @@ interface SwooleServerInterface
 
     /**
      * @param      $name
-     * @param null $callback
+     * @param      $callback
      * @return $this
      */
-    public function on($name, $callback = null);
+    public function on($name, $callback);
 
     /**
      * @param SwooleHandlerInterface $swooleHandlerInterface

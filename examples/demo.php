@@ -14,6 +14,11 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-$server = \FastD\Swoole\Server\SwooleServer::create('tcp://127.0.0.1:9501');
+use FastD\Swoole\Server\SwooleServer;
+use FastD\Swoole\Handler\ServerHandler;
+
+$server = SwooleServer::create('tcp://127.0.0.1:9501', [], new ServerHandler());
+
+$server->start();
 
 

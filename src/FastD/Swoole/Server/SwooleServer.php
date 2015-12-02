@@ -15,12 +15,13 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Context;
+use FastD\Swoole\Handler\ServerHandlerInterface;
 use FastD\Swoole\Handler\SwooleHandlerInterface;
 
 /**
  * Class Swoole
  *
- * @package FastD\Swoole
+ * @package FastD\Swoole\Server
  */
 class SwooleServer implements SwooleServerInterface
 {
@@ -39,20 +40,37 @@ class SwooleServer implements SwooleServerInterface
      */
     protected $handler;
 
-    protected $pid;
-
-    public function __construct($protocol, array $config = [])
+    /**
+     * SwooleServer constructor.
+     *
+     * @param                             $protocol
+     * @param array                       $config
+     * @param ServerHandlerInterface|null $serverHandlerInterface
+     */
+    public function __construct($protocol, array $config = [], ServerHandlerInterface $serverHandlerInterface = null)
     {
         $this->context = new Context($protocol, $config);
 
-        print_r($this->context);die;
+        $this->server = new \swoole_server(
+            $this->context->getScheme(),
+            $this->context->getPort(),
+            SWOOLE_PROCESS,
+            SWOOLE_SOCK_TCP
+        );
 
-        $this->server = new \swoole_server($context->getScheme(), $context->getPort(), SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+        if (null !== $serverHandlerInterface) {
+            $this->handle($serverHandlerInterface);
+        }
     }
 
-    public static function create($protocol, array $config = [])
+    /**
+     * @param       $protocol
+     * @param array $config
+     * @return static
+     */
+    public static function create($protocol, array $config = [], ServerHandlerInterface $serverHandlerInterface = null)
     {
-        return new static($protocol, $config);
+        return new static($protocol, $config, $serverHandlerInterface);
     }
 
     /**
@@ -69,9 +87,24 @@ class SwooleServer implements SwooleServerInterface
         }
     }
 
+    /**
+     * Get server pid file absolute path.
+     *
+     * @return string
+     */
+    public function getPidFile()
+    {
+        return $this->context->has('pid_file') ? $this->context->get('pid_file') : false;
+    }
+
+    /**
+     * @return int|null
+     */
     public function getPid()
     {
-        return (int)$this->pid;
+        $file = $this->getPidFile();
+
+        return false !== $file ? (int)file_get_contents($file) : null;
     }
 
     /**
@@ -110,23 +143,7 @@ class SwooleServer implements SwooleServerInterface
         $this->server->set($this->context->all());
 
         if (null === $this->handler) {
-            $this->handler = new TcpHandler([
-                'start',
-                'shutdown',
-                'workerStart',
-                'workerStop',
-                'timer',
-                'connect',
-                'receive',
-                'packet',
-                'close',
-                'task',
-                'finish',
-                'pipeMessage',
-                'workerError',
-                'managerStart',
-                'managerStop',
-            ]);
+            throw new \RuntimeException("Server is not has handler.");
         }
 
         $this->handler->handle($this);
@@ -147,14 +164,19 @@ class SwooleServer implements SwooleServerInterface
 
     /**
      * @param      $name
-     * @param null $callback
+     * @param      $callback
      * @return $this
      */
-    public function on($name, $callback = null)
+    public function on($name, $callback)
     {
         $this->server->on($name, $callback);
 
         return $this;
+    }
+
+    public function getConfig($name)
+    {
+        return $this->context->get($name);
     }
 
     /**
@@ -174,7 +196,7 @@ class SwooleServer implements SwooleServerInterface
      */
     public function getUser()
     {
-        return $this->context->get('user');
+        return $this->getConfig('user');
     }
 
     /**
@@ -193,7 +215,7 @@ class SwooleServer implements SwooleServerInterface
      */
     public function getGroup()
     {
-        return $this->context->get('group');
+        return $this->getConfig('group');
     }
 
     /**
@@ -205,27 +227,6 @@ class SwooleServer implements SwooleServerInterface
         $this->setConfig('group', $group);
 
         return $this;
-    }
-
-    /**
-     * @param $master_name
-     * @return $this
-     */
-    public function rename($master_name)
-    {
-        $this->setConfig('process_name', $master_name);
-
-        return $this;
-    }
-
-    /**
-     * Get server pid file absolute path.
-     *
-     * @return string
-     */
-    public function getPidPath()
-    {
-        // TODO: Implement getPidPath() method.
     }
 
     /**

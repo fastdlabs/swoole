@@ -11,6 +11,7 @@
  * Gmail: bboyjanhuang@gmail.com
  * WebSite: http://www.janhuang.me
  */
+
 namespace FastD\Swoole;
 
 /**
@@ -39,7 +40,8 @@ class Context
      * @var array
      */
     protected $config = [
-        'pid_file' => '/tmp/swoole.pid'
+        'pid_file' => '/tmp/swoole.pid',
+        'process_name' => 'fd_swoole'
     ];
 
     /**
