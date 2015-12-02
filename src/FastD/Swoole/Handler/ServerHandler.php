@@ -100,7 +100,9 @@ class ServerHandler implements ServerHandlerInterface
      * @return mixed
      */
     public function onConnect(\swoole_server $server, $fd, $from_id)
-    {}
+    {
+        echo 'connection' . PHP_EOL;
+    }
 
     /**
      * @param \swoole_server $server
@@ -111,7 +113,8 @@ class ServerHandler implements ServerHandlerInterface
      */
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
-
+        $server->send($fd, $data);
+        $server->close($fd);
     }
 
     /**
@@ -122,7 +125,7 @@ class ServerHandler implements ServerHandlerInterface
      */
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
-
+        echo 'close';
     }
 
     /**
@@ -136,39 +139,6 @@ class ServerHandler implements ServerHandlerInterface
         if (null !== $pidFile && file_exists($pidFile)) {
             unlink($pidFile);
         }
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param                $worker_id
-     * @return mixed
-     */
-    public function onWorkerStop(\swoole_server $server, $worker_id)
-    {
-        // TODO: Implement onWorkerStop() method.
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param                $task_id
-     * @param                $from_id
-     * @param                $data
-     * @return mixed
-     */
-    public function onTask(\swoole_server $server, $task_id, $from_id, $data)
-    {
-        // TODO: Implement onTask() method.
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param                $task_id
-     * @param                $data
-     * @return mixed
-     */
-    public function onFinish(\swoole_server $server, $task_id, $data)
-    {
-        // TODO: Implement onFinish() method.
     }
 
     /**
