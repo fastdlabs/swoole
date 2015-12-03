@@ -40,8 +40,19 @@ class Context
      * @var array
      */
     protected $config = [
-        'pid_file' => '/tmp/fd_swoole.pid',
-        'process_name' => 'fd_swoole'
+        'pid_file'              => '/tmp/fd_swoole.pid',
+        'process_name'          => 'fd_swoole', // 进程名
+        'open_length_check'     => 1,
+        'dispatch_mode'         => 3,
+        'package_length_type'   => 'N',
+        'package_length_offset' => 0,
+        'package_body_offset'   => 4,
+        'package_max_length'    => 1024 * 1024 * 2,
+        'buffer_output_size'    => 1024 * 1024 * 3,
+        'pipe_buffer_size'      => 1024 * 1024 * 32,
+        'max_request'           => 0,
+        'log_file'              => '/tmp/fd_server.log',
+        'task_tmpdir'           => '/tmp/fd_tmp/',
     ];
 
     /**
