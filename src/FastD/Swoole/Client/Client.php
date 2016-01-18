@@ -15,39 +15,29 @@
 namespace FastD\Swoole\Client;
 
 use FastD\Swoole\Context;
+use FastD\Swoole\Handler\ClientHandlerInterface;
 use FastD\Swoole\SwooleHandlerInterface;
 
 class Client implements ClientInterface
 {
-    protected $client;
-
-    /**
-     * @var Context
-     */
-    protected $context;
-
-    protected $on;
-
-    protected $isHandle = false;
-
     const ASYNC = SWOOLE_SOCK_ASYNC;
 
-    const SYNC = SWOOLE_SOCK_SYNC|null;
+    const SYNC = SWOOLE_SOCK_SYNC;
 
-    public function __construct($mode = SWOOLE_SOCK_TCP, $async = Client::SYNC)
+    protected $handler;
+
+    protected $client;
+
+    public function __construct(ClientHandlerInterface $clientHandlerInterface = null, $mode = SWOOLE_SOCK_TCP, $async = Client::SYNC)
     {
         $this->client = new \swoole_client($mode, $async);
+
+        $this->handle($clientHandlerInterface);
     }
 
-    public function connect($protocol, $flag = null)
+    public function connect($host, $port, $flag = null)
     {
-        if (false === $this->isHandle) {
-            $this->handle(new ClientHandler());
-        }
-
-        $this->context = new Context($protocol, ['flog' => $flag]);
-
-        return $this->client->connect($this->context->getHost(), $this->context->getPort(), $flag);
+        return $this->client->connect($host, $port);
     }
 
     public function send($data)
@@ -66,43 +56,15 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param      $name
-     * @param null $callback
-     * @return $this
+     * @param ClientHandlerInterface $clientHandlerInterface
      */
-    public function on($name, $callback = null)
+    public function handle(ClientHandlerInterface $clientHandlerInterface = null)
     {
-        $this->client->on($name, $callback);
-
-        return $this;
-    }
-
-    /**
-     * @param Context $context
-     * @return $this
-     */
-    public function setContext(Context $context)
-    {
-        $this->context = $context;
-        return $this;
-    }
-
-    /**
-     * @return Context
-     */
-    public function getContext()
-    {
-        return $this->context;
-    }
-
-    /**
-     * @param SwooleHandlerInterface $swooleHandlerInterface
-     * @return $this
-     */
-    public function handle(SwooleHandlerInterface $swooleHandlerInterface)
-    {
-        $swooleHandlerInterface->handle($this);
-
-        $this->isHandle = true;
+        if (null !== $clientHandlerInterface) {
+            $this->client->on('connect', [$clientHandlerInterface, 'onConnect']);
+            $this->client->on('receive', [$clientHandlerInterface, 'onReceive']);
+            $this->client->on('error', [$clientHandlerInterface, 'onError']);
+            $this->client->on('close', [$clientHandlerInterface, 'onClose']);
+        }
     }
 }

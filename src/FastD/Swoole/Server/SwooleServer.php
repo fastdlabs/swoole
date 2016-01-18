@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Context;
+use FastD\Swoole\Handler\ServerHandler;
 use FastD\Swoole\Handler\ServerHandlerInterface;
 use FastD\Swoole\Handler\SwooleHandlerInterface;
 
@@ -30,10 +31,23 @@ class SwooleServer implements SwooleServerInterface
      */
     protected $server;
 
-    /**
-     * @var Context
-     */
-    protected $context;
+    protected $config = [
+        'pid_file'              => '/tmp/fd_swoole.pid',
+        'process_name'          => 'fd_swoole', // 进程名
+        'open_length_check'     => 1,
+        'dispatch_mode'         => 3,
+        'package_length_type'   => 'N',
+        'package_length_offset' => 0,
+        'package_body_offset'   => 4,
+        'package_max_length'    => 1024 * 1024 * 2,
+        'buffer_output_size'    => 1024 * 1024 * 3,
+        'pipe_buffer_size'      => 1024 * 1024 * 32,
+        'max_request'           => 0,
+        'log_file'              => '/tmp/fd_server.log',
+        'task_tmpdir'           => '/tmp/fd_tmp/',
+        'user'                  => 'www',
+        'group'                 => 'www',
+    ];
 
     /**
      * @var SwooleHandlerInterface
@@ -41,50 +55,45 @@ class SwooleServer implements SwooleServerInterface
     protected $handler;
 
     /**
+     * @var int
+     */
+    protected $pid;
+
+    /**
+     * @var bool
+     */
+    protected $daemonize = false;
+
+    /**
      * SwooleServer constructor.
      *
-     * @param                             $protocol
-     * @param array                       $config
+     * @param                             $host
+     * @param                             $port
      * @param ServerHandlerInterface|null $serverHandlerInterface
+     * @param array                       $config
      */
-    public function __construct($protocol, array $config = [], ServerHandlerInterface $serverHandlerInterface = null)
+    public function __construct($host, $port, ServerHandlerInterface $serverHandlerInterface = null, array $config = [])
     {
-        $this->context = new Context($protocol, $config);
+        $this->config = array_merge($this->config, $config);
 
-        $this->server = new \swoole_server(
-            $this->context->getScheme(),
-            $this->context->getPort(),
-            SWOOLE_PROCESS,
-            SWOOLE_SOCK_TCP
-        );
+        $this->server = new \swoole_server($host, $port, static::SERVER_MODE_PROCESS, static::SERVER_SOCK_TCP);
 
-        if (null !== $serverHandlerInterface) {
-            $this->handle($serverHandlerInterface);
-        }
+        $this->handler = null === $serverHandlerInterface ? new ServerHandler() : $serverHandlerInterface;
+
+        $this->pid = (int)@file_get_contents($this->config['pid_file']);
     }
 
     /**
-     * @param       $protocol
+     * @param       $host
+     * @param       $port
+     * @param ServerHandlerInterface $serverHandlerInterface
      * @param array $config
+     *
      * @return static
      */
-    public static function create($protocol, array $config = [], ServerHandlerInterface $serverHandlerInterface = null)
+    public static function create($host, $port, ServerHandlerInterface $serverHandlerInterface = null, array $config = [])
     {
-        return new static($protocol, $config, $serverHandlerInterface);
-    }
-
-    /**
-     * @param Context $context
-     * @return void
-     */
-    public function initPid(Context $context)
-    {
-        if (null !== ($sock = $context->get('pid_file'))) {
-            if (file_exists($sock)) {
-                $this->pid = file_get_contents($sock);
-                unset($sock);
-            }
-        }
+        return new static($host, $port, $serverHandlerInterface, $config);
     }
 
     /**
@@ -94,7 +103,17 @@ class SwooleServer implements SwooleServerInterface
      */
     public function getPidFile()
     {
-        return $this->context->has('pid_file') ? $this->context->get('pid_file') : false;
+        return $this->config['pid_file'];
+    }
+
+    public function getLogFile()
+    {
+        return $this->config['log_file'];
+    }
+
+    public function getName()
+    {
+        return 'fd-server';
     }
 
     /**
@@ -102,27 +121,7 @@ class SwooleServer implements SwooleServerInterface
      */
     public function getPid()
     {
-        $file = $this->getPidFile();
-
-        return false !== $file ? (int)file_get_contents($file) : null;
-    }
-
-    /**
-     * @return Context
-     */
-    public function getContext()
-    {
-        return $this->context;
-    }
-
-    /**
-     * @param Context $context
-     * @return $this
-     */
-    public function setContext(Context $context)
-    {
-        $this->context = $context;
-        return $this;
+        return $this->pid;
     }
 
     /**
@@ -130,7 +129,9 @@ class SwooleServer implements SwooleServerInterface
      */
     public function daemonize()
     {
-        $this->context->set('daemonize', true);
+        $this->daemonize = true;
+
+        $this->config['daemonize'] = true;
 
         return $this;
     }
@@ -140,7 +141,7 @@ class SwooleServer implements SwooleServerInterface
      */
     public function start()
     {
-        $this->server->set($this->context->all());
+        $this->server->set($this->config);
 
         if (null === $this->handler) {
             throw new \RuntimeException("Server is not has handler.");
@@ -178,59 +179,9 @@ class SwooleServer implements SwooleServerInterface
      * @param $name
      * @return null
      */
-    public function getConfig($name)
+    public function getConfig($name = null)
     {
-        return $this->context->get($name);
-    }
-
-    /**
-     * @param      $name
-     * @param null $value
-     * @return $this
-     */
-    public function setConfig($name, $value = null)
-    {
-        $this->context->set($name, $value);
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUser()
-    {
-        return $this->getConfig('user');
-    }
-
-    /**
-     * @param $user
-     * @return $this
-     */
-    public function setUser($user)
-    {
-        $this->setConfig('user', $user);
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getGroup()
-    {
-        return $this->getConfig('group');
-    }
-
-    /**
-     * @param $group
-     * @return $this
-     */
-    public function setGroup($group)
-    {
-        $this->setConfig('group', $group);
-
-        return $this;
+        return array_key_exists($name, $this->config) ? $this->config[$name] : null;
     }
 
     /**

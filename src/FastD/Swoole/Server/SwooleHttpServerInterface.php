@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/10
- * Time: 上午11:13
+ * Date: 16/1/18
+ * Time: 下午10:00
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,6 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-$invoker = include __DIR__ . '/http/boot.php';
+namespace FastD\Swoole\Server;
 
-$result = $invoker->status();
+interface SwooleHttpServerInterface
+{
+
+}

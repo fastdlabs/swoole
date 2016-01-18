@@ -22,7 +22,7 @@ use FastD\Swoole\Server\SwooleServerInterface;
  *
  * @package FastD\Swoole\Handler
  */
-class ServerHandler implements ServerHandlerInterface
+class ServerHandler implements SwooleHandlerInterface
 {
     /**
      * @var SwooleServer
@@ -37,8 +37,12 @@ class ServerHandler implements ServerHandlerInterface
     {
         $this->swoole = $swooleInterface;
 
-        foreach ($this->registerHandles() as $name => $callback) {
-            $swooleInterface->on($name, $callback);
+        $handles = get_class_methods($this);
+
+        foreach ($handles as $value) {
+            if ('on' == substr($value, 0, 2)) {
+                $swooleInterface->on(lcfirst(substr($value, 2)), [$this, $value]);
+            }
         }
 
         return $this;
@@ -71,7 +75,7 @@ class ServerHandler implements ServerHandlerInterface
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
-        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' master');
+        $this->rename($this->swoole->getName() . ' master');
     }
 
     /**
@@ -95,7 +99,7 @@ class ServerHandler implements ServerHandlerInterface
      */
     public function onManagerStart(\swoole_server $server)
     {
-        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' manager');
+        $this->rename($this->swoole->getName() . ' manager');
     }
 
     /**
@@ -105,7 +109,7 @@ class ServerHandler implements ServerHandlerInterface
      */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
-        $this->rename($this->swoole->getContext()->hasGet('process_name', 'swoole') . ' worker');
+        $this->rename($this->swoole->getName() . ' worker');
     }
 
     /**
@@ -141,19 +145,5 @@ class ServerHandler implements ServerHandlerInterface
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
         echo 'close';
-    }
-
-    /**
-     * @return array
-     */
-    public function registerHandles()
-    {
-        return [
-            'Start'     => [$this, 'onStart'],
-            'Shutdown'  => [$this, 'onShutdown'],
-            'Connect'   => [$this, 'onConnect'],
-            'Receive'   => [$this, 'onReceive'],
-            'Close'     => [$this, 'onClose'],
-        ];
     }
 }

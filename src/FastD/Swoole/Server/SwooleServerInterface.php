@@ -24,6 +24,12 @@ use FastD\Swoole\Handler\SwooleHandlerInterface;
  */
 interface SwooleServerInterface
 {
+    const SERVER_MODE_BASE = SWOOLE_BASE;
+    const SERVER_MODE_PROCESS = SWOOLE_PROCESS;
+
+    const SERVER_SOCK_TCP = SWOOLE_SOCK_TCP;
+    const SERVER_SOCK_UDP = SWOOLE_SOCK_UDP;
+
     /**
      * Get server pid
      *
@@ -37,6 +43,29 @@ interface SwooleServerInterface
      * @return string
      */
     public function getPidFile();
+
+    /**
+     * @return string
+     */
+    public function getName();
+
+    /**
+     * @return string
+     */
+    public function getLogFile();
+
+    /**
+     * @param      $name
+     * @param      $callback
+     * @return $this
+     */
+    public function on($name, $callback);
+
+    /**
+     * @param SwooleHandlerInterface $swooleHandlerInterface
+     * @return $this
+     */
+    public function handle(SwooleHandlerInterface $swooleHandlerInterface);
 
     /**
      * Run server.
@@ -58,67 +87,4 @@ interface SwooleServerInterface
      * @return int
      */
     public function shutdown();
-
-    /**
-     * Get running server user.
-     *
-     * @return string
-     */
-    public function getUser();
-
-    /**
-     * @param $user
-     * @return $this
-     */
-    public function setUser($user);
-
-    /**
-     * Get running server user group.
-     *
-     * @return string
-     */
-    public function getGroup();
-
-    /**
-     * @param $group
-     * @return $this
-     */
-    public function setGroup($group);
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function getConfig($name);
-
-    /**
-     * @param      $name
-     * @param null $value
-     * @return $this
-     */
-    public function setConfig($name, $value = null);
-
-    /**
-     * @param Context $context
-     * @return $this
-     */
-    public function setContext(Context $context);
-
-    /**
-     * @return Context
-     */
-    public function getContext();
-
-    /**
-     * @param      $name
-     * @param      $callback
-     * @return $this
-     */
-    public function on($name, $callback);
-
-    /**
-     * @param SwooleHandlerInterface $swooleHandlerInterface
-     * @return $this
-     */
-    public function handle(SwooleHandlerInterface $swooleHandlerInterface);
 }

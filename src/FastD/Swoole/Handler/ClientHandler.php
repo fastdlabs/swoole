@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/20
- * Time: 下午11:08
+ * Date: 16/1/18
+ * Time: 下午10:43
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,27 +12,27 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Client;
+namespace FastD\Swoole\Handler;
 
-class ClientHandler extends ClientHandlerAbstract
+class ClientHandler implements ClientHandlerInterface
 {
     public function onConnect(\swoole_client $client)
     {
-        echo 'client connect' . PHP_EOL;
+        echo 'connect';
     }
 
     public function onReceive(\swoole_client $client, $data)
     {
-        echo 'client receive' . PHP_EOL;
+        echo 'receive: ' . $data;
     }
 
     public function onError(\swoole_client $client)
     {
-        echo 'client error' . PHP_EOL;
+        echo 'error';
     }
 
     public function onClose(\swoole_client $client)
     {
-        echo 'client close' . PHP_EOL;
+        echo 'close';
     }
 }

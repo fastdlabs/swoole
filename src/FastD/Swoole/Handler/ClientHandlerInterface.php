@@ -1,10 +1,9 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/12
- * Time: 下午4:14
+ * Date: 16/1/18
+ * Time: 下午10:34
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -15,15 +14,13 @@
 
 namespace FastD\Swoole\Handler;
 
-/**
- * Interface ServerHandlerInterface
- *
- * @package FastD\Swoole\Handler
- */
-interface ServerHandlerInterface extends SwooleHandlerInterface
+interface ClientHandlerInterface
 {
-    /**
-     * @return array
-     */
-    public function registerHandles();
+    public function onConnect(\swoole_client $client);
+
+    public function onReceive(\swoole_client $client, $data);
+
+    public function onError(\swoole_client $client);
+
+    public function onClose(\swoole_client $client);
 }

@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/11
- * Time: 下午4:57
+ * Date: 16/1/18
+ * Time: 下午9:47
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,8 +12,16 @@
  * WebSite: http://www.janhuang.me
  */
 
-$invoker = include __DIR__ . '/http/boot.php';
+include __DIR__ . '/../../vendor/autoload.php';
 
-$result = $invoker->reload();
+use FastD\Swoole\Client\Client;
 
-var_dump($result);
+$client = new Client();
+
+$client->connect('127.0.0.1', '9321');
+
+$client->send('hello world');
+
+echo $client->receive();
+
+$client->close();

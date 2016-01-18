@@ -14,13 +14,15 @@
 
 namespace FastD\Swoole\Client;
 
-use FastD\Swoole\SwooleInterface;
+use FastD\Swoole\Handler\ClientHandlerInterface;
 
-interface ClientInterface extends SwooleInterface
+interface ClientInterface
 {
+    public function handle(ClientHandlerInterface $clientHandlerInterface);
+
     public function send($data);
 
-    public function connect($protocol, $flag = null);
+    public function connect($host, $port, $flag = null);
 
     public function receive();
 

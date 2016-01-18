@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/11
- * Time: 下午5:51
+ * Date: 16/1/18
+ * Time: 下午10:21
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,6 +12,12 @@
  * WebSite: http://www.janhuang.me
  */
 
-$invoker = include __DIR__ . '/tcp/boot.php';
+namespace FastD\Swoole;
 
-$invoker->start();
+class ServerFactory
+{
+    public static function factory()
+    {
+
+    }
+}
