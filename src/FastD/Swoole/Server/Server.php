@@ -74,10 +74,9 @@ class Server implements ServerInterface
     protected $config = [
         'dispatch_mode'         => 2,
         'reactor_num'           => 1,
-        'max_conn'              => 10000,
+        'max_conn'              => 1024,
         'worker_num'            => 1,
         'max_request'           => 0,
-        'log_file'              => '/tmp/fd_server.log',
         'task_tmpdir'           => '/tmp/fd_tmp/',
         'user'                  => 'www',
         'group'                 => 'www',
@@ -99,15 +98,15 @@ class Server implements ServerInterface
     }
 
     /**
-     * @param       $host
-     * @param       $port
-     * @param array $config
-     *
+     * @param $host
+     * @param $port
+     * @param $mode
+     * @param $sock
      * @return static
      */
-    public static function create($host, $port, array $config = [])
+    public static function create($host, $port, $mode = SwooleInterface::SWOOLE_MODE_BASE, $sock = SwooleInterface::SWOOLE_SOCK_TCP)
     {
-        return new static($host, $port, $config);
+        return new static($host, $port, $mode, $sock);
     }
 
     /**
@@ -206,6 +205,7 @@ class Server implements ServerInterface
      */
     public function start()
     {
+        print_r($this->config);
         $this->server->set($this->config);
 
         if (null === $this->handler) {

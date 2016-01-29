@@ -14,6 +14,13 @@
 
 namespace FastD\Swoole;
 
+/**
+ * Base Swoole Server Interface.
+ *
+ * Interface SwooleInterface
+ *
+ * @package FastD\Swoole
+ */
 interface SwooleInterface
 {
     const SWOOLE_MODE_BASE = SWOOLE_BASE;
@@ -24,4 +31,11 @@ interface SwooleInterface
 
     const SWOOLE_ASYNC = SWOOLE_SOCK_ASYNC;
     const SWOOLE_SYNC = SWOOLE_SOCK_SYNC;
+
+    /**
+     * @param $name
+     * @param $callback
+     * @return mixed
+     */
+    public function on($name, $callback);
 }

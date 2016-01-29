@@ -12,14 +12,12 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Handler;
-
 /**
  * Class SwooleHandler
  *
  * @package FastD\Swoole\Handler
  */
-class ServerHandler extends HandlerAbstract
+class ServerHandler extends \FastD\Swoole\Handler\HandlerAbstract
 {
     /**
      * @param \swoole_server $server
@@ -27,7 +25,7 @@ class ServerHandler extends HandlerAbstract
      */
     public function onStart(\swoole_server $server)
     {
-        if (null !== ($file = $this->swoole->getPidFile())) {
+        if (null !== ($file = $this->server->getPidFile())) {
             if (!is_dir($dir = dirname($file))) {
                 mkdir($dir, 0755, true);
             }
@@ -35,22 +33,7 @@ class ServerHandler extends HandlerAbstract
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
-        $this->rename($this->swoole->getName() . ' master');
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @return void
-     */
-    public function onShutdown(\swoole_server $server)
-    {
-        $file = $this->swoole->getPidFile();
-
-        if (null !== $file && file_exists($file)) {
-            @unlink($file);
-        }
-
-        $server->shutdown();
+        $this->rename($this->server->getName() . ' master');
     }
 
     /**
@@ -59,7 +42,7 @@ class ServerHandler extends HandlerAbstract
      */
     public function onManagerStart(\swoole_server $server)
     {
-        $this->rename($this->swoole->getName() . ' manager');
+        $this->rename($this->server->getName() . ' manager');
     }
 
     /**
@@ -69,7 +52,7 @@ class ServerHandler extends HandlerAbstract
      */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
-        $this->rename($this->swoole->getName() . ' worker');
+        $this->rename($this->server->getName() . ' worker');
     }
 
     /**
@@ -93,6 +76,7 @@ class ServerHandler extends HandlerAbstract
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
         $server->send($fd, $data);
+        $server->close($fd);
     }
 
     /**

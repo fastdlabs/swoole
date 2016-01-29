@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Handler;
 
 use FastD\Swoole\Server\ServerInterface;
+use FastD\Swoole\SwooleInterface;
 
 /**
  * Class HandlerAbstract
@@ -29,18 +30,18 @@ abstract class HandlerAbstract implements HandlerInterface
     protected $server;
 
     /**
-     * @param ServerInterface $serverInterface
+     * @param SwooleInterface $swooleInterface
      * @return $this
      */
-    public function handle(ServerInterface $serverInterface)
+    public function handle(SwooleInterface $swooleInterface)
     {
-        $this->server = $serverInterface;
+        $this->server = $swooleInterface;
 
         $handles = get_class_methods($this);
 
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
-                $serverInterface->on(lcfirst(substr($value, 2)), [$this, $value]);
+                $swooleInterface->on(lcfirst(substr($value, 2)), [$this, $value]);
             }
         }
 

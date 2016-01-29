@@ -12,9 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Handler;
-
-class ClientHandler extends HandlerAbstract
+class ClientHandler extends \FastD\Swoole\Handler\HandlerAbstract
 {
     public function onConnect(\swoole_client $client)
     {
