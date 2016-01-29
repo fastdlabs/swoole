@@ -14,25 +14,18 @@
 
 namespace FastD\Swoole\Client;
 
-use FastD\Swoole\Context;
-use FastD\Swoole\Handler\ClientHandlerInterface;
-use FastD\Swoole\SwooleHandlerInterface;
+use FastD\Swoole\Handler\HandlerInterface;
+use FastD\Swoole\SwooleInterface;
 
-class Client implements ClientInterface
+class Client implements ClientInterface, SwooleInterface
 {
-    const ASYNC = SWOOLE_SOCK_ASYNC;
-
-    const SYNC = SWOOLE_SOCK_SYNC;
-
     protected $handler;
 
     protected $client;
 
-    public function __construct(ClientHandlerInterface $clientHandlerInterface = null, $mode = SWOOLE_SOCK_TCP, $async = Client::SYNC)
+    public function __construct($mode = SwooleInterface::SWOOLE_SOCK_TCP, $async = SwooleInterface::SWOOLE_SYNC)
     {
         $this->client = new \swoole_client($mode, $async);
-
-        $this->handle($clientHandlerInterface);
     }
 
     public function connect($host, $port, $flag = null)
@@ -56,15 +49,10 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param ClientHandlerInterface $clientHandlerInterface
+     * @param HandlerInterface $handlerInterface
      */
-    public function handle(ClientHandlerInterface $clientHandlerInterface = null)
+    public function handle(HandlerInterface $handlerInterface)
     {
-        if (null !== $clientHandlerInterface) {
-            $this->client->on('connect', [$clientHandlerInterface, 'onConnect']);
-            $this->client->on('receive', [$clientHandlerInterface, 'onReceive']);
-            $this->client->on('error', [$clientHandlerInterface, 'onError']);
-            $this->client->on('close', [$clientHandlerInterface, 'onClose']);
-        }
+        $handlerInterface->handle($this);
     }
 }

@@ -14,22 +14,16 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Context;
-use FastD\Swoole\Handler\SwooleHandlerInterface;
+use FastD\Swoole\Handler\HandlerInterface;
+use FastD\Swoole\SwooleInterface;
 
 /**
  * Interface SwooleServerInterface
  *
  * @package FastD\Swoole\Server
  */
-interface SwooleServerInterface
+interface ServerInterface extends SwooleInterface
 {
-    const SERVER_MODE_BASE = SWOOLE_BASE;
-    const SERVER_MODE_PROCESS = SWOOLE_PROCESS;
-
-    const SERVER_SOCK_TCP = SWOOLE_SOCK_TCP;
-    const SERVER_SOCK_UDP = SWOOLE_SOCK_UDP;
-
     /**
      * Get server pid
      *
@@ -62,10 +56,10 @@ interface SwooleServerInterface
     public function on($name, $callback);
 
     /**
-     * @param SwooleHandlerInterface $swooleHandlerInterface
+     * @param HandlerInterface $handlerInterface
      * @return $this
      */
-    public function handle(SwooleHandlerInterface $swooleHandlerInterface);
+    public function handle(HandlerInterface $handlerInterface);
 
     /**
      * Run server.
@@ -73,18 +67,4 @@ interface SwooleServerInterface
      * @return int
      */
     public function start();
-
-    /**
-     * Get server running status.
-     *
-     * @return string
-     */
-    public function status();
-
-    /**
-     * Shutdown running server.
-     *
-     * @return int
-     */
-    public function shutdown();
 }

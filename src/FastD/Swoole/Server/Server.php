@@ -1,0 +1,217 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: janhuang
+ * Date: 15/7/9
+ * Time: 下午6:23
+ * Github: https://www.github.com/janhuang
+ * Coding: https://www.coding.net/janhuang
+ * SegmentFault: http://segmentfault.com/u/janhuang
+ * Blog: http://segmentfault.com/blog/janhuang
+ * Gmail: bboyjanhuang@gmail.com
+ * WebSite: http://www.janhuang.me
+ */
+
+namespace FastD\Swoole\Server;
+
+use FastD\Swoole\Handler\HandlerInterface;
+use FastD\Swoole\Manager\ServerManager;
+use FastD\Swoole\SwooleInterface;
+
+/**
+ * Class Swoole
+ *
+ * @package FastD\Swoole\Server
+ */
+class Server implements ServerInterface
+{
+    /**
+     * @var \swoole_server
+     */
+    protected $server;
+
+    /**
+     * Swoole server pid file path.
+     *
+     * @var string
+     */
+    protected $pid_file = './var/pid/{name}.pid';
+
+    /**
+     * Server running log path.
+     *
+     * @var string
+     */
+    protected $log_file = './var/log/{name}.log';
+
+    /**
+     * Swoole server process name.
+     *
+     * @var string
+     */
+    protected $process_name = 'fast-d';
+
+    /**
+     * @var HandlerInterface
+     */
+    protected $handler;
+
+    /**
+     * @var bool
+     */
+    protected $daemonize = false;
+
+    /**
+     * @var ServerManager
+     */
+    protected $manager;
+
+    /**
+     * Swoole server run configuration.
+     *
+     * @var array
+     */
+    protected $config = [
+        'dispatch_mode'         => 2,
+        'reactor_num'           => 1,
+        'max_conn'              => 10000,
+        'worker_num'            => 1,
+        'max_request'           => 0,
+        'log_file'              => '/tmp/fd_server.log',
+        'task_tmpdir'           => '/tmp/fd_tmp/',
+        'user'                  => 'www',
+        'group'                 => 'www',
+    ];
+
+    /**
+     * Server constructor.
+     *
+     * @param $host
+     * @param $port
+     * @param $mode
+     * @param $sock
+     */
+    public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_MODE_BASE, $sock = SwooleInterface::SWOOLE_SOCK_TCP)
+    {
+        $this->server = new \swoole_server($host, $port, $mode, $sock);
+
+        $this->manager = new ServerManager($this);
+    }
+
+    /**
+     * @param       $host
+     * @param       $port
+     * @param array $config
+     *
+     * @return static
+     */
+    public static function create($host, $port, array $config = [])
+    {
+        return new static($host, $port, $config);
+    }
+
+    /**
+     * Get server pid file absolute path.
+     *
+     * @return string
+     */
+    public function getPidFile()
+    {
+        return str_replace('{name}', $this->getName(), $this->pid_file);
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPid()
+    {
+        return (int)@file_get_contents($this->getPidFile());
+    }
+
+    /**
+     * @return string
+     */
+    public function getLogFile()
+    {
+        return str_replace('{name}', $this->getName(), $this->log_file);
+    }
+
+    /**
+     * Get server name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->process_name;
+    }
+
+    /**
+     * @return $this
+     */
+    public function daemonize()
+    {
+        $this->daemonize = true;
+
+        $this->config['daemonize'] = true;
+
+        return $this;
+    }
+
+    /**
+     * @param array|string $config Server config array or Server config file.
+     * @return null
+     */
+    public function config($config)
+    {
+        if (is_string($config)) {
+            switch(pathinfo($config, PATHINFO_EXTENSION)) {
+                case 'ini':
+                    $config = parse_ini_file($config);
+                    break;
+                case 'php':
+                default:
+                    $config = include $config;
+            }
+        }
+
+        $this->config = array_merge($this->config, $config);
+    }
+
+    /**
+     * @param HandlerInterface $handlerInterface
+     * @return $this
+     */
+    public function handle(HandlerInterface $handlerInterface)
+    {
+        $this->handler = $handlerInterface->handle($this);
+
+        return $this;
+    }
+
+    /**
+     * @param      $name
+     * @param      $callback
+     * @return $this
+     */
+    public function on($name, $callback)
+    {
+        $this->server->on($name, $callback);
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function start()
+    {
+        $this->server->set($this->config);
+
+        if (null === $this->handler) {
+            throw new \RuntimeException("Server is not has handler.");
+        }
+
+        return $this->server->start();
+    }
+}

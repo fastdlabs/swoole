@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 15/7/12
- * Time: 下午5:16
+ * Date: 16/1/18
+ * Time: 下午10:43
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,9 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Client;
+namespace FastD\Swoole\Handler;
 
-class AsyncHandler extends ClientHandler
+class ClientHandler extends HandlerAbstract
 {
     public function onConnect(\swoole_client $client)
     {
@@ -23,7 +23,7 @@ class AsyncHandler extends ClientHandler
 
     public function onReceive(\swoole_client $client, $data)
     {
-        echo 'receive';
+        echo 'receive: ' . $data;
     }
 
     public function onError(\swoole_client $client)

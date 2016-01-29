@@ -14,18 +14,21 @@
 
 namespace FastD\Swoole\Handler;
 
-use FastD\Swoole\Server\SwooleServerInterface;
+use FastD\Swoole\SwooleInterface;
 
 /**
  * Interface SwooleHandlerInterface
  *
  * @package FastD\Swoole\Handler
  */
-interface SwooleHandlerInterface
+interface HandlerInterface
 {
     /**
-     * @param SwooleServerInterface $swooleServerInterface
+     * Handle server.
+     * The method of dealing with the first two letters to on.
+     *
+     * @param SwooleInterface $swooleInterface
      * @return mixed
      */
-    public function handle(SwooleServerInterface $swooleServerInterface);
+    public function handle(SwooleInterface $swooleInterface);
 }

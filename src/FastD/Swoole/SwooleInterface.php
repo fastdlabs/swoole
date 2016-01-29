@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/1/18
- * Time: 下午10:21
+ * Date: 16/1/29
+ * Time: 下午11:55
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -14,10 +14,14 @@
 
 namespace FastD\Swoole;
 
-class ServerFactory
+interface SwooleInterface
 {
-    public static function factory()
-    {
+    const SWOOLE_MODE_BASE = SWOOLE_BASE;
+    const SWOOLE_MODE_PROCESS = SWOOLE_PROCESS;
 
-    }
+    const SWOOLE_SOCK_TCP = SWOOLE_SOCK_TCP;
+    const SWOOLE_SOCK_UDP = SWOOLE_SOCK_UDP;
+
+    const SWOOLE_ASYNC = SWOOLE_SOCK_ASYNC;
+    const SWOOLE_SYNC = SWOOLE_SOCK_SYNC;
 }

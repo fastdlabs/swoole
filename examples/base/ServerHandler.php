@@ -14,53 +14,13 @@
 
 namespace FastD\Swoole\Handler;
 
-use FastD\Swoole\Server\SwooleServer;
-use FastD\Swoole\Server\SwooleServerInterface;
-
 /**
  * Class SwooleHandler
  *
  * @package FastD\Swoole\Handler
  */
-class ServerHandler implements SwooleHandlerInterface
+class ServerHandler extends HandlerAbstract
 {
-    /**
-     * @var SwooleServer
-     */
-    protected $swoole;
-
-    /**
-     * @param SwooleServerInterface $swooleInterface
-     * @return $this
-     */
-    public function handle(SwooleServerInterface $swooleInterface)
-    {
-        $this->swoole = $swooleInterface;
-
-        $handles = get_class_methods($this);
-
-        foreach ($handles as $value) {
-            if ('on' == substr($value, 0, 2)) {
-                $swooleInterface->on(lcfirst(substr($value, 2)), [$this, $value]);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param $name
-     * @return void
-     */
-    public function rename($name)
-    {
-        if (function_exists('cli_set_process_title')) {
-            cli_set_process_title($name);
-        } else if (function_exists('swoole_set_process_name')) {
-            swoole_set_process_name($name);
-        }
-    }
-
     /**
      * @param \swoole_server $server
      * @return mixed
