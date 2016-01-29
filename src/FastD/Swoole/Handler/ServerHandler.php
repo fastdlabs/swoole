@@ -133,7 +133,6 @@ class ServerHandler implements SwooleHandlerInterface
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
         $server->send($fd, $data);
-        $server->close($fd);
     }
 
     /**
