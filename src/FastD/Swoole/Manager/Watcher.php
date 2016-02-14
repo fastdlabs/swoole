@@ -21,6 +21,8 @@ namespace FastD\Swoole\Manager;
  */
 class Watcher
 {
+    use Output;
+
     /**
      * Handle events.
      *
@@ -111,15 +113,6 @@ class Watcher
         });
 
         return $this;
-    }
-
-    /**
-     * @param $msg
-     * @return void
-     */
-    public function output($msg)
-    {
-        echo sprintf("[%s]\t" . $msg . '...' . PHP_EOL, date('Y-m-d H:i:s'));
     }
 
     /**

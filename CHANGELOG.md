@@ -5,3 +5,5 @@
 - 移除 Invoker 对象
 - 删除无用代码
 - 调整 ServerHandlerInterface 接口
+- 增加 `FastD\Swoole\Manager\Watcher`
+- 增加服务管理 `FastD\Swoole\Manager\ServerManager`

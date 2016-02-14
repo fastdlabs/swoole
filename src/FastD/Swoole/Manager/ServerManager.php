@@ -25,17 +25,21 @@ use FastD\Swoole\Server\ServerInterface;
  */
 class ServerManager
 {
+    use Output;
+
     /**
      * @var ServerInterface
      */
     protected $server;
 
+    /**
+     * @var int
+     */
     protected $server_pid;
 
-    protected $server_pid_file;
-
-    protected $server_log_file;
-
+    /**
+     * @var string
+     */
     protected $server_name = 'fd-server';
 
     /**
@@ -68,10 +72,12 @@ class ServerManager
     }
 
     /**
+     * Bind running server in manager.
+     *
      * @param ServerInterface $serverInterface
      * @return $this
      */
-    public function bind(ServerInterface $serverInterface)
+    public function bindServer(ServerInterface $serverInterface)
     {
         $this->server = $serverInterface;
 
@@ -79,9 +85,16 @@ class ServerManager
 
         $this->server_name = $serverInterface->getName();
 
+        print_r($this);
+
         return $this;
     }
 
+    /**
+     * Start server
+     *
+     * @return int
+     */
     public function start()
     {
         if ($this->server instanceof ServerInterface) {
@@ -101,9 +114,14 @@ class ServerManager
     {
         $watch = new Watcher();
 
+        $self = $this;
+
         try {
             $watch
-                ->watch($directories, $callback)
+                ->watch($directories, $callback ? $callback : function (Watcher $watcher) use ($self) {
+                    $self->reload();
+                    $watcher->output('Reload finish');
+                })
                 ->run()
             ;
         } catch (\Exception $e) {
@@ -119,25 +137,27 @@ class ServerManager
     public function status()
     {
         if (empty($this->server_pid)) {
-            echo 'Server [' . $this->server_name . '] not running...' . PHP_EOL;
+            $this->output('Server [' . $this->server_name . '] not running');
             return 0;
         }
-        echo 'Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] is running...' . PHP_EOL;
+
+        $this->output('Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] is running');
         return 0;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function shutdown()
     {
         if (empty($this->server_pid)) {
-            echo 'Server [' . $this->server_name . '] not running...' . PHP_EOL;
+            $this->output('Server [' . $this->server_name . '] not running');
             return 1;
         }
 
         posix_kill($this->server_pid, SIGTERM);
-        echo 'Server [' .  $this->server_name . ' pid: ' . $this->server_pid . '] is stop...' . PHP_EOL;
+
+        $this->output('Server [' .  $this->server_name . ' pid: ' . $this->server_pid . '] is stop');
         return 0;
     }
 
@@ -147,12 +167,13 @@ class ServerManager
     public function reload()
     {
         if (empty($this->server_pid)) {
-            echo 'Server [' . $this->server_name . '] not running...' . PHP_EOL;
+            $this->output('Reload: Server [' . $this->server_name . '] not running');
+            return 0;
         }
 
         posix_kill($this->server_pid, SIGUSR1);
-        echo 'Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] reload...' . PHP_EOL;
 
+        $this->output('Reload: Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] reload');
         return 0;
     }
 
@@ -161,15 +182,15 @@ class ServerManager
      */
     public function usage()
     {
-        echo 'Usage: Server {start|stop|restart|reload|status} ' . PHP_EOL;
+        $this->output('Usage: Server {start|stop|restart|reload|status}');
         return 0;
     }
 
-    public function getUsage()
-    {}
-
-    public function getTree()
+    /**
+     * @return int
+     */
+    public function tree()
     {
-
+        return 0;
     }
 }

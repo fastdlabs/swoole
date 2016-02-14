@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: janhuang
  * Date: 16/2/14
- * Time: 下午6:45
+ * Time: 下午9:58
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,15 +12,16 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../../vendor/autoload.php';
+namespace FastD\Swoole\Manager;
 
-use FastD\Swoole\Manager\ServerManager;
-use FastD\Swoole\Server\Server;
-
-$manager = new ServerManager();
-
-$server = Server::create('0.0.0.0', '9321');
-
-$manager->bindServer($server);
-
-$manager->watch([__DIR__ . '/tmp']);
+trait Output
+{
+    /**
+     * @param $msg
+     * @return void
+     */
+    public function output($msg)
+    {
+        echo sprintf("[%s]\t" . $msg . '...' . PHP_EOL, date('Y-m-d H:i:s'));
+    }
+}
