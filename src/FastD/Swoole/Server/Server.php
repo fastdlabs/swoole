@@ -35,14 +35,14 @@ class Server implements ServerInterface
      *
      * @var string
      */
-    protected $pid_file = './var/pid/{name}.pid';
+    protected $pid_file = '/tmp/{name}/var/server.pid';
 
     /**
      * Server running log path.
      *
      * @var string
      */
-    protected $log_file = './var/log/{name}.log';
+    protected $log_file = '/tmp/{name}/var/server.log';
 
     /**
      * Swoole server process name.
@@ -79,6 +79,7 @@ class Server implements ServerInterface
         'task_tmpdir'           => '/tmp/fd_tmp/',
         'user'                  => 'www',
         'group'                 => 'www',
+        'daemonize'             => false,
     ];
 
     /**
@@ -174,6 +175,16 @@ class Server implements ServerInterface
         }
 
         $this->config = array_merge($this->config, $config);
+
+        if (isset($this->config['log_file'])) {
+            $this->log_file = $this->config['log_file'];
+            unset($this->config['log_file']);
+        }
+
+        if (isset($this->config['pid_file'])) {
+            $this->pid_file = $this->config['pid_file'];
+            unset($this->config['pid_file']);
+        }
     }
 
     /**

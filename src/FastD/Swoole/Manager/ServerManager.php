@@ -91,21 +91,6 @@ class ServerManager
     }
 
     /**
-     * Start server
-     *
-     * @return int
-     */
-    public function start()
-    {
-        if ($this->server instanceof ServerInterface) {
-            $this->server->start();
-            return 0;
-        }
-
-        throw new \RuntimeException('Unbind server.');
-    }
-
-    /**
      * @param array         $directories
      * @param \Closure|null $callback
      * @throws \Exception
@@ -127,6 +112,21 @@ class ServerManager
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Start server
+     *
+     * @return int
+     */
+    public function start()
+    {
+        if ($this->server instanceof ServerInterface) {
+            $this->server->start();
+            return 0;
+        }
+
+        throw new \RuntimeException('Unbind server.');
     }
 
     /**
@@ -174,6 +174,17 @@ class ServerManager
         posix_kill($this->server_pid, SIGUSR1);
 
         $this->output('Reload: Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] reload');
+        return 0;
+    }
+
+    /**
+     * @return int
+     */
+    public function restart()
+    {
+        $this->shutdown();
+        $this->start();
+
         return 0;
     }
 

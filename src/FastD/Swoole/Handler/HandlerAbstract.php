@@ -79,4 +79,12 @@ abstract class HandlerAbstract implements HandlerInterface
 
         $this->rename($this->server->getName() . ' master');
     }
+
+    /**
+     * Shutdown server process.
+     */
+    public function onShutdown()
+    {
+
+    }
 }

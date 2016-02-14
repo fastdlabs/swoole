@@ -115,6 +115,12 @@ class Watcher
         return $this;
     }
 
+    public function __destruct()
+    {
+        $this->clearWatch();
+        fclose($this->inotify);
+    }
+
     /**
      * @return void
      */

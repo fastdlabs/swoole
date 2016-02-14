@@ -14,5 +14,31 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$manager = new FastD\Swoole\Manager\ServerManager();
- 
+use FastD\Swoole\Manager\ServerManager;
+
+$manager = new ServerManager(8091);
+
+$action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'usage';
+
+switch ($action) {
+    case 'start':
+        $manager->start();
+        break;
+    case 'status':
+        $manager->status();
+        break;
+    case 'stop':
+        $manager->shutdown();
+        break;
+    case 'restart':
+        $manager->restart();
+        break;
+    case 'reload':
+        $manager->reload();
+        break;
+    case 'tree':
+        $manager->tree();
+        break;
+    default:
+        $manager->usage();
+}
