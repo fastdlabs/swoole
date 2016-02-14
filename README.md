@@ -4,7 +4,8 @@
 
 ## 环境要求
 
-Swoole >= 1.8.0 
+Swoole >= 1.7.20
+
 PHP >= 5.6
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
