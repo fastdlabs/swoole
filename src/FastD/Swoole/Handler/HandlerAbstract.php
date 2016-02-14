@@ -60,4 +60,23 @@ abstract class HandlerAbstract implements HandlerInterface
             swoole_set_process_name($name);
         }
     }
+
+    /**
+     * Base start handle. Storage process id.
+     *
+     * @param \swoole_server $server
+     * @return mixed
+     */
+    public function onStart(\swoole_server $server)
+    {
+        if (null !== ($file = $this->server->getPidFile())) {
+            if (!is_dir($dir = dirname($file))) {
+                mkdir($dir, 0755, true);
+            }
+
+            file_put_contents($file, $server->master_pid . PHP_EOL);
+        }
+
+        $this->rename($this->server->getName() . ' master');
+    }
 }

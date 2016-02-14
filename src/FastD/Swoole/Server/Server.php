@@ -49,7 +49,7 @@ class Server implements ServerInterface
      *
      * @var string
      */
-    protected $process_name = 'fast-d';
+    protected $process_name = 'fd-server';
 
     /**
      * @var HandlerInterface
@@ -75,7 +75,6 @@ class Server implements ServerInterface
         'dispatch_mode'         => 2,
         'reactor_num'           => 1,
         'max_conn'              => 1024,
-        'worker_num'            => 1,
         'max_request'           => 0,
         'task_tmpdir'           => '/tmp/fd_tmp/',
         'user'                  => 'www',
@@ -205,7 +204,6 @@ class Server implements ServerInterface
      */
     public function start()
     {
-        print_r($this->config);
         $this->server->set($this->config);
 
         if (null === $this->handler) {

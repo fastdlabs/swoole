@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/1/18
- * Time: 下午9:47
+ * Date: 16/2/14
+ * Time: 下午6:45
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -14,14 +14,10 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-use FastD\Swoole\Client\Client;
+use FastD\Swoole\Manager\ServerManager;
 
-$client = new Client();
+$manager = new ServerManager();
 
-$client->connect('11.11.11.44', '9321');
-
-$client->send('hello world');
-
-echo $client->receive();
-
-$client->close();
+$manager->watch([__DIR__ . '/tmp'], function () {
+    echo 'callback';
+});

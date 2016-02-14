@@ -23,23 +23,6 @@ class ServerHandler extends \FastD\Swoole\Handler\HandlerAbstract
      * @param \swoole_server $server
      * @return mixed
      */
-    public function onStart(\swoole_server $server)
-    {
-        if (null !== ($file = $this->server->getPidFile())) {
-            if (!is_dir($dir = dirname($file))) {
-                mkdir($dir, 0755, true);
-            }
-
-            file_put_contents($file, $server->master_pid . PHP_EOL);
-        }
-
-        $this->rename($this->server->getName() . ' master');
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @return mixed
-     */
     public function onManagerStart(\swoole_server $server)
     {
         $this->rename($this->server->getName() . ' manager');
