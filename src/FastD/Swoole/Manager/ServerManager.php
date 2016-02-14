@@ -85,8 +85,6 @@ class ServerManager
 
         $this->server_name = $serverInterface->getName();
 
-        print_r($this);
-
         return $this;
     }
 
