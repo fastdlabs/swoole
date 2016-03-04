@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Handler;
 
+use FastD\Swoole\Manager\Output;
 use FastD\Swoole\Server\ServerInterface;
 use FastD\Swoole\SwooleInterface;
 
@@ -24,6 +25,8 @@ use FastD\Swoole\SwooleInterface;
  */
 abstract class HandlerAbstract implements HandlerInterface
 {
+    use Output;
+
     /**
      * @var ServerInterface
      */
@@ -78,6 +81,8 @@ abstract class HandlerAbstract implements HandlerInterface
         }
 
         $this->rename($this->server->getName() . ' master');
+
+        $this->output("Server [Pid: {$server->master_pid}] is startd...");
     }
 
     /**
@@ -85,6 +90,12 @@ abstract class HandlerAbstract implements HandlerInterface
      */
     public function onShutdown()
     {
+        $pid = $this->server->getPid();
 
+        if (null !== ($file = $this->server->getPidFile())) {
+            unlink($file);
+        }
+
+        $this->output("Server [Pid: {$pid}] is shutdown...");
     }
 }

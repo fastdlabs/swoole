@@ -15,8 +15,11 @@
 include __DIR__ . '/../../vendor/autoload.php';
 
 use FastD\Swoole\Manager\ServerManager;
+use FastD\Swoole\Server\Server;
 
-$manager = new ServerManager(8091);
+$manager = new ServerManager();
+
+$manager->bindServer(Server::create('0.0.0.0', '9321'));
 
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'usage';
 

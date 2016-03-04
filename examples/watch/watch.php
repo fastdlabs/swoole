@@ -13,6 +13,7 @@
  */
 
 include __DIR__ . '/../../vendor/autoload.php';
+include __DIR__ . '/../base/server_handler.php';
 
 use FastD\Swoole\Manager\ServerManager;
 use FastD\Swoole\Server\Server;
@@ -20,6 +21,8 @@ use FastD\Swoole\Server\Server;
 $manager = new ServerManager();
 
 $server = Server::create('0.0.0.0', '9321');
+
+$server->handle(new ServerHandler());
 
 $manager->bindServer($server);
 

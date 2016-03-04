@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\HandlerInterface;
+use FastD\Swoole\Manager\Output;
 use FastD\Swoole\Manager\ServerManager;
 use FastD\Swoole\SwooleInterface;
 
@@ -25,6 +26,8 @@ use FastD\Swoole\SwooleInterface;
  */
 class Server implements ServerInterface
 {
+    use Output;
+
     /**
      * @var \swoole_server
      */

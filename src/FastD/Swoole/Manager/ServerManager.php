@@ -38,11 +38,6 @@ class ServerManager
     protected $server_pid;
 
     /**
-     * @var string
-     */
-    protected $server_name = 'fd-server';
-
-    /**
      * ServerManager constructor.
      *
      * @param $pid
@@ -82,8 +77,6 @@ class ServerManager
         $this->server = $serverInterface;
 
         $this->server_pid = $serverInterface->getPid();
-
-        $this->server_name = $serverInterface->getName();
 
         return $this;
     }
@@ -135,11 +128,11 @@ class ServerManager
     public function status()
     {
         if (empty($this->server_pid)) {
-            $this->output('Server [' . $this->server_name . '] not running');
+            $this->output('Status: Server is not running');
             return 0;
         }
 
-        $this->output('Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] is running');
+        $this->output('Status: Server [Pid: ' . $this->server_pid . '] is running');
         return 0;
     }
 
@@ -149,13 +142,13 @@ class ServerManager
     public function shutdown()
     {
         if (empty($this->server_pid)) {
-            $this->output('Server [' . $this->server_name . '] not running');
-            return 1;
+            $this->output('Shutdown: Server is not running');
+            return -1;
         }
 
         posix_kill($this->server_pid, SIGTERM);
 
-        $this->output('Server [' .  $this->server_name . ' pid: ' . $this->server_pid . '] is stop');
+        $this->output('Shutdown: Server [Pid: ' . $this->server_pid . '] is shutdown');
         return 0;
     }
 
@@ -165,13 +158,13 @@ class ServerManager
     public function reload()
     {
         if (empty($this->server_pid)) {
-            $this->output('Reload: Server [' . $this->server_name . '] not running');
+            $this->output('Reload: Server is not running');
             return 0;
         }
 
         posix_kill($this->server_pid, SIGUSR1);
 
-        $this->output('Reload: Server [' . $this->server_name . ' pid: ' . $this->server_pid . '] reload');
+        $this->output('Reload: Server [Pid: ' . $this->server_pid . '] reload');
         return 0;
     }
 
