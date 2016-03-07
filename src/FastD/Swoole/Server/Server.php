@@ -20,7 +20,7 @@ use FastD\Swoole\Manager\ServerManager;
 use FastD\Swoole\SwooleInterface;
 
 /**
- * Class Swoole
+ * Class Server
  *
  * @package FastD\Swoole\Server
  */

@@ -17,7 +17,7 @@ namespace FastD\Swoole\Handler;
 use FastD\Swoole\SwooleInterface;
 
 /**
- * Interface SwooleHandlerInterface
+ * Interface HandlerInterface
  *
  * @package FastD\Swoole\Handler
  */

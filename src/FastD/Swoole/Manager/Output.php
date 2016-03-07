@@ -14,6 +14,11 @@
 
 namespace FastD\Swoole\Manager;
 
+/**
+ * Class Output
+ *
+ * @package FastD\Swoole\Manager
+ */
 trait Output
 {
     /**

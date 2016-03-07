@@ -18,7 +18,7 @@ use FastD\Swoole\Handler\HandlerInterface;
 use FastD\Swoole\SwooleInterface;
 
 /**
- * Interface SwooleServerInterface
+ * Interface ServerInterface
  *
  * @package FastD\Swoole\Server
  */
