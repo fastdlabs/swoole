@@ -70,6 +70,6 @@ class ServerHandler extends \FastD\Swoole\Handler\HandlerAbstract
      */
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
-        echo 'close';
+        echo 'close' . PHP_EOL;
     }
 }

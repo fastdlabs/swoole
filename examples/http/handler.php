@@ -70,7 +70,7 @@ class HttpHandler extends \FastD\Swoole\Handler\HttpHandleAbstract
      */
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
-        echo 'close';
+        echo 'close' . PHP_EOL;
     }
 
     /**
