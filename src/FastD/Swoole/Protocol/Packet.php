@@ -42,8 +42,6 @@ class Packet implements ProtocolInterface
      */
     public function encode()
     {
-        $this->encode = true;
-
         switch ($this->type) {
             case static::PACKET_JSON:
                 $data = json_encode($this->data, JSON_UNESCAPED_UNICODE);
@@ -66,8 +64,6 @@ class Packet implements ProtocolInterface
      */
     public function decode()
     {
-        $this->encode = false;
-
         switch ($this->type) {
             case static::PACKET_JSON:
                 $data = json_decode($this->data, true);
@@ -85,39 +81,22 @@ class Packet implements ProtocolInterface
 
     public function toJson()
     {
-        if (!$this->isEncode()) {
-            return $this->encode();
-        }
-
-        return $this->data;
+        return $this->encode();
     }
 
     public function toArray()
     {
-        if ($this->isEncode()) {
-            return $this->decode();
-        }
-
-        return $this->data;
+        return $this->decode();
     }
 
     public function toSerialize()
     {
-        if (!$this->isEncode()) {
-            return $this->encode();
-        }
-
-        return $this->data;
+        return $this->encode();
     }
 
     public function toRaw()
     {
         return $this->data;
-    }
-
-    public function isEncode()
-    {
-        return $this->encode;
     }
 
     public static function packet($data, $type = Packet::PACKET_JSON, $encode = false)

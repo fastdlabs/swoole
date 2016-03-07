@@ -22,7 +22,7 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole\Server
  */
-class Http extends Server
+class HttpServer extends Server
 {
     /**
      * @var string

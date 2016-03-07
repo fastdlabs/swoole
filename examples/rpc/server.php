@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/1/18
- * Time: 下午9:47
+ * Date: 16/3/7
+ * Time: 下午5:52
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -13,12 +13,18 @@
  */
 
 include __DIR__ . '/../../vendor/autoload.php';
-include __DIR__ . '/handler.php';
+include __DIR__ . '/handle.php';
+include __DIR__ . '/api/demo.php';
 
-use FastD\Swoole\Server\HttpServer;
+use FastD\Swoole\Server\RpcServer;
 
-$server = HttpServer::create('0.0.0.0', '9321');
+$server = RpcServer::create('0.0.0.0', '9501');
 
-$server->handle(new HttpHandler());
+$demo = new Demo();
 
-$server->start();
+$server->add('/test', [$demo, 'emptyArg']);
+
+$server
+    ->handle(new RpcHandler())
+    ->start()
+;
