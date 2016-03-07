@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: janhuang
  * Date: 16/3/7
- * Time: 下午12:09
+ * Time: 下午5:18
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -15,19 +15,12 @@
 namespace FastD\Swoole\Handler;
 
 /**
- * Class HttpHandleAbstract
+ * Class ServerHandlerAbstract
  *
  * @package FastD\Swoole\Handler
  */
-abstract class HttpHandleAbstract extends ServerHandlerAbstract
+abstract class ServerHandlerAbstract extends HandlerAbstract
 {
-    /**
-     * @param \swoole_http_request $request
-     * @param \swoole_http_response $response
-     * @return void
-     */
-    abstract public function onRequest(\swoole_http_request $request, \swoole_http_response $response);
-
     /**
      * @param \swoole_server $server
      * @param $fd
@@ -35,7 +28,7 @@ abstract class HttpHandleAbstract extends ServerHandlerAbstract
      * @param $data
      * @return mixed
      */
-    public function onReceive(\swoole_server $server, $fd, $from_id, $data){}
+    abstract public function onReceive(\swoole_server $server, $fd, $from_id, $data);
 
     /**
      * @param \swoole_server $server
@@ -43,5 +36,5 @@ abstract class HttpHandleAbstract extends ServerHandlerAbstract
      * @param array $client_info
      * @return mixed
      */
-    public function onPacket(\swoole_server $server, $data, array $client_info){}
+    abstract public function onPacket(\swoole_server $server, $data, array $client_info);
 }

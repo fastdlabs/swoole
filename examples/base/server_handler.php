@@ -12,12 +12,14 @@
  * WebSite: http://www.janhuang.me
  */
 
+use FastD\Swoole\Protocol\Packet;
+
 /**
  * Class SwooleHandler
  *
  * @package FastD\Swoole\Handler
  */
-class ServerHandler extends \FastD\Swoole\Handler\HandlerAbstract
+class ServerHandler extends \FastD\Swoole\Handler\ServerHandlerAbstract
 {
     /**
      * @param \swoole_server $server
@@ -58,7 +60,9 @@ class ServerHandler extends \FastD\Swoole\Handler\HandlerAbstract
      */
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
-        $server->send($fd, $data);
+        $packet = Packet::packet($data, Packet::PACKET_JSON, true);
+        print_r($packet->toArray());
+        $server->send($fd, $packet->toRaw());
         $server->close($fd);
     }
 
@@ -71,5 +75,16 @@ class ServerHandler extends \FastD\Swoole\Handler\HandlerAbstract
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
         echo 'close' . PHP_EOL;
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param $data
+     * @param array $client_info
+     * @return mixed
+     */
+    public function onPacket(\swoole_server $server, $data, array $client_info)
+    {
+
     }
 }
