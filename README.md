@@ -4,7 +4,7 @@
 
 ## 环境要求
 
-Swoole >= 1.7.20
+Swoole >= 1.8
 
 PHP >= 5.6
 
@@ -35,7 +35,7 @@ pecl install inotify
 创建服务, 处理回调, 启动进程
 
 ```php
-// code...
+// autoload...
 use \FastD\Swoole\Server\Server;
 $server = new Server(host, port);
 // 或者 两者等价
@@ -58,7 +58,7 @@ $server->start();
 ### Client
 
 ```php
-// code...
+// autoload...
 use FastD\Swoole\Client\Client;
 
 $client = new Client();
@@ -73,6 +73,62 @@ $client->close();
 ```
 
 成功调用服务, 会显示简单的 `hello world` 字样.
+
+### Simple Json RPC Server
+
+一个简单的 Json RPC 服务(暂用于学习和演示)
+
+```php
+// autoload...
+include __DIR__ . '/handle.php';
+include __DIR__ . '/api/demo.php';
+
+use FastD\Swoole\Server\RpcServer;
+
+$server = RpcServer::create('0.0.0.0', '9501');
+
+$demo = new Demo();
+
+$server->add('/test', [$demo, 'emptyArg']);
+
+$server
+    ->handle(new RpcHandler())
+    ->start()
+;
+```
+
+通过 `Rpc::add($name, $callback)` 方法设置 `rpc` 接口, 使用方法如下: 
+
+```php
+$server->add('/test', [$demo, 'emptyArg']);
+```
+
+和配置路由一样, 主要为了区分不同的操作和方法.
+
+回调支持匿名函数(`function () {}`) 数组 (`[$obj, 'action']`) 静态方法 (`Name::action`)
+
+**注意:** 每个回调方法中,必须返回数组. `return ['name' => 'janhuang'];`
+
+### Simple Json Rpc Client
+
+简单的 rpc 客户端. 与 PRC Server 进行配置.
+
+```php
+// autoload...
+use FastD\Swoole\Client\RpcClient;
+
+$client = new RpcClient();
+
+$client->call('//11.11.11.44:9501/test');
+
+print_r($client->receive());
+
+$client->close();
+```
+
+客户端在接收到相应数据后,会自动解码成数组,客户端可以直接使用.
+
+**说明:** 本实例主要用于演示和学习,谨慎用于生产环境,不喜勿喷,多谢批评
 
 ### Manager
 
