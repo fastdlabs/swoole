@@ -46,7 +46,7 @@ class HttpHandler extends \FastD\Swoole\Handler\HttpHandleAbstract
      */
     public function onConnect(\swoole_server $server, $fd, $from_id)
     {
-        echo 'connection' . PHP_EOL;
+
     }
 
     /**
@@ -70,7 +70,7 @@ class HttpHandler extends \FastD\Swoole\Handler\HttpHandleAbstract
      */
     public function onClose(\swoole_server $server, $fd, $from_id)
     {
-        echo 'close' . PHP_EOL;
+
     }
 
     /**

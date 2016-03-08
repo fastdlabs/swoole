@@ -45,7 +45,7 @@ class Server implements ServerInterface
      *
      * @var string
      */
-    protected $log_file = '/tmp/{name}/var/server.log';
+    protected $log_file = '/tmp/{name}/logs/server.log';
 
     /**
      * Swoole server process name.
@@ -83,6 +83,7 @@ class Server implements ServerInterface
         'user'                  => 'www',
         'group'                 => 'www',
         'daemonize'             => false,
+        'log_level'             => 2,
     ];
 
     /**
@@ -127,7 +128,7 @@ class Server implements ServerInterface
      */
     public function getPid()
     {
-        return (int)@file_get_contents($this->getPidFile());
+        return (int) @file_get_contents($this->getPidFile());
     }
 
     /**
@@ -178,16 +179,6 @@ class Server implements ServerInterface
         }
 
         $this->config = array_merge($this->config, $config);
-
-        if (isset($this->config['log_file'])) {
-            $this->log_file = $this->config['log_file'];
-            unset($this->config['log_file']);
-        }
-
-        if (isset($this->config['pid_file'])) {
-            $this->pid_file = $this->config['pid_file'];
-            unset($this->config['pid_file']);
-        }
     }
 
     /**
@@ -218,6 +209,12 @@ class Server implements ServerInterface
      */
     public function start()
     {
+        $this->config['log_file'] = $this->getLogFile();
+
+        if (!file_exists(dirname($this->config['log_file']))) {
+            mkdir(dirname($this->config['log_file']), 0755, true);
+        }
+
         $this->server->set($this->config);
 
         if (null === $this->handler) {
