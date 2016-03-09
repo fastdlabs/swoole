@@ -45,11 +45,28 @@ class HttpServer extends Server
     }
 
     /**
+     * Enable Http2 Support.
+     *
      * @return $this
      */
-    public function isHttp2()
+    public function enableHttp2()
     {
         $this->config['open_http2_protocol'] = true;
+
+        return $this;
+    }
+
+    /**
+     * Enable SSL Support.
+     *
+     * @param $crt
+     * @param $key
+     * @return $this
+     */
+    public function enableSSL($crt, $key)
+    {
+        $this->config['ssl_cert_file'] = $crt;
+        $this->config['ssl_key_file'] = $key;
 
         return $this;
     }
