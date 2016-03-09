@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: janhuang
  * Date: 16/3/9
- * Time: 上午10:36
+ * Time: 下午2:28
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,20 +12,11 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Async;
+namespace FastD\Swoole\Async\Redis;
 
-/**
- * 异步处理模块
- *
- * Interface AsyncInterface
- *
- * @package FastD\Swoole\Async
- */
-interface AsyncInterface
+use FastD\Swoole\Async\AsyncInterface;
+
+class AsyncRedis implements AsyncInterface
 {
-    public function multiQuery();
 
-    public function multiSet();
-
-    public function multiGet();
 }

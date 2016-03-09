@@ -26,7 +26,7 @@ $server->enableSSL(
     $dir . '/server.key'
 );
 
-$server->enableHttp2();
+//$server->enableHttp2();
 
 $server->handle(new HttpHandler());
 
