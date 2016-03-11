@@ -30,7 +30,9 @@ pecl install inotify
 
 ## 使用
 
-### Http
+具体 Demo 请移步到 examples 目录下
+
+### Http Server 
 
 创建一个 Http 服务, 建议配合 Nginx 作为代理服务器,可以更加灵活地处理各种事务.
 
@@ -53,16 +55,9 @@ $server->start();
 ```php
 // autoload...
 use \FastD\Swoole\Server\Server;
-$server = new Server(host, port);
-// 或者 两者等价
-// $server = Server::create('0.0.0.0', '9321');
-// $server->handle(); // 处理回调, 传入 FastD\Swoole\Handler\HandlerInterface 对象
-$server->start(); 
-// 或者使用管理器进行启动, 两者是等价的.
-// use FastD\Swoole\Manager\ServerManager;
-// $manager = new ServerManager();
-// $manager->bindServer($server);
-// $manager->start();
+$server = Server::create('0.0.0.0', '9321');
+$server->handle(new ServerHandler());
+$server->start();
 ```
 
 在 `FastD\Swoole\Handler\HandlerInterface` 对象中, 如果方法是 `on` 开头的, 会在进程启动的时候自动添加到回调处理当中, 所以请注意命名, 与官方命名保持一致.
