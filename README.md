@@ -30,7 +30,23 @@ pecl install inotify
 
 ## 使用
 
-### Server
+### Http
+
+创建一个 Http 服务, 建议配合 Nginx 作为代理服务器,可以更加灵活地处理各种事务.
+
+```php
+use FastD\Swoole\Server\HttpServer;
+$server = HttpServer::create('0.0.0.0', '9321');
+$server->handle(new HttpHandler());
+$server->start();
+```
+
+启动 Http 服务之后, 就可以通过浏览器访问地址: `127.0.0.1:9321` 进行访问.
+
+具体的请求处理在 `http/handler.php` 文件中的 `onRequest` 方法, 需要继承 `\FastD\Swoole\Handler\HttpHandleAbstract` 进行实现.
+
+
+### Tcp Server
 
 创建服务, 处理回调, 启动进程
 
@@ -55,7 +71,7 @@ $server->start();
 
 在示例代码中, 已经有一个最简单的例子了.
 
-### Client
+### Tcp Client
 
 ```php
 // autoload...
