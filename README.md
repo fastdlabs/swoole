@@ -6,7 +6,7 @@
 
 Swoole >= 1.8
 
-PHP >= 5.6
+PHP >= 7
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
@@ -26,6 +26,12 @@ pecl 安装
 
 ```shell
 pecl install inotify
+```
+
+### Composer 
+
+```
+composer require "fastd/swoole:2.0.x-dev" -vvv
 ```
 
 ## 使用
