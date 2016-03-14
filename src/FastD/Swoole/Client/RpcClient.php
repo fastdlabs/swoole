@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Client;
 
 use FastD\Swoole\Protocol\Packet;
+use FastD\Swoole\SwooleInterface;
 
 /**
  * Class Rpc
@@ -23,28 +24,31 @@ use FastD\Swoole\Protocol\Packet;
  */
 class RpcClient extends Client
 {
+    /**
+     * @var array
+     */
     protected $connects = [];
 
-    public function call($uri, array $args = [])
+    /**
+     * RpcClient constructor.
+     * @param $host
+     * @param $port
+     */
+    public function __construct($host, $port)
     {
-        $info = parse_url($uri);
+        parent::__construct(SwooleInterface::SWOOLE_SOCK_TCP, SwooleInterface::SWOOLE_SYNC);
 
-        if (!isset($info['host']) || !isset($info['port'])) {
-            throw new \InvalidArgumentException(sprintf('Url error. Please set host and port.'));
-        }
+        $this->connect($host, $port);
+    }
 
-        $query = [];
-
-        if (isset($info['query'])) {
-
-        }
-
-        $args = array_merge($query, $args);
-
-        $this->connect($info['host'], $info['port']);
-
+    /**
+     * @param $name
+     * @param array $args
+     */
+    public function call($name, array $args = [])
+    {
         $this->send([
-            'name' => $info['path'],
+            'name' => $name,
             'args' => $args
         ]);
     }

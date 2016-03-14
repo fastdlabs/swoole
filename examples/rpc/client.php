@@ -16,9 +16,9 @@ include __DIR__ . '/../../vendor/autoload.php';
 
 use FastD\Swoole\Client\RpcClient;
 
-$client = new RpcClient();
+$client = new RpcClient('11.11.11.44', '9501');
 
-$client->call('//11.11.11.44:9501/test');
+$client->call('/test');
 
 print_r($client->receive());
 
