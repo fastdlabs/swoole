@@ -75,15 +75,15 @@ class Server implements ServerInterface
      * @var array
      */
     protected $config = [
-        'dispatch_mode'         => 2,
-        'reactor_num'           => 1,
-        'max_conn'              => 1024,
-        'max_request'           => 0,
-        'task_tmpdir'           => '/tmp/fd_tmp/',
-        'user'                  => 'www',
-        'group'                 => 'www',
-        'daemonize'             => false,
-        'log_level'             => 2,
+        'dispatch_mode' => 2,
+        'reactor_num'   => 1,
+        'max_conn'      => 1024,
+        'max_request'   => 0,
+        'task_tmpdir'   => '/tmp/fd_tmp/',
+        'user'          => 'www',
+        'group'         => 'www',
+        'daemonize'     => false,
+        'log_level'     => 2,
     ];
 
     /**

@@ -18,13 +18,13 @@ include __DIR__ . '/api/demo.php';
 
 use FastD\Swoole\Server\RpcServer;
 
-$server = RpcServer::create('0.0.0.0', '9501');
+$server = RpcServer::create('0.0.0.0', '9501'); // 进程
 
 $demo = new Demo();
 
-$server->add('/test', [$demo, 'emptyArg']);
-$server->add('/test2', [$demo, '']);
-$server->add('/test3', function () {
+$server->add('test', [$demo, 'emptyArg']);
+$server->add('test2', [$demo, '']);
+$server->add('test3', function () {
     return ['msg' => 'abc'];
 });
 

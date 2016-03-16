@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/3/7
- * Time: 下午5:52
+ * Date: 16/3/14
+ * Time: 下午3:39
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,14 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../../vendor/autoload.php';
+// HTTP2
+// jsonp iframe
+// phpunit 单元测试, tdd 测试驱动开发, bdd 行为驱动开发 spec, behat, ddd, 前端单元测试
+// 代码组织架构, 设计模式, 依赖注入
+//
 
-use FastD\Swoole\Client\RpcClient;
-
-$client = new RpcClient('11.11.11.44', '9501');
-
-$client->call('test');
-
-print_r($client->receive());
-
-$client->close();

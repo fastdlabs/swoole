@@ -57,6 +57,8 @@ class ServerHandler extends \FastD\Swoole\Handler\ServerHandlerAbstract
      * @param                $from_id
      * @param                $data
      * @return mixed
+     * fd = fopen Resources
+     * socket
      */
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {

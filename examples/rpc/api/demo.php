@@ -17,7 +17,7 @@ class Demo
     public function emptyArg()
     {
         return [
-            'name' => '/test',
+            'name' => 'test22222',
             'content' => [
                 'action' => 'emptyArg',
                 'msg' => 'empty arg action'

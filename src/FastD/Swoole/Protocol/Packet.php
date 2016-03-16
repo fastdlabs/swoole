@@ -14,18 +14,39 @@
 
 namespace FastD\Swoole\Protocol;
 
+/**
+ * Class Packet
+ *
+ * @package FastD\Swoole\Protocol
+ */
 class Packet implements ProtocolInterface
 {
+    const PACKET_DEFAULT = 0;
     const PACKET_JSON = 1;
     const PACKET_SERIALIZE = 2;
-    const PACKET_DEFAULT = 3;
+    const PACKET_BINARY = 3;
 
+    /**
+     * @var array|string
+     */
     protected $data;
 
+    /**
+     * @var int
+     */
     protected $type;
 
+    /**
+     * @var bool
+     */
     protected $encode = false;
 
+    /**
+     * Packet constructor.
+     * @param $data
+     * @param int $type
+     * @param bool $encode
+     */
     protected function __construct($data, $type = Packet::PACKET_JSON, $encode = false)
     {
         $this->data = $data;

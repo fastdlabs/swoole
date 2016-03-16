@@ -80,6 +80,11 @@ class HttpHandler extends \FastD\Swoole\Handler\HttpHandleAbstract
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
-        $response->end('hello http');
+        $this->task($request, $response);
+    }
+
+    public function task(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        $response->end('hello world');
     }
 }
