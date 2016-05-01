@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "FastD\\": "src/FastD"
+            "FastD\\": "src"
         }
     },
     "extra": {
