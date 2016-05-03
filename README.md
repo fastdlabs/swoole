@@ -6,9 +6,9 @@
 
 ## 环境要求
 
-* Swoole >= 1.8
+* PHP 7+
 
-* PHP >= 7
+* Swoole 1.8+
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
