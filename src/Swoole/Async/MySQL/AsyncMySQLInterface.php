@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/3/9
- * Time: 上午10:36
+ * Date: 16/5/3
+ * Time: 下午6:56
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,15 +12,11 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Async;
+namespace FastD\Swoole\Async\MySQL;
 
-/**
- * 异步处理模块
- *
- * Interface AsyncInterface
- *
- * @package FastD\Swoole\Async
- */
-interface AsyncInterface
+use FastD\Swoole\Async\AsyncInterface;
+
+interface AsyncMySQLInterface extends AsyncInterface
 {
+    public function setMySQLi(\mysqli $mysqli);
 }

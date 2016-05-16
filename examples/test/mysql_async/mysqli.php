@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/3/9
- * Time: 上午10:36
+ * Date: 16/5/3
+ * Time: 下午9:44
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,15 +12,4 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Async;
-
-/**
- * 异步处理模块
- *
- * Interface AsyncInterface
- *
- * @package FastD\Swoole\Async
- */
-interface AsyncInterface
-{
-}
+$db = new mysqli('127.0.0.1', 'root', '123456', 'test');

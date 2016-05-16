@@ -15,27 +15,35 @@
 namespace FastD\Swoole;
 
 /**
- * Base Swoole Server Interface.
- *
  * Interface SwooleInterface
  *
  * @package FastD\Swoole
  */
 interface SwooleInterface
 {
-    const SWOOLE_MODE_BASE = SWOOLE_BASE;
-    const SWOOLE_MODE_PROCESS = SWOOLE_PROCESS;
+    // server mode
+    const SWOOLE_BASE      = SWOOLE_BASE;
+    const SWOOLE_PROCESS   = SWOOLE_PROCESS;
+    const SWOOLE_THREAD    = SWOOLE_THREAD;
 
-    const SWOOLE_SOCK_TCP = SWOOLE_SOCK_TCP;
-    const SWOOLE_SOCK_UDP = SWOOLE_SOCK_UDP;
+    const SWOOLE_SOCK_TCP   = SWOOLE_SOCK_TCP;
+    const SWOOLE_SOCK_UDP   = SWOOLE_SOCK_UDP;
+    const SWOOLE_SOCK_ASYNC = SWOOLE_SOCK_ASYNC;
+    const SWOOLE_SOCK_SYNC  = SWOOLE_SOCK_SYNC;
 
-    const SWOOLE_ASYNC = SWOOLE_SOCK_ASYNC;
-    const SWOOLE_SYNC = SWOOLE_SOCK_SYNC;
+    const SWOOLE_TCP = SWOOLE_TCP;
+    const SWOOLE_UDP = SWOOLE_UDP;
 
     /**
      * @param $name
      * @param $callback
-     * @return mixed
+     * @return $this
      */
     public function on($name, $callback);
+
+    /**
+     * @param array $configure
+     * @return $this
+     */
+    public function configure(array $configure);
 }

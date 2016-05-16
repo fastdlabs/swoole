@@ -57,11 +57,13 @@ abstract class HandlerAbstract implements HandlerInterface
      */
     public function rename($name)
     {
-        if (function_exists('cli_set_process_title')) {
-            cli_set_process_title($name);
-        } else if (function_exists('swoole_set_process_name')) {
-            swoole_set_process_name($name);
-        }
+        try {
+            if (function_exists('cli_set_process_title')) {
+                cli_set_process_title($name);
+            } else if (function_exists('swoole_set_process_name')) {
+                swoole_set_process_name($name);
+            }
+        } catch (\Exception $e) {}
     }
 
     /**
@@ -80,9 +82,9 @@ abstract class HandlerAbstract implements HandlerInterface
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
-        $this->rename($this->server->getName() . ' master');
+        $this->rename($this->server->getName() . ' master process(' . ')');
 
-        $this->output("Server [Pid: {$server->master_pid}] is startd...");
+        $this->output("Server [Host: {$server->host} Port: {$server->port}](Pid: {$server->master_pid}) is startd...");
     }
 
     /**

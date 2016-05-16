@@ -2,3 +2,4 @@
 .idea
 *.orig
 composer.lock
+swoole.php

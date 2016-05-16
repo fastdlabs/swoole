@@ -24,7 +24,7 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole\Server
  */
-class Server implements ServerInterface
+abstract class Server implements ServerInterface
 {
     use Output;
 
@@ -33,19 +33,29 @@ class Server implements ServerInterface
      */
     protected $server;
 
+    protected $sock_type;
+
+    protected $host;
+
+    protected $port;
+
+    protected $mode;
+
+    protected $handles = [];
+
     /**
      * Swoole server pid file path.
      *
      * @var string
      */
-    protected $pid_file = '/tmp/{name}/var/server.pid';
+    protected $pid_file = 'var/server.pid';
 
     /**
      * Server running log path.
      *
      * @var string
      */
-    protected $log_file = '/tmp/{name}/logs/server.log';
+    protected $log_file = 'run/server.log';
 
     /**
      * Swoole server process name.
@@ -86,31 +96,57 @@ class Server implements ServerInterface
         'log_level'     => 2,
     ];
 
-    /**
-     * Server constructor.
-     *
-     * @param $host
-     * @param $port
-     * @param $mode
-     * @param $sock
-     */
-    public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_MODE_BASE, $sock = SwooleInterface::SWOOLE_SOCK_TCP)
+    final public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
     {
-        $this->server = new \swoole_server($host, $port, $mode, $sock);
+        $this->init($host, $port, $mode, $sock_type);
+    }
 
-        $this->manager = new ServerManager($this);
+    final protected function init($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
+    {
+        $this->host = $host;
+
+        $this->port = $port;
+
+        $this->mode = $mode;
+    }
+
+    final public static function create($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
+    {
+        return new static($host, $port, $mode, $sock_type);
+    }
+
+    public function enableAsync()
+    {
+        $this->sock_type = SWOOLE_SOCK_ASYNC;
+
+        return $this;
+    }
+
+    public function enableSync()
+    {
+        $this->sock_type = SWOOLE_SOCK_SYNC;
+
+        return $this;
     }
 
     /**
-     * @param $host
-     * @param $port
-     * @param $mode
-     * @param $sock
-     * @return static
+     * @param array $configure
+     * @return $this
      */
-    public static function create($host, $port, $mode = SwooleInterface::SWOOLE_MODE_BASE, $sock = SwooleInterface::SWOOLE_SOCK_TCP)
+    public function configure(array $configure)
     {
-        return new static($host, $port, $mode, $sock);
+        if (is_string($configure)) {
+            switch(pathinfo($configure, PATHINFO_EXTENSION)) {
+                case 'ini':
+                    $configure = parse_ini_file($configure);
+                    break;
+                case 'php':
+                default:
+                $configure = include $configure;
+            }
+        }
+
+        $this->config = array_merge($this->config, $configure);
     }
 
     /**
@@ -162,44 +198,13 @@ class Server implements ServerInterface
     }
 
     /**
-     * @param array|string $config Server config array or Server config file.
-     * @return null
-     */
-    public function config($config)
-    {
-        if (is_string($config)) {
-            switch(pathinfo($config, PATHINFO_EXTENSION)) {
-                case 'ini':
-                    $config = parse_ini_file($config);
-                    break;
-                case 'php':
-                default:
-                    $config = include $config;
-            }
-        }
-
-        $this->config = array_merge($this->config, $config);
-    }
-
-    /**
-     * @param HandlerInterface $handlerInterface
-     * @return $this
-     */
-    public function handle(HandlerInterface $handlerInterface)
-    {
-        $this->handler = $handlerInterface->handle($this);
-
-        return $this;
-    }
-
-    /**
      * @param      $name
      * @param      $callback
      * @return $this
      */
     public function on($name, $callback)
     {
-        $this->server->on($name, $callback);
+        $this->handles[$name] = $callback;
 
         return $this;
     }
@@ -222,5 +227,10 @@ class Server implements ServerInterface
         }
 
         return $this->server->start();
+    }
+
+    public function getServer()
+    {
+        return $this->server;
     }
 }
