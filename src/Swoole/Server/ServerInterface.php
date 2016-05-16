@@ -14,7 +14,6 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handler\HandlerInterface;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -30,36 +29,6 @@ interface ServerInterface extends SwooleInterface
      * @return int
      */
     public function getPid();
-
-    /**
-     * Get server pid file absolute path.
-     *
-     * @return string
-     */
-    public function getPidFile();
-
-    /**
-     * @return string
-     */
-    public function getName();
-
-    /**
-     * @return string
-     */
-    public function getLogFile();
-
-    /**
-     * @param      $name
-     * @param      $callback
-     * @return $this
-     */
-    public function on($name, $callback);
-
-    /**
-     * @param HandlerInterface $handlerInterface
-     * @return $this
-     */
-    public function handle(HandlerInterface $handlerInterface);
 
     /**
      * Run server.

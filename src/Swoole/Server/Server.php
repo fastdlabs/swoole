@@ -43,6 +43,8 @@ abstract class Server implements ServerInterface
 
     protected $handles = [];
 
+    protected $workspace_dir;
+
     /**
      * Swoole server pid file path.
      *
@@ -63,21 +65,6 @@ abstract class Server implements ServerInterface
      * @var string
      */
     protected $process_name = 'fd-server';
-
-    /**
-     * @var HandlerInterface
-     */
-    protected $handler;
-
-    /**
-     * @var bool
-     */
-    protected $daemonize = false;
-
-    /**
-     * @var ServerManager
-     */
-    protected $manager;
 
     /**
      * Swoole server run configuration.
@@ -108,6 +95,8 @@ abstract class Server implements ServerInterface
         $this->port = $port;
 
         $this->mode = $mode;
+
+        $this->workspace_dir = realpath('.');
     }
 
     final public static function create($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
@@ -150,16 +139,6 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * Get server pid file absolute path.
-     *
-     * @return string
-     */
-    public function getPidFile()
-    {
-        return str_replace('{name}', $this->getName(), $this->pid_file);
-    }
-
-    /**
      * @return int|null
      */
     public function getPid()
@@ -168,30 +147,10 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return string
-     */
-    public function getLogFile()
-    {
-        return str_replace('{name}', $this->getName(), $this->log_file);
-    }
-
-    /**
-     * Get server name.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->process_name;
-    }
-
-    /**
      * @return $this
      */
     public function daemonize()
     {
-        $this->daemonize = true;
-
         $this->config['daemonize'] = true;
 
         return $this;
