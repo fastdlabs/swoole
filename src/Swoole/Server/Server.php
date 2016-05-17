@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\SwooleInterface;
+use FastD\Swoole\Handler\HandlerAbstract;
 
 /**
  * Class Server
@@ -45,11 +46,6 @@ abstract class Server implements ServerInterface
      */
     protected $pid_file = 'var/server.pid';
 
-    /**
-     * Server running log path.
-     *
-     * @var string
-     */
     protected $log_file = 'run/server.log';
 
     /**
@@ -146,6 +142,23 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @return \swoole_server
+     */
+    public function getServer()
+    {
+        return $this->server;
+    }
+
+    /**
+     * @param HandlerAbstract $handlerAbstract
+     * @return mixed
+     */
+    public function handle(HandlerAbstract $handlerAbstract)
+    {
+        $handlerAbstract->handle($this);
+    }
+
+    /**
      * @return $this
      */
     public function daemonize()
@@ -153,5 +166,35 @@ abstract class Server implements ServerInterface
         $this->config['daemonize'] = true;
 
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function start()
+    {
+        $this->server->set($this->config);
+
+        foreach ($this->handles as $name => $handle) {
+            $this->server->on($name, $handle);
+        }
+
+        $this->server->start();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function reload()
+    {
+        $this->server->reload();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function shutdown()
+    {
+        $this->server->shutdown();
     }
 }

@@ -46,4 +46,19 @@ interface SwooleInterface
      * @return $this
      */
     public function configure(array $configure);
+
+    /**
+     * @return mixed
+     */
+    public function start();
+
+    /**
+     * @return mixed
+     */
+    public function reload();
+
+    /**
+     * @return mixed
+     */
+    public function shutdown();
 }

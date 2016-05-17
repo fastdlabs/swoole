@@ -14,8 +14,6 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handler\HandlerInterface;
-
 class TcpServer extends Server
 {
 }

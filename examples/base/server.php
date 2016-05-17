@@ -13,7 +13,6 @@
  */
 
 include __DIR__ . '/../../vendor/autoload.php';
-include __DIR__ . '/server_handler.php';
 
 use FastD\Swoole\Server\TcpServer;
 
