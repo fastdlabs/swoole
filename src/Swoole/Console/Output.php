@@ -35,16 +35,16 @@ class Output
      * @param $msg
      * @return void
      */
-    public function output($msg)
+    public static function output($msg)
     {
-        echo $this->format($msg);
+        echo static::format($msg);
     }
 
     /**
      * @param $msg
      * @return string
      */
-    public function format($msg)
+    public static function format($msg)
     {
         return sprintf("[%s]\t" . $msg . '...' . PHP_EOL, date('Y-m-d H:i:s'));
     }
@@ -52,30 +52,8 @@ class Output
     /**
      * @param $msg
      */
-    public function flush($msg)
+    public static function flush($msg)
     {
-        $this->output($msg);
-    }
-
-    /**
-     * @return static
-     */
-    public static function getInstance()
-    {
-        if (null === static::$instance) {
-            static::$instance = new static;
-        }
-
-        return static::$instance;
-    }
-
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     */
-    public static function __callStatic($name, $arguments)
-    {
-        return call_user_func_array([static::getInstance(), $name], $arguments);
+        static::output($msg);
     }
 }

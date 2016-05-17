@@ -205,8 +205,6 @@ abstract class Server implements ServerInterface
             $this->server->on($name, $handle);
         }
 
-        Output::getInstance()->output(Server::SERVER_NAME . ' started...');
-
         $this->server->start();
     }
 
