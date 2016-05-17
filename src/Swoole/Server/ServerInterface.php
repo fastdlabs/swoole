@@ -24,13 +24,6 @@ use FastD\Swoole\SwooleInterface;
 interface ServerInterface extends SwooleInterface
 {
     /**
-     * Get server pid
-     *
-     * @return int
-     */
-    public function getPid();
-
-    /**
      * Run server.
      *
      * @return int

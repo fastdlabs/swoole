@@ -18,12 +18,4 @@ use FastD\Swoole\Handler\HandlerInterface;
 
 class TcpServer extends Server
 {
-    /**
-     * @param HandlerInterface $handlerInterface
-     * @return $this
-     */
-    public function handle(HandlerInterface $handlerInterface)
-    {
-        // TODO: Implement handle() method.
-    }
 }

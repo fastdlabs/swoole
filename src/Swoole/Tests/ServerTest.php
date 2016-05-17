@@ -24,4 +24,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         print_r($server);
     }
+
+    public function testTcpServer()
+    {
+        TcpServer::create('0.0.0.0', '9321')->start();
+    }
 }

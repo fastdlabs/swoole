@@ -14,9 +14,7 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handler\HandlerInterface;
 use FastD\Swoole\Manager\Output;
-use FastD\Swoole\Manager\ServerManager;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -33,16 +31,14 @@ abstract class Server implements ServerInterface
      */
     protected $server;
 
-    protected $sock_type;
-
-    protected $host;
-
-    protected $port;
-
-    protected $mode;
-
+    /**
+     * @var array
+     */
     protected $handles = [];
 
+    /**
+     * @var string
+     */
     protected $workspace_dir;
 
     /**
@@ -83,12 +79,25 @@ abstract class Server implements ServerInterface
         'log_level'     => 2,
     ];
 
-    final public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
+    /**
+     * Server constructor.
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     */
+    final public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         $this->init($host, $port, $mode, $sock_type);
     }
 
-    final protected function init($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
+    /**
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     */
+    public function init($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         $this->host = $host;
 
@@ -96,26 +105,21 @@ abstract class Server implements ServerInterface
 
         $this->mode = $mode;
 
+        $this->server = new \swoole_server($host, $port, $mode, $sock_type);
+
         $this->workspace_dir = realpath('.');
     }
 
-    final public static function create($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = null)
+    /**
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     * @return static
+     */
+    final public static function create($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         return new static($host, $port, $mode, $sock_type);
-    }
-
-    public function enableAsync()
-    {
-        $this->sock_type = SWOOLE_SOCK_ASYNC;
-
-        return $this;
-    }
-
-    public function enableSync()
-    {
-        $this->sock_type = SWOOLE_SOCK_SYNC;
-
-        return $this;
     }
 
     /**
@@ -139,11 +143,15 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return int|null
+     * @param      $name
+     * @param      $callback
+     * @return $this
      */
-    public function getPid()
+    public function on($name, $callback)
     {
-        return (int) @file_get_contents($this->getPidFile());
+        $this->handles[$name] = $callback;
+
+        return $this;
     }
 
     /**
@@ -157,39 +165,15 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @param      $name
-     * @param      $callback
-     * @return $this
-     */
-    public function on($name, $callback)
-    {
-        $this->handles[$name] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
+     * @return void
      */
     public function start()
     {
-        $this->config['log_file'] = $this->getLogFile();
-
-        if (!file_exists(dirname($this->config['log_file']))) {
-            mkdir(dirname($this->config['log_file']), 0755, true);
-        }
-
         $this->server->set($this->config);
-
-        if (null === $this->handler) {
-            throw new \RuntimeException("Server is not has handler.");
+        foreach ($this->handles as $name => $handle) {
+            $this->server->on($name, $handle);
         }
 
-        return $this->server->start();
-    }
-
-    public function getServer()
-    {
-        return $this->server;
+        $this->server->start();
     }
 }
