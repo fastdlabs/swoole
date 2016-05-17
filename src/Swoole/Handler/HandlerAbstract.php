@@ -45,21 +45,6 @@ abstract class HandlerAbstract implements HandlerInterface
     }
 
     /**
-     * @param $name
-     * @return void
-     */
-    public function rename($name)
-    {
-        try {
-            if (function_exists('cli_set_process_title')) {
-                cli_set_process_title($name);
-            } else if (function_exists('swoole_set_process_name')) {
-                swoole_set_process_name($name);
-            }
-        } catch (\Exception $e) {}
-    }
-
-    /**
      * Base start handle. Storage process id.
      *
      * @param \swoole_server $server
