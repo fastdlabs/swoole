@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Handler;
 
+use FastD\Swoole\Server\Server;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -27,8 +28,8 @@ interface HandlerInterface
      * Handle server.
      * The method of dealing with the first two letters to on.
      *
-     * @param SwooleInterface $swooleInterface
+     * @param Server $server
      * @return mixed
      */
-    public function handle(SwooleInterface $swooleInterface);
+    public function handle(Server $server);
 }

@@ -14,9 +14,8 @@
 
 namespace FastD\Swoole\Handler;
 
-use FastD\Swoole\Manager\Output;
+use FastD\Swoole\Server\Server;
 use FastD\Swoole\Server\ServerInterface;
-use FastD\Swoole\SwooleInterface;
 
 /**
  * Class HandlerAbstract
@@ -25,26 +24,20 @@ use FastD\Swoole\SwooleInterface;
  */
 abstract class HandlerAbstract implements HandlerInterface
 {
-    use Output;
-
     /**
      * @var ServerInterface
      */
     protected $server;
 
-    /**
-     * @param SwooleInterface $swooleInterface
-     * @return $this
-     */
-    public function handle(SwooleInterface $swooleInterface)
+    public function handle(Server $server)
     {
-        $this->server = $swooleInterface;
+        $this->server = $server;
 
         $handles = get_class_methods($this);
 
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
-                $swooleInterface->on(lcfirst(substr($value, 2)), [$this, $value]);
+                $server->on(lcfirst(substr($value, 2)), [$this, $value]);
             }
         }
 
@@ -81,10 +74,6 @@ abstract class HandlerAbstract implements HandlerInterface
 
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
-
-        $this->rename($this->server->getName() . ' master process(' . ')');
-
-        $this->output("Server [Host: {$server->host} Port: {$server->port}](Pid: {$server->master_pid}) is startd...");
     }
 
     /**
@@ -97,7 +86,5 @@ abstract class HandlerAbstract implements HandlerInterface
         if (null !== ($file = $this->server->getPidFile())) {
             unlink($file);
         }
-
-        $this->output("Server [Pid: {$pid}] is shutdown...");
     }
 }

@@ -14,7 +14,6 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Manager\Output;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -24,8 +23,6 @@ use FastD\Swoole\SwooleInterface;
  */
 abstract class Server implements ServerInterface
 {
-    use Output;
-
     /**
      * @var \swoole_server
      */
@@ -88,6 +85,8 @@ abstract class Server implements ServerInterface
      */
     final public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
+        $this->workspace_dir = realpath('.');
+
         $this->init($host, $port, $mode, $sock_type);
     }
 
@@ -99,15 +98,7 @@ abstract class Server implements ServerInterface
      */
     public function init($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
-        $this->host = $host;
-
-        $this->port = $port;
-
-        $this->mode = $mode;
-
         $this->server = new \swoole_server($host, $port, $mode, $sock_type);
-
-        $this->workspace_dir = realpath('.');
     }
 
     /**
@@ -162,18 +153,5 @@ abstract class Server implements ServerInterface
         $this->config['daemonize'] = true;
 
         return $this;
-    }
-
-    /**
-     * @return void
-     */
-    public function start()
-    {
-        $this->server->set($this->config);
-        foreach ($this->handles as $name => $handle) {
-            $this->server->on($name, $handle);
-        }
-
-        $this->server->start();
     }
 }

@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Server;
 
+use FastD\Swoole\Handler\HandlerAbstract;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -24,9 +25,13 @@ use FastD\Swoole\SwooleInterface;
 interface ServerInterface extends SwooleInterface
 {
     /**
-     * Run server.
-     *
-     * @return int
+     * @return \swoole_server
      */
-    public function start();
+    public function getServer();
+
+    /**
+     * @param HandlerAbstract $handlerAbstract
+     * @return mixed
+     */
+    public function handle(HandlerAbstract $handlerAbstract);
 }

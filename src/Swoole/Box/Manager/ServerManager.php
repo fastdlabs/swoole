@@ -25,8 +25,6 @@ use FastD\Swoole\Server\ServerInterface;
  */
 class ServerManager
 {
-    use Output;
-
     /**
      * @var ServerInterface
      */
