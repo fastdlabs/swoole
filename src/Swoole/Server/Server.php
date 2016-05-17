@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Server;
 
+use FastD\Swoole\Console\Output;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
 
@@ -46,15 +47,6 @@ abstract class Server implements ServerInterface
      */
     protected $pid_file = 'var/server.pid';
 
-    protected $log_file = 'run/server.log';
-
-    /**
-     * Swoole server process name.
-     *
-     * @var string
-     */
-    protected $process_name = 'fd-server';
-
     /**
      * Swoole server run configuration.
      *
@@ -63,13 +55,15 @@ abstract class Server implements ServerInterface
     protected $config = [
         'dispatch_mode' => 2,
         'reactor_num'   => 1,
+        'worker_num'    => 1,
         'max_conn'      => 1024,
         'max_request'   => 0,
-        'task_tmpdir'   => '/tmp/fd_tmp/',
-        'user'          => 'www',
-        'group'         => 'www',
+        'task_tmpdir'   => '/tmp/fd/',
+        'user'          => 'nobody',
+        'group'         => 'nobody',
         'daemonize'     => false,
         'log_level'     => 2,
+        'log_file'      => 'run/server.log'
     ];
 
     /**
@@ -81,7 +75,10 @@ abstract class Server implements ServerInterface
      */
     final public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
-        $this->workspace_dir = realpath('.');
+        $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
+
+        $this->config['log_file'] = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['log_file']);
+        $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->pid_file);
 
         $this->init($host, $port, $mode, $sock_type);
     }
@@ -110,6 +107,30 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @return \swoole_server
+     */
+    public function getServer()
+    {
+        return $this->server;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWorkSpace()
+    {
+        return $this->workspace_dir;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPidFile()
+    {
+        return $this->pid_file;
+    }
+
+    /**
      * @param array $configure
      * @return $this
      */
@@ -127,6 +148,19 @@ abstract class Server implements ServerInterface
         }
 
         $this->config = array_merge($this->config, $configure);
+
+        if (isset($this->config['log_file']) && substr($this->config['log_file'], 0, 1) != '/') {
+            $this->config['log_file'] = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['log_file']);
+        }
+
+        if (isset($this->config['pid_file'])) {
+            if (substr($this->config['pid_file'], 0, 1) != '/') {
+                $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['pid_file']);
+            } else {
+                $this->pid_file = $this->config['pid_file'];
+            }
+            unset($this->config['pid_file']);
+        }
     }
 
     /**
@@ -139,14 +173,6 @@ abstract class Server implements ServerInterface
         $this->handles[$name] = $callback;
 
         return $this;
-    }
-
-    /**
-     * @return \swoole_server
-     */
-    public function getServer()
-    {
-        return $this->server;
     }
 
     /**
@@ -178,6 +204,8 @@ abstract class Server implements ServerInterface
         foreach ($this->handles as $name => $handle) {
             $this->server->on($name, $handle);
         }
+
+        Output::getInstance()->output(Server::SERVER_NAME . ' started...');
 
         $this->server->start();
     }

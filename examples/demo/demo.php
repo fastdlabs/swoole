@@ -14,20 +14,15 @@
 
 $server = new swoole_server('127.0.0.1', 9501);
 
-$process = new swoole_process(function($process) use ($server) {
-    while (true) {
-        $msg = $process->read();
-        foreach($server->connections as $conn) {
-            $server->send($conn, $msg);
-        }
-    }
+$port = $server->listen('127.0.0.1', 9502, SWOOLE_SOCK_TCP);
+$port->on('receive', function ($serv, $fd, $from_id, $data) {
+    $serv->send($fd, 'listen');
+    $serv->close($fd);
 });
 
-$server->addProcess($process);
-
-$server->on('receive', function ($serv, $fd, $from_id, $data) use ($process) {
-    //群发收到的消息
-    $process->write($data);
+$server->on('receive', function ($serv, $fd, $from_id, $data) {
+    $serv->send($fd, 'server');
+    $serv->close($fd);
 });
 
 $server->start();

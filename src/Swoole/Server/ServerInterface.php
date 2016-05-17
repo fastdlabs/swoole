@@ -24,6 +24,9 @@ use FastD\Swoole\SwooleInterface;
  */
 interface ServerInterface extends SwooleInterface
 {
+    const SERVER_NAME = 'fd-server';
+    const SERVER_VERSION = 2.0;
+
     /**
      * @return \swoole_server
      */

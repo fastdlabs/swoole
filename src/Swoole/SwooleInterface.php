@@ -21,6 +21,14 @@ namespace FastD\Swoole;
  */
 interface SwooleInterface
 {
+    const LOGO = <<<LOGO
+    ____    __
+   / __/___/ /
+  / /_/ __  /
+ / __/ /_/ /
+/_/  \__,_/
+LOGO;
+
     // server mode
     const SWOOLE_BASE      = SWOOLE_BASE;
     const SWOOLE_PROCESS   = SWOOLE_PROCESS;
