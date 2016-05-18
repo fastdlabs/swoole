@@ -11,7 +11,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": ">=7.0"
+        "php": ">=7.0",
+        "ext-swoole": ">=1.8"
     },
     "require-dev": {
         "phpunit/phpunit": "5.0"
@@ -26,6 +27,10 @@
             "dev-master": "2.0.x-dev"
         }
     },
+    "bin": [
+        "swoole",
+        "monitor"
+    ],
     "suggests": {
         "ext-swoole": "Allow php swoole extension.",
         "ext-inotify": "Allow php inotify extension."

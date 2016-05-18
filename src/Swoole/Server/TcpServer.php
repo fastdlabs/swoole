@@ -16,4 +16,5 @@ namespace FastD\Swoole\Server;
 
 class TcpServer extends Server
 {
+    const NAME = 'tcp';
 }

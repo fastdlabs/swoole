@@ -46,7 +46,15 @@ abstract class Server implements ServerInterface
      *
      * @var string
      */
-    protected $pid_file = 'run/server.pid';
+    protected $pid_file;
+
+    protected $host;
+
+    protected $port;
+
+    protected $mode;
+
+    protected $sock;
 
     /**
      * Swoole server run configuration.
@@ -54,17 +62,8 @@ abstract class Server implements ServerInterface
      * @var array
      */
     protected $config = [
-        'dispatch_mode' => 2,
-        'reactor_num'   => 1,
-        'worker_num'    => 1,
-        'max_conn'      => 1024,
-        'max_request'   => 0,
-        'task_tmpdir'   => '/tmp/fd/',
-        'user'          => 'nobody',
-        'group'         => 'nobody',
-        'daemonize'     => false,
-        'log_level'     => 2,
-        'log_file'      => 'var/server.log'
+        'log_level' => 2,
+        'log_file' => 'var/' . Server::SERVER_NAME . '.log',
     ];
 
     /**
@@ -74,12 +73,16 @@ abstract class Server implements ServerInterface
      * @param int $mode
      * @param int $sock_type
      */
-    final public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    final public function __construct($host = null, $port = null, $mode = null, $sock_type = null)
     {
         $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
 
-        $this->config['log_file'] = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['log_file']);
-        $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->pid_file);
+        $this->configure($this->workspace_dir . '/etc/server.ini');
+
+        $host = null === $host ? $this->host : $host;
+        $port = null === $port ? $this->port : $port;
+        $mode = null === $mode ? $this->mode : $mode;
+        $sock_type = null === $sock_type ? $this->sock : $sock_type;
 
         $this->init($host, $port, $mode, $sock_type);
     }
@@ -104,7 +107,7 @@ abstract class Server implements ServerInterface
      * @param int $sock_type
      * @return static
      */
-    final public static function create($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    final public static function create($host = null, $port = null, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         return new static($host, $port, $mode, $sock_type);
     }
@@ -136,6 +139,14 @@ abstract class Server implements ServerInterface
     /**
      * @return string
      */
+    public function getLogFile()
+    {
+        return $this->config['log_file'];
+    }
+
+    /**
+     * @return string
+     */
     public function getPidFile()
     {
         return $this->pid_file;
@@ -145,12 +156,18 @@ abstract class Server implements ServerInterface
      * @param array $configure
      * @return $this
      */
-    public function configure(array $configure)
+    public function configure($configure)
     {
         if (is_string($configure)) {
             switch(pathinfo($configure, PATHINFO_EXTENSION)) {
                 case 'ini':
-                    $configure = parse_ini_file($configure);
+                    $configure = parse_ini_file($configure, true);
+                    $configure = $configure[static::NAME];
+                    $this->host = $configure['server']['host'] ?? '127.0.0.1';
+                    $this->port = $configure['server']['port'] ?? 9501;
+                    $this->mode = $configure['server']['mode'] ?? SwooleInterface::SWOOLE_PROCESS;
+                    $this->sock = $configure['server']['sock'] ?? SwooleInterface::SWOOLE_SOCK_TCP;
+                    $this->pid_file = $configure['server']['pid'] ?? 'run/' . Server::SERVER_NAME . '.pid';
                     break;
                 case 'php':
                 default:
@@ -160,17 +177,12 @@ abstract class Server implements ServerInterface
 
         $this->config = array_merge($this->config, $configure);
 
-        if (isset($this->config['log_file']) && substr($this->config['log_file'], 0, 1) != '/') {
-            $this->config['log_file'] = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['log_file']);
+        if (substr($this->pid_file, 0, 1) != '/') {
+            $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->pid_file);
         }
 
-        if (isset($this->config['pid_file'])) {
-            if (substr($this->config['pid_file'], 0, 1) != '/') {
-                $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['pid_file']);
-            } else {
-                $this->pid_file = $this->config['pid_file'];
-            }
-            unset($this->config['pid_file']);
+        if (substr($this->config['log_file'], 0, 1) != '/') {
+            $this->config['log_file'] = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['log_file']);
         }
     }
 
@@ -206,7 +218,7 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return mixed
+     * @return void
      */
     public function start()
     {
@@ -220,7 +232,7 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return mixed
+     * @return void
      */
     public function reload()
     {
@@ -228,13 +240,20 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return mixed
+     * @return void
      */
     public function shutdown()
     {
         $this->server->shutdown();
     }
 
+    /**
+     * @return void
+     */
+    public function stop()
+    {
+        $this->server->stop();
+    }
 
     /**
      * @param $host
@@ -246,8 +265,6 @@ abstract class Server implements ServerInterface
     {
         $listener = new Listener($host, $port, $mode);
 
-        $listener->setServer($this);
-
-        return $listener;
+        return $listener->setServer($this);
     }
 }

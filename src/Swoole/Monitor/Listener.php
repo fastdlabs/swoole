@@ -17,12 +17,26 @@ namespace FastD\Swoole\Monitor;
 use FastD\Swoole\Server\Server;
 use FastD\Swoole\SwooleInterface;
 
+/**
+ * Class Listener
+ *
+ * @package FastD\Swoole\Monitor
+ */
 class Listener implements SwooleInterface
 {
+    /**
+     * @var string
+     */
     protected $host;
 
+    /**
+     * @var int
+     */
     protected $port;
 
+    /**
+     * @var int
+     */
     protected $mode;
 
     /**
@@ -30,6 +44,12 @@ class Listener implements SwooleInterface
      */
     protected $server;
 
+    /**
+     * Listener constructor.
+     * @param $host
+     * @param $port
+     * @param $mode
+     */
     public function __construct($host, $port, $mode)
     {
         $this->host = $host;
@@ -39,9 +59,15 @@ class Listener implements SwooleInterface
         $this->mode = $mode;
     }
 
+    /**
+     * @param Server $server
+     * @return $this
+     */
     public function setServer(Server $server)
     {
         $this->server = $server->getServer()->listen($this->host, $this->port, $this->mode);
+
+        return $this;
     }
 
     /**

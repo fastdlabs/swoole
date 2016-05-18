@@ -26,6 +26,7 @@ interface ServerInterface extends SwooleInterface
 {
     const SERVER_NAME = 'fd-server';
     const SERVER_VERSION = 2.0;
+    const NAME = null;
 
     /**
      * @param HandlerAbstract $handlerAbstract

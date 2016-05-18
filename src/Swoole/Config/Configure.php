@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/5/16
- * Time: 下午10:22
+ * Date: 16/5/18
+ * Time: 下午7:05
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,17 +12,22 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Tests;
+namespace FastD\Swoole\Config;
 
-use FastD\Swoole\Server\TcpServer;
-use FastD\Swoole\Tests\Handle\TestHandler;
-
-class ServerTest extends \PHPUnit_Framework_TestCase
+class Configure
 {
-    public function testConfig()
-    {
-        $server = TcpServer::create();
+    protected static $configures;
 
-        
+    protected function __construct($configure)
+    {
+
     }
+
+    public static function load($configure, $name)
+    {
+
+    }
+
+    public function get()
+    {}
 }
