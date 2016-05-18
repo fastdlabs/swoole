@@ -14,12 +14,7 @@
 
 namespace FastD\Swoole\Manager;
 
-use FastD\Swoole\Server\Server;
-use FastD\Swoole\SwooleInterface;
-
-interface MonitorInterface extends SwooleInterface
+interface MonitorInterface
 {
-    public function addServer($name, Server $server);
-
-    public function listen($host, $port, $mode, $type = null);
+    public function listen($host, $port);
 }

@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Server;
 
+use FastD\Swoole\Handler\Handle;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
 
@@ -44,7 +45,7 @@ abstract class Server implements ServerInterface
      *
      * @var string
      */
-    protected $pid_file = 'var/server.pid';
+    protected $pid_file = 'run/server.pid';
 
     /**
      * Swoole server run configuration.
@@ -62,7 +63,7 @@ abstract class Server implements ServerInterface
         'group'         => 'nobody',
         'daemonize'     => false,
         'log_level'     => 2,
-        'log_file'      => 'run/server.log'
+        'log_file'      => 'var/server.log'
     ];
 
     /**
@@ -91,6 +92,8 @@ abstract class Server implements ServerInterface
     public function init($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         $this->server = new \swoole_server($host, $port, $mode, $sock_type);
+
+        $this->handle(new Handle());
     }
 
     /**
@@ -111,6 +114,14 @@ abstract class Server implements ServerInterface
     public function getServer()
     {
         return $this->server;
+    }
+
+    /**
+     * @return array
+     */
+    public function getConfig()
+    {
+        return $this->config;
     }
 
     /**
@@ -160,8 +171,6 @@ abstract class Server implements ServerInterface
             }
             unset($this->config['pid_file']);
         }
-
-        $this->server->set($this->config);
     }
 
     /**
@@ -172,8 +181,6 @@ abstract class Server implements ServerInterface
     public function on($name, $callback)
     {
         $this->handles[$name] = $callback;
-
-        $this->server->on($name, $callback);
 
         return $this;
     }
@@ -202,6 +209,12 @@ abstract class Server implements ServerInterface
      */
     public function start()
     {
+        $this->server->set($this->config);
+
+        foreach ($this->handles as $name => $handle) {
+            $this->server->on($name, $handle);
+        }
+
         $this->server->start();
     }
 

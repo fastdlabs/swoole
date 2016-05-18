@@ -14,7 +14,6 @@
 
 namespace FastD\Swoole\Handler;
 
-use FastD\Swoole\Console\Output;
 use FastD\Swoole\Server\Server;
 
 /**
@@ -42,38 +41,5 @@ abstract class HandlerAbstract implements HandlerInterface
         }
 
         return $this;
-    }
-
-    /**
-     * Base start handle. Storage process id.
-     *
-     * @param \swoole_server $server
-     * @return mixed
-     */
-    public function onStart(\swoole_server $server)
-    {
-        if (null !== ($file = $this->server->getPidFile())) {
-            if (!is_dir($dir = dirname($file))) {
-                mkdir($dir, 0755, true);
-            }
-
-            file_put_contents($file, $server->master_pid . PHP_EOL);
-        }
-
-        Output::output(sprintf('server [%s] started', Server::SERVER_NAME));
-    }
-
-    /**
-     * Shutdown server process.
-     */
-    public function onShutdown()
-    {
-        $pid = @file_get_contents($this->server->getPidFile());
-
-        if (null !== ($file = $this->server->getPidFile())) {
-            unlink($file);
-        }
-
-        Output::output(sprintf('shutdown server [%s]', $pid));
     }
 }
