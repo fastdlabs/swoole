@@ -16,6 +16,7 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
 use FastD\Swoole\SwooleInterface;
+use FastD\Swoole\Server\Listen\Listener;
 use FastD\Swoole\Handler\HandlerAbstract;
 
 /**
@@ -68,6 +69,15 @@ abstract class Server implements ServerInterface
     protected $sock;
 
     /**
+     * @var array
+     */
+    protected $listener = [
+        'listen' => 'off',
+        'host' => '127.0.0.1',
+        'port' => 9599
+    ];
+
+    /**
      * Swoole server run configuration.
      *
      * @var array
@@ -96,6 +106,10 @@ abstract class Server implements ServerInterface
         $this->sock = null === $sock_type ? $this->sock : $sock_type;
 
         $this->init($this->host, $this->port, $this->mode, $this->sock);
+
+        if ($this->listener['listen'] == 1) {
+            $this->listen($this->listener['host'], $this->listener['port'], SwooleInterface::SWOOLE_SOCK_UDP);
+        }
     }
 
     /**
@@ -173,12 +187,13 @@ abstract class Server implements ServerInterface
             switch(pathinfo($configure, PATHINFO_EXTENSION)) {
                 case 'ini':
                     $configure = parse_ini_file($configure, true);
-                    $configure = $configure[static::NAME];
                     $this->host = $configure['server']['host'] ?? '127.0.0.1';
                     $this->port = $configure['server']['port'] ?? 9501;
                     $this->mode = $configure['server']['mode'] ?? SwooleInterface::SWOOLE_PROCESS;
                     $this->sock = $configure['server']['sock'] ?? SwooleInterface::SWOOLE_SOCK_TCP;
                     $this->pid_file = $configure['server']['pid'] ?? 'run/' . Server::SERVER_NAME . '.pid';
+                    $this->listener = array_merge($this->listener, $configure['listen']);
+                    $configure = $configure[static::NAME];
                     break;
                 case 'php':
                 default:
@@ -216,6 +231,21 @@ abstract class Server implements ServerInterface
     public function handle(HandlerAbstract $handlerAbstract)
     {
         $handlerAbstract->handle($this);
+    }
+
+    /**
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @return $this
+     */
+    public function listen($host = null, $port = null, $mode = SwooleInterface::SWOOLE_SOCK_UDP)
+    {
+        $listener = new Listener($host, $port, $mode);
+
+        $listener->setServer($this);
+
+        return $this;
     }
 
     /**

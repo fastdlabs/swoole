@@ -14,5 +14,12 @@
 
 include __DIR__ . '/bootstrap.php';
 
+$prefix = '@prefix@';
+$pid = '@pid@';
+
+if (isset($_SERVER['argv'][1])) {
+    $action = $_SERVER['argv'][1];
+}
+
 
  

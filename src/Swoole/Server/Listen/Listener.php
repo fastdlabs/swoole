@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/5/18
- * Time: 上午11:26
+ * Date: 16/5/19
+ * Time: 上午1:22
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,7 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Monitor;
+namespace FastD\Swoole\Server\Listen;
 
 use FastD\Swoole\Server\Server;
 use FastD\Swoole\SwooleInterface;
@@ -20,9 +20,9 @@ use FastD\Swoole\SwooleInterface;
 /**
  * Class Listener
  *
- * @package FastD\Swoole\Monitor
+ * @package FastD\Swoole\Server\Listen
  */
-class Listener implements SwooleInterface
+class Listener
 {
     /**
      * @var string
@@ -30,7 +30,7 @@ class Listener implements SwooleInterface
     protected $host;
 
     /**
-     * @var int
+     * @var int|string
      */
     protected $port;
 
@@ -40,17 +40,12 @@ class Listener implements SwooleInterface
     protected $mode;
 
     /**
-     * @var \swoole_server
-     */
-    protected $server;
-
-    /**
      * Listener constructor.
      * @param $host
      * @param $port
-     * @param $mode
+     * @param int $mode
      */
-    public function __construct($host, $port, $mode)
+    public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_SOCK_UDP)
     {
         $this->host = $host;
 
@@ -61,31 +56,24 @@ class Listener implements SwooleInterface
 
     /**
      * @param Server $server
-     * @return $this
      */
     public function setServer(Server $server)
     {
-        $this->server = $server->getServer()->listen($this->host, $this->port, $this->mode);
+        $swoole = $server->getServer();
 
-        return $this;
+        $listen = $swoole->listen($this->host, $this->port, $this->mode);
+
+        $listen->on('receive', [$this, 'onReceive']);
+        $listen->on('connect', [$this, 'onConnect']);
     }
 
-    /**
-     * @param $name
-     * @param $callback
-     * @return $this
-     */
-    public function on($name, $callback)
+    public function onReceive()
     {
-        $this->server->on($name, $callback);
+
     }
 
-    /**
-     * @param array $configure
-     * @return $this
-     */
-    public function configure(array $configure)
+    public function onConnect()
     {
-        $this->server->set($configure);
+
     }
 }

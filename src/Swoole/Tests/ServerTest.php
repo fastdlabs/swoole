@@ -23,6 +23,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     {
         $server = TcpServer::create();
 
+        $server->listen('127.0.0.1', '9599');
+
         print_r($server);
     }
 
@@ -30,7 +32,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     {
         $server = TcpServer::create('0.0.0.0', '1111');
 
-        print_r($server);
+//        print_r($server);
     }
 
     public function testConfigure()
@@ -42,6 +44,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             'log_file' => '/tmp/error.log'
         ]);
 
-        print_r($server);
+//        print_r($server);
     }
 }
