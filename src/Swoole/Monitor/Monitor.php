@@ -14,7 +14,7 @@
 
 namespace FastD\Swoole\Manager;
 
-use FastD\Swoole\Server\ServerInterface;
+use FastD\Swoole\Server\Server;
 
 /**
  * Server Manager.
@@ -23,174 +23,56 @@ use FastD\Swoole\Server\ServerInterface;
  *
  * @package FastD\Swoole\Manager
  */
-class ServerManager
+class ServerManager implements MonitorInterface
 {
-    /**
-     * @var ServerInterface
-     */
-    protected $server;
+    protected $servers = [];
 
-    /**
-     * @var int
-     */
-    protected $server_pid;
-
-    /**
-     * ServerManager constructor.
-     *
-     * @param $pid
-     */
-    public function __construct($pid = null)
+    public function __construct()
     {
-        $this->setPid($pid);
+
+    }
+
+    public function addServer($name, Server $server)
+    {
+        $this->servers[$name] = $server;
+    }
+
+    public function listen($host, $port, $mode, $type = null)
+    {
+        // TODO: Implement listen() method.
+    }
+
+    public function start($name = null)
+    {
+        // TODO: Implement start() method.
+    }
+
+    public function reload($name = null)
+    {
+        // TODO: Implement reload() method.
+    }
+
+    public function shutdown($name = null)
+    {
+        // TODO: Implement shutdown() method.
     }
 
     /**
-     * @return int
-     */
-    public function getPid()
-    {
-        return $this->server_pid;
-    }
-
-    /**
-     * @param int $pid
+     * @param $name
+     * @param $callback
      * @return $this
      */
-    public function setPid($pid)
+    public function on($name, $callback)
     {
-        $this->server_pid = $pid;
-
-        return $this;
+        // TODO: Implement on() method.
     }
 
     /**
-     * Bind running server in manager.
-     *
-     * @param ServerInterface $serverInterface
+     * @param array $configure
      * @return $this
      */
-    public function bindServer(ServerInterface $serverInterface)
+    public function configure(array $configure)
     {
-        $this->server = $serverInterface;
-
-        $this->server_pid = $serverInterface->getPid();
-
-        return $this;
-    }
-
-    /**
-     * @param array         $directories
-     * @param \Closure|null $callback
-     * @throws \Exception
-     */
-    public function watch(array $directories, \Closure $callback = null)
-    {
-        $watch = new Watcher();
-
-        $self = $this;
-
-        try {
-            $watch
-                ->watch($directories, $callback ? $callback : function (Watcher $watcher) use ($self) {
-                    $self->reload();
-                    $watcher->output('Reload finish');
-                })
-                ->run()
-            ;
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Start server
-     *
-     * @return int
-     */
-    public function start()
-    {
-        if ($this->server instanceof ServerInterface) {
-            $this->server->start();
-            return 0;
-        }
-
-        throw new \RuntimeException('Unbind server.');
-    }
-
-    /**
-     * Show server status.
-     *
-     * @return array|null
-     */
-    public function status()
-    {
-        if (empty($this->server_pid)) {
-            $this->output('Status: Server is not running');
-            return 0;
-        }
-
-        $this->output('Status: Server [Pid: ' . $this->server_pid . '] is running');
-        return 0;
-    }
-
-    /**
-     * @return int
-     */
-    public function shutdown()
-    {
-        if (empty($this->server_pid)) {
-            $this->output('Shutdown: Server is not running');
-            return -1;
-        }
-
-        posix_kill($this->server_pid, SIGTERM);
-
-        $this->output('Shutdown: Server [Pid: ' . $this->server_pid . '] is shutdown');
-        return 0;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function reload()
-    {
-        if (empty($this->server_pid)) {
-            $this->output('Reload: Server is not running');
-            return 0;
-        }
-
-        posix_kill($this->server_pid, SIGUSR1);
-
-        $this->output('Reload: Server [Pid: ' . $this->server_pid . '] reload');
-        return 0;
-    }
-
-    /**
-     * @return int
-     */
-    public function restart()
-    {
-        $this->shutdown();
-        $this->start();
-
-        return 0;
-    }
-
-    /**
-     * @return int
-     */
-    public function usage()
-    {
-        $this->output('Usage: Server {start|stop|restart|reload|status}');
-        return 0;
-    }
-
-    /**
-     * @return int
-     */
-    public function tree()
-    {
-        return 0;
+        // TODO: Implement configure() method.
     }
 }

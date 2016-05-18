@@ -14,7 +14,6 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Console\Output;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
 
@@ -161,6 +160,8 @@ abstract class Server implements ServerInterface
             }
             unset($this->config['pid_file']);
         }
+
+        $this->server->set($this->config);
     }
 
     /**
@@ -171,6 +172,8 @@ abstract class Server implements ServerInterface
     public function on($name, $callback)
     {
         $this->handles[$name] = $callback;
+
+        $this->server->on($name, $callback);
 
         return $this;
     }
@@ -199,12 +202,6 @@ abstract class Server implements ServerInterface
      */
     public function start()
     {
-        $this->server->set($this->config);
-
-        foreach ($this->handles as $name => $handle) {
-            $this->server->on($name, $handle);
-        }
-
         $this->server->start();
     }
 

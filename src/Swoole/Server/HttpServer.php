@@ -14,9 +14,6 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Manager\ServerManager;
-use FastD\Swoole\SwooleInterface;
-
 /**
  * Class Http
  *
@@ -27,22 +24,7 @@ class HttpServer extends Server
     /**
      * @var string
      */
-    protected $process_name = 'fd-http';
-
-    /**
-     * Server constructor.
-     *
-     * @param $host
-     * @param $port
-     * @param $mode
-     * @param $sock
-     */
-    public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_MODE_BASE, $sock = SwooleInterface::SWOOLE_SOCK_TCP)
-    {
-        $this->server = new \swoole_http_server($host, $port, $mode);
-
-        $this->manager = new ServerManager($this);
-    }
+    const SERVER_NAME = 'fd-http';
 
     /**
      * Enable Http2 Support.
