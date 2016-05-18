@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/1/18
- * Time: 下午9:47
+ * Date: 16/5/19
+ * Time: 上午12:51
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,14 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../../vendor/autoload.php';
+include __DIR__ . '/bootstrap.php';
 
-use FastD\Swoole\Server\TcpServer;
 
-$server = TcpServer::create();
-
-$server->on('receive', function () {
-    echo 'receive' . PHP_EOL;
-});
-
-$server->start();
+ 

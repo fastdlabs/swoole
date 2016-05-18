@@ -11,4 +11,5 @@
  * Gmail: bboyjanhuang@gmail.com
  * WebSite: http://www.janhuang.me
  */
- 
+
+include __DIR__ . '/bootstrap.php';

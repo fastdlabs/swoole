@@ -1,0 +1,69 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Created by PhpStorm.
+ * User: janhuang
+ * Date: 15/3/19
+ * Time: 下午8:03
+ * Github: https://www.github.com/janhuang
+ * Coding: https://www.coding.net/janhuang
+ * SegmentFault: http://segmentfault.com/u/janhuang
+ * Blog: http://segmentfault.com/blog/janhuang
+ * Gmail: bboyjanhuang@gmail.com
+ */
+
+include __DIR__ . '/bootstrap.php';
+
+define('NAME', 'swoole');
+$root = __DIR__;
+$pwd = $_SERVER['PWD'];
+$action = 'install';
+
+if (isset($_SERVER['argv'][1])) {
+    $action = $_SERVER['argv'][1];
+}
+
+$target = function ($dir) {
+    if (!file_exists($dir)) {
+        mkdir($dir, 0755, true);
+    }
+};
+
+switch ($action) {
+    case 'check':
+        (function () use ($root, $pwd) {
+            echo '[php version ' . PHP_VERSION  . ']' . PHP_EOL;
+            echo 'loaded configuration file: ' . php_ini_loaded_file() . PHP_EOL;
+            echo PHP_EOL;
+
+            echo '[' . NAME . ' version ' . swoole_version() . ']' . PHP_EOL;
+            $extIni = ini_get_all(NAME);
+            foreach ($extIni as $name => $value) {
+                echo sprintf('%s: Value => %s', $name, $value['local_value']) . PHP_EOL;
+            }
+
+            echo PHP_EOL;
+            echo 'etc dir: ' . (file_exists($pwd . '/etc') ? $pwd . '/etc' : '(none)') . PHP_EOL;
+            echo 'var dir: ' . (file_exists($pwd . '/var') ? $pwd . '/var' : '(none)') . PHP_EOL;
+            echo 'run dir: ' . (file_exists($pwd . '/run') ? $pwd . '/run' : '(none)') . PHP_EOL;
+            echo 'loaded server configuration file: ' . (file_exists($pwd . '/etc/server.ini') ? $pwd . '/etc/server.ini' : '(none)') . PHP_EOL;
+        })();
+        break;
+    case 'install': // install all server configure.
+    default:
+        (function () use ($root, $pwd, $target) {
+            echo '[fastd swoole version ' . (float) \FastD\Swoole\Server\ServerInterface::SERVER_VERSION . ']' . PHP_EOL;
+            foreach ([
+                         $pwd . '/etc',
+                         $pwd . '/run',
+                         $pwd . '/var'
+                     ] as $dir) {
+                $target($dir);
+                echo 'target dir: ' . $dir . PHP_EOL;
+            }
+            if (!file_exists($pwd . '/etc/server.ini')) {
+                copy($root . '/etc/server.ini', $pwd . '/etc/server.ini');
+            }
+            echo 'make ini file into: ' . $pwd . '/etc/server.ini';
+        })();
+}

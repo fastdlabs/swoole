@@ -15,7 +15,6 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
-use FastD\Swoole\Monitor\Listener;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
 
@@ -265,18 +264,5 @@ abstract class Server implements ServerInterface
     public function stop()
     {
         $this->server->stop();
-    }
-
-    /**
-     * @param $host
-     * @param $port
-     * @param $mode
-     * @return Listener
-     */
-    public function listen($host, $port, $mode = Server::SWOOLE_SOCK_UDP)
-    {
-        $listener = new Listener($host, $port, $mode);
-
-        return $listener->setServer($this);
     }
 }
