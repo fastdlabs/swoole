@@ -15,7 +15,6 @@
 namespace FastD\Swoole\Handler;
 
 use FastD\Swoole\Server\Server;
-use FastD\Swoole\SwooleInterface;
 
 /**
  * Interface HandlerInterface

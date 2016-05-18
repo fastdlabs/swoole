@@ -28,16 +28,6 @@ interface ServerInterface extends SwooleInterface
     const SERVER_VERSION = 2.0;
 
     /**
-     * @return \swoole_server
-     */
-    public function getServer();
-
-    /**
-     * @return array
-     */
-    public function getConfig();
-
-    /**
      * @param HandlerAbstract $handlerAbstract
      * @return mixed
      */
