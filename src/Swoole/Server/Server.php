@@ -48,12 +48,24 @@ abstract class Server implements ServerInterface
      */
     protected $pid_file;
 
+    /**
+     * @var string
+     */
     protected $host;
 
+    /**
+     * @var int
+     */
     protected $port;
 
+    /**
+     * @var int
+     */
     protected $mode;
 
+    /**
+     * @var int
+     */
     protected $sock;
 
     /**
@@ -79,12 +91,12 @@ abstract class Server implements ServerInterface
 
         $this->configure($this->workspace_dir . '/etc/server.ini');
 
-        $host = null === $host ? $this->host : $host;
-        $port = null === $port ? $this->port : $port;
-        $mode = null === $mode ? $this->mode : $mode;
-        $sock_type = null === $sock_type ? $this->sock : $sock_type;
+        $this->host = null === $host ? $this->host : $host;
+        $this->port = null === $port ? $this->port : $port;
+        $this->mode = null === $mode ? $this->mode : $mode;
+        $this->sock = null === $sock_type ? $this->sock : $sock_type;
 
-        $this->init($host, $port, $mode, $sock_type);
+        $this->init($this->host, $this->port, $this->mode, $this->sock);
     }
 
     /**

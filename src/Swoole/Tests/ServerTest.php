@@ -19,10 +19,29 @@ use FastD\Swoole\Tests\Handle\TestHandler;
 
 class ServerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConfig()
+    public function testIniConfig()
     {
         $server = TcpServer::create();
 
-        
+        print_r($server);
+    }
+
+    public function testInit()
+    {
+        $server = TcpServer::create('0.0.0.0', '1111');
+
+        print_r($server);
+    }
+
+    public function testConfigure()
+    {
+        $server = TcpServer::create('0.0.0.0', '1112');
+
+        $server->configure([
+            'log_level' => 3,
+            'log_file' => '/tmp/error.log'
+        ]);
+
+        print_r($server);
     }
 }

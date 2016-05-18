@@ -26,6 +26,8 @@ class HttpServer extends Server
      */
     const SERVER_NAME = 'fd-http';
 
+    const NAME = 'http';
+
     /**
      * Enable Http2 Support.
      *
