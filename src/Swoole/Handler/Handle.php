@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Handler;
 
 use FastD\Swoole\Console\Output;
+use FastD\Swoole\Console\Process;
 use FastD\Swoole\Server\Server;
 
 /**
@@ -39,6 +40,8 @@ class Handle extends HandlerAbstract
 
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
+
+        Process::rename(Server::SERVER_NAME);
 
         Output::output(sprintf('server [%s] started', Server::SERVER_NAME));
     }

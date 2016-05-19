@@ -16,12 +16,7 @@ include __DIR__ . '/../../vendor/autoload.php';
 
 use FastD\Swoole\Server\TcpServer;
 
-$server = TcpServer::create('0.0.0.0', '9321');
-
-$listener = $server->listen('127.0.0,1', '9322');
-$listener->on('receive', function (swoole_server $server) use ($server) {
-    print_r($server->getServer()->connections);
-});
+$server = TcpServer::create();
 
 $server->on('receive', function () {
     echo 'receive' . PHP_EOL;

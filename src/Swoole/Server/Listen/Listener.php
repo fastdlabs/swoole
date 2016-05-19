@@ -40,6 +40,11 @@ class Listener
     protected $mode;
 
     /**
+     * @var \swoole_server
+     */
+    protected $server;
+
+    /**
      * Listener constructor.
      * @param $host
      * @param $port
@@ -59,20 +64,20 @@ class Listener
      */
     public function setServer(Server $server)
     {
-        $swoole = $server->getServer();
+        $this->server = $server->getServer();
 
-        $listen = $swoole->listen($this->host, $this->port, $this->mode);
+        $listen = $this->server->listen($this->host, $this->port, $this->mode);
 
         $listen->on('receive', [$this, 'onReceive']);
         $listen->on('connect', [$this, 'onConnect']);
     }
 
-    public function onReceive()
+    public function onReceive(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-
+        print_r($this->server->connections);
     }
 
-    public function onConnect()
+    public function onConnect(\swoole_server $server, $fd, $reactorId)
     {
 
     }

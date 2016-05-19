@@ -16,7 +16,7 @@ namespace FastD\Swoole\Console;
 
 class Process
 {
-    public function rename($name)
+    public static function rename($name)
     {
         try {
             if (function_exists('cli_set_process_title')) {
