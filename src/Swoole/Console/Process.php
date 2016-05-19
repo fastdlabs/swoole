@@ -14,8 +14,16 @@
 
 namespace FastD\Swoole\Console;
 
+/**
+ * Class Process
+ *
+ * @package FastD\Swoole\Console
+ */
 class Process
 {
+    /**
+     * @param $name
+     */
     public static function rename($name)
     {
         try {
