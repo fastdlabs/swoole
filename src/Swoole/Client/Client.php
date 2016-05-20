@@ -15,7 +15,6 @@
 namespace FastD\Swoole\Client;
 
 use FastD\Swoole\Handler\HandlerInterface;
-use FastD\Swoole\Manager\Output;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -25,8 +24,6 @@ use FastD\Swoole\SwooleInterface;
  */
 class Client implements ClientInterface
 {
-    use Output;
-
     /**
      * @var HandlerInterface
      */

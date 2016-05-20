@@ -64,9 +64,9 @@ class Listener
      */
     public function setServer(Server $server)
     {
-        $this->server = $server->getServer();
+        $this->server = $server;
 
-        $listen = $this->server->listen($this->host, $this->port, $this->mode);
+        $listen = $this->server->getServer()->listen($this->host, $this->port, $this->mode);
 
         $listen->on('receive', [$this, 'onReceive']);
         $listen->on('connect', [$this, 'onConnect']);
@@ -74,7 +74,7 @@ class Listener
 
     public function onReceive(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        print_r($this->server->connections);
+        print_r($this->server->getServer()->connections);
     }
 
     public function onConnect(\swoole_server $server, $fd, $reactorId)
