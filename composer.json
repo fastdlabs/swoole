@@ -28,7 +28,7 @@
         }
     },
     "bin": [
-        "swoole",
+        "install",
         "monitor"
     ],
     "suggests": {
