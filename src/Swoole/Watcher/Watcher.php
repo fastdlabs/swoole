@@ -12,7 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Manager;
+namespace FastD\Swoole\Watcher;
+
+use FastD\Swoole\Console\Output;
 
 /**
  * Class Watcher
@@ -21,8 +23,6 @@ namespace FastD\Swoole\Manager;
  */
 class Watcher
 {
-    use Output;
-
     /**
      * Handle events.
      *
@@ -101,7 +101,7 @@ class Watcher
 
             foreach ($events as $event) {
                 if (!empty($event['name'])) {
-                    $this->output($event['name'] . ' modify');
+                    Output::output($event['name'] . ' modify');
                 }
             }
 
@@ -109,7 +109,7 @@ class Watcher
                 $callback($this);
             }
 
-            $this->output('-------');
+            Output::output('-------');
         });
 
         return $this;

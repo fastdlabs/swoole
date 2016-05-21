@@ -14,6 +14,8 @@
 
 namespace FastD\Swoole\Server\Listen;
 
+use FastD\Packet\Packet;
+use FastD\Packet\PacketException;
 use FastD\Swoole\Server\Server;
 use FastD\Swoole\SwooleInterface;
 
@@ -40,7 +42,7 @@ class Listener
     protected $mode;
 
     /**
-     * @var \swoole_server
+     * @var Server
      */
     protected $server;
 
@@ -69,16 +71,61 @@ class Listener
         $listen = $this->server->getServer()->listen($this->host, $this->port, $this->mode);
 
         $listen->on('receive', [$this, 'onReceive']);
-        $listen->on('connect', [$this, 'onConnect']);
     }
 
+    /**
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return void
+     */
     public function onReceive(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        print_r($this->server->getServer()->connections);
+        try {
+            $action = $this->getAction($data);
+        } catch (PacketException $e) {
+            $action = 'status';
+        }
+
+        switch ($action) {
+            case 'stop':
+                $server->send($fd, Packet::encode([
+                    'msg' => sprintf('Server [%s] is shutdown...', $server->master_pid)
+                ]), $from_id);
+                $this->server->getServer()->shutdown();
+                break;
+            case 'restart':
+                $server->send($fd, Packet::encode([
+                    'msg' => sprintf('Server [%s] is restart...', $server->master_pid)
+                ]), $from_id);
+                $this->server->getServer()->shutdown();
+                $this->server->getServer()->start();
+                break;
+            case 'reload':
+                $server->send($fd, Packet::encode([
+                    'msg' => sprintf('Server [%s] is reloading...', $server->master_pid)
+                ]), $from_id);
+                $this->server->getServer()->reload();
+                break;
+            case 'status':
+            default:
+                $server->send($fd, Packet::encode([
+                    'state' => $this->server->getServer()->stats(),
+                    'connections' => $this->server->getServer()->connections,
+                ]), $from_id);
+        }
     }
 
-    public function onConnect(\swoole_server $server, $fd, $reactorId)
+    /**
+     * @param $data
+     * @return mixed
+     * @throws \FastD\Packet\PacketException
+     */
+    public function getAction($data)
     {
+        $data = Packet::decode($data);
 
+        return $data;
     }
 }

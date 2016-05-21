@@ -345,6 +345,9 @@ class swoole_server{
 
     public function addprocess(){}
 
+    /**
+     * @return mixed
+     */
     public function stats(){}
 
     /**

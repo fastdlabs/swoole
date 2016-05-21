@@ -98,7 +98,13 @@ abstract class Server implements ServerInterface
     {
         $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
 
-        $this->configure($this->workspace_dir . '/etc/server.ini');
+        $conf = $this->workspace_dir . '/etc/server.ini';
+
+        if (null === $host && !file_exists($conf)) {
+            throw new \RuntimeException(sprintf('Server is not configuration.'));
+        }
+
+        $this->configure($conf);
 
         $this->host = null === $host ? $this->host : $host;
         $this->port = null === $port ? $this->port : $port;
