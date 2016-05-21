@@ -22,7 +22,7 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole\Client
  */
-interface ClientInterface extends SwooleInterface
+interface ClientInterface
 {
     /**
      * @param HandlerInterface $handlerInterface
