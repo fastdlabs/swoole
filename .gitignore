@@ -3,3 +3,6 @@
 *.orig
 composer.lock
 swoole.php
+/etc
+/run
+/var
