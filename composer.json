@@ -30,7 +30,8 @@
     },
     "bin": [
         "install",
-        "monitor"
+        "monitor",
+        "bootstrap.php"
     ],
     "suggests": {
         "ext-swoole": "Allow php swoole extension.",

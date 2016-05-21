@@ -26,12 +26,15 @@ class Process
      */
     public static function rename($name)
     {
-        try {
-            if (function_exists('cli_set_process_title')) {
-                cli_set_process_title($name);
-            } else if (function_exists('swoole_set_process_name')) {
-                swoole_set_process_name($name);
-            }
-        } catch (\Exception $e) {}
+        // hidden Mac OS error。
+        set_error_handler(function () {});
+
+        if (function_exists('cli_set_process_title')) {
+            cli_set_process_title($name);
+        } else if (function_exists('swoole_set_process_name')) {
+            swoole_set_process_name($name);
+        }
+
+        restore_error_handler();
     }
 }
