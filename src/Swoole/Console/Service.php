@@ -25,20 +25,36 @@ use FastD\Swoole\Server\Server;
  */
 class Service
 {
+    /**
+     * @var static
+     */
     protected static $service;
 
+    /**
+     * @var Server
+     */
     protected $server;
 
+    /**
+     * Service constructor.
+     * @param Server $server
+     */
     public function __construct(Server $server)
     {
         $this->server= $server;
     }
 
+    /**
+     * @return void
+     */
     public function start()
     {
         $this->server->start();
     }
 
+    /**
+     * @return int
+     */
     protected function getPid()
     {
         $pid = $this->server->getPidFile();
@@ -49,6 +65,9 @@ class Service
         return (int) trim(file_get_contents($pid));
     }
 
+    /**
+     * @return void
+     */
     public function stop()
     {
         $pid = $this->getPid();
@@ -56,6 +75,9 @@ class Service
         posix_kill($pid, SIGTERM);
     }
 
+    /**
+     * @return void
+     */
     public function reload()
     {
         $pid = $this->getPid();
@@ -63,12 +85,18 @@ class Service
         posix_kill($pid, SIGUSR1);
     }
 
+    /**
+     * @return void
+     */
     public function restart()
     {
         $this->stop();
         $this->start();
     }
 
+    /**
+     * @return void
+     */
     public function status()
     {
 
