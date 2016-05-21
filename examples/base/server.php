@@ -15,11 +15,13 @@
 include __DIR__ . '/../../vendor/autoload.php';
 
 use FastD\Swoole\Server\TcpServer;
+use FastD\Swoole\Console\Service;
 
 $server = TcpServer::create();
 
-$server->on('receive', function () {
+$server->on('receive', function (\swoole_server $server, $fd) {
     echo 'receive' . PHP_EOL;
+    $server->close($fd);
 });
 
-$server->start();
+Service::server($server)->start();

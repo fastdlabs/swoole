@@ -43,9 +43,9 @@ switch ($action) {
             }
 
             echo PHP_EOL;
-            echo 'etc dir: ' . (file_exists($pwd . '/etc') ? $pwd . '/etc' : '(none)') . PHP_EOL;
             echo 'var dir: ' . (file_exists($pwd . '/var') ? $pwd . '/var' : '(none)') . PHP_EOL;
             echo 'run dir: ' . (file_exists($pwd . '/run') ? $pwd . '/run' : '(none)') . PHP_EOL;
+            echo 'loaded server configuration dir: ' . (file_exists($pwd . '/etc') ? $pwd . '/etc' : '(none)') . PHP_EOL;
             echo 'loaded server configuration file: ' . (file_exists($pwd . '/etc/server.ini') ? $pwd . '/etc/server.ini' : '(none)') . PHP_EOL;
         })();
         break;
