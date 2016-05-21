@@ -24,4 +24,27 @@ $server->on('receive', function (\swoole_server $server, $fd) {
     $server->close($fd);
 });
 
-Service::server($server)->start();
+$action = 'status';
+
+if (isset($_SERVER['argv'][1])) {
+    $action = $_SERVER['argv'][1];
+}
+
+switch ($action) {
+    case 'start':
+        Service::server($server)->start();
+        break;
+    case 'stop':
+        Service::server($server)->stop();
+        break;
+    case 'restart':
+        Service::server($server)->restart();
+        break;
+    case 'reload':
+        Service::server($server)->reload();
+        break;
+    case 'status':
+    default:
+        Service::server($server)->status();
+}
+

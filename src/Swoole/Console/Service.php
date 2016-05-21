@@ -39,16 +39,40 @@ class Service
         $this->server->start();
     }
 
+    protected function getPid()
+    {
+        $pid = $this->server->getPidFile();
+        if (!file_exists($pid)) {
+            throw new \RuntimeException(sprintf('Pid file ["%s"] is not exists', $pid));
+        }
+
+        return (int) trim(file_get_contents($pid));
+    }
+
     public function stop()
+    {
+        $pid = $this->getPid();
+
+        posix_kill($pid, SIGTERM);
+    }
+
+    public function reload()
+    {
+        $pid = $this->getPid();
+
+        posix_kill($pid, SIGUSR1);
+    }
+
+    public function restart()
+    {
+        $this->stop();
+        $this->start();
+    }
+
+    public function status()
     {
 
     }
-
-    public function reload(){}
-
-    public function restart(){}
-
-    public function status(){}
 
     /**
      * @param Server $server

@@ -57,6 +57,6 @@ class Handle extends HandlerAbstract
             unlink($file);
         }
 
-        Output::output(sprintf('shutdown server [%s]', $pid));
+        Output::output(sprintf('shutdown server [%s]', trim($pid)));
     }
 }

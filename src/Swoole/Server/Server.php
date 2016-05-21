@@ -110,12 +110,6 @@ abstract class Server implements ServerInterface
         $this->port = null === $port ? $this->port : $port;
         $this->mode = null === $mode ? $this->mode : $mode;
         $this->sock = null === $sock_type ? $this->sock : $sock_type;
-
-        $this->init($this->host, $this->port, $this->mode, $this->sock);
-
-        if ($this->listener['listen'] == 1) {
-            $this->listen($this->listener['host'], $this->listener['port'], SwooleInterface::SWOOLE_SOCK_UDP);
-        }
     }
 
     /**
@@ -124,7 +118,7 @@ abstract class Server implements ServerInterface
      * @param int $mode
      * @param int $sock_type
      */
-    public function init($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    public function initServer($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         $this->server = new \swoole_server($host, $port, $mode, $sock_type);
 
@@ -269,6 +263,12 @@ abstract class Server implements ServerInterface
      */
     public function start()
     {
+        $this->initServer($this->host, $this->port, $this->mode, $this->sock);
+
+        if ($this->listener['listen'] == 1) {
+            $this->listen($this->listener['host'], $this->listener['port'], SwooleInterface::SWOOLE_SOCK_UDP);
+        }
+
         $this->server->set($this->config);
 
         foreach ($this->handles as $name => $handle) {
