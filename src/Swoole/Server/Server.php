@@ -178,6 +178,14 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @return int
+     */
+    public function getPid()
+    {
+        return (int) trim(file_get_contents($this->getPidFile()));
+    }
+
+    /**
      * @param array $configure
      * @return $this
      */

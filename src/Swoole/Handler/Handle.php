@@ -43,7 +43,7 @@ class Handle extends HandlerAbstract
 
         Process::rename(Server::SERVER_NAME);
 
-        Output::output(sprintf('server [%s] started', Server::SERVER_NAME));
+        Output::output(sprintf('Server[%s] started', $this->server->getPid()));
     }
 
     /**
@@ -51,12 +51,35 @@ class Handle extends HandlerAbstract
      */
     public function onShutdown()
     {
-        $pid = @file_get_contents($this->server->getPidFile());
-
         if (null !== ($file = $this->server->getPidFile())) {
             unlink($file);
         }
 
-        Output::output(sprintf('shutdown server [%s]', trim($pid)));
+        Output::output(sprintf('Server[%s] shutdown ', $this->server->getPid()));
+    }
+
+    public function onManagerStart()
+    {
+        Output::output(sprintf('Server[%s] Manager started', $this->server->getPid()));
+    }
+
+    public function onManagerStop()
+    {
+        Output::output(sprintf('Server[%s] Manager stop', $this->server->getPid()));
+    }
+
+    public function onWorkerStart()
+    {
+        Output::output(sprintf('Server[%s] Worker started', $this->server->getPid()));
+    }
+
+    public function onWorkerStop()
+    {
+        Output::output(sprintf('Server[%s] Worker stop', $this->server->getPid()));
+    }
+
+    public function onWorkerError()
+    {
+        Output::output(sprintf('Server[%s] Worker error', $this->server->getPid()));
     }
 }

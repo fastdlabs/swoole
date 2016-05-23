@@ -23,7 +23,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     {
         $server = TcpServer::create();
 
-        $server->listen('127.0.0.1', '9599');
+//        $server->listen('127.0.0.1', '9599');
 
         print_r($server);
     }
