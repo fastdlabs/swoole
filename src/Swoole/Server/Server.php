@@ -16,7 +16,7 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
 use FastD\Swoole\SwooleInterface;
-use FastD\Swoole\Server\Listen\Listener;
+use FastD\Swoole\Server\Manage\Listener;
 use FastD\Swoole\Handler\HandlerAbstract;
 
 /**
@@ -100,11 +100,13 @@ abstract class Server implements ServerInterface
 
         $conf = $this->workspace_dir . '/etc/server.ini';
 
-        if (null === $host && !file_exists($conf)) {
-            throw new \RuntimeException(sprintf('Server is not configuration.'));
+        if (file_exists($conf)) {
+            $this->configure($conf);
         }
 
-        $this->configure($conf);
+        if (null === $host && null === $this->host) {
+            throw new \RuntimeException(sprintf('Server is not configuration.'));
+        }
 
         $this->host = null === $host ? $this->host : $host;
         $this->port = null === $port ? $this->port : $port;
@@ -182,7 +184,7 @@ abstract class Server implements ServerInterface
      */
     public function getPid()
     {
-        return (int) trim(file_get_contents($this->getPidFile()));
+        return (int) trim(@file_get_contents($this->getPidFile()));
     }
 
     /**

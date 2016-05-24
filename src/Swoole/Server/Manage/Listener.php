@@ -12,7 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server\Listen;
+namespace FastD\Swoole\Server\Manage;
 
 use FastD\Packet\Packet;
 use FastD\Packet\PacketException;
@@ -91,20 +91,20 @@ class Listener
         switch ($action) {
             case 'stop':
                 $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server [%s] is shutdown...', $server->master_pid)
+                    'msg' => sprintf('Server[%s] is shutdown...', $server->master_pid)
                 ]), $from_id);
                 $this->server->getServer()->shutdown();
                 break;
             case 'restart':
                 $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server [%s] is restart...', $server->master_pid)
+                    'msg' => sprintf('Server[%s] is restart...', $server->master_pid)
                 ]), $from_id);
                 $this->server->getServer()->shutdown();
                 $this->server->getServer()->start();
                 break;
             case 'reload':
                 $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server [%s] is reloading...', $server->master_pid)
+                    'msg' => sprintf('Server[%s] is reloading...', $server->master_pid)
                 ]), $from_id);
                 $this->server->getServer()->reload();
                 break;

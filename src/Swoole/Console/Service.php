@@ -53,24 +53,11 @@ class Service
     }
 
     /**
-     * @return int
-     */
-    protected function getPid()
-    {
-        $pid = $this->server->getPidFile();
-        if (!file_exists($pid)) {
-            throw new \RuntimeException(sprintf('Pid file ["%s"] is not exists', $pid));
-        }
-
-        return (int) trim(file_get_contents($pid));
-    }
-
-    /**
      * @return void
      */
     public function stop()
     {
-        $pid = $this->getPid();
+        $pid = $this->server->getPid();
 
         posix_kill($pid, SIGTERM);
     }
@@ -80,7 +67,7 @@ class Service
      */
     public function reload()
     {
-        $pid = $this->getPid();
+        $pid = $this->server->getPid();
 
         posix_kill($pid, SIGUSR1);
     }

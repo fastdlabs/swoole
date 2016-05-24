@@ -29,7 +29,7 @@ class Handle extends HandlerAbstract
      * Base start handle. Storage process id.
      *
      * @param \swoole_server $server
-     * @return mixed
+     * @return void
      */
     public function onStart(\swoole_server $server)
     {
@@ -43,42 +43,73 @@ class Handle extends HandlerAbstract
 
         Process::rename(Server::SERVER_NAME);
 
-        Output::output(sprintf('Server[%s] started', $this->server->getPid()));
+        Output::output(sprintf('Server[%s] Master started', $this->server->getPid()));
     }
 
     /**
      * Shutdown server process.
+     *
+     * @return void
      */
     public function onShutdown()
     {
+        $pid = $this->server->getPid();
+
         if (null !== ($file = $this->server->getPidFile())) {
             unlink($file);
         }
 
-        Output::output(sprintf('Server[%s] shutdown ', $this->server->getPid()));
+        Output::output(sprintf('Server[%s] Master shutdown ', $pid));
     }
 
-    public function onManagerStart()
+    /**
+     * @param \swoole_server $server
+     *
+     * @return void
+     */
+    public function onManagerStart(\swoole_server $server)
     {
         Output::output(sprintf('Server[%s] Manager started', $this->server->getPid()));
     }
 
-    public function onManagerStop()
+    /**
+     * @param \swoole_server $server
+     *
+     * @return void
+     */
+    public function onManagerStop(\swoole_server $server)
     {
         Output::output(sprintf('Server[%s] Manager stop', $this->server->getPid()));
     }
 
-    public function onWorkerStart()
+    /**
+     * @param \swoole_server $server
+     * @param int $worker_id
+     * @return void
+     */
+    public function onWorkerStart(\swoole_server $server, int $worker_id)
     {
         Output::output(sprintf('Server[%s] Worker started', $this->server->getPid()));
     }
 
-    public function onWorkerStop()
+    /**
+     * @param \swoole_server $server
+     * @param int $worker_id
+     * @return void
+     */
+    public function onWorkerStop(\swoole_server $server, int $worker_id)
     {
         Output::output(sprintf('Server[%s] Worker stop', $this->server->getPid()));
     }
 
-    public function onWorkerError()
+    /**
+     * @param \swoole_server $serv
+     * @param int $worker_id
+     * @param int $worker_pid
+     * @param int $exit_code
+     * @return void
+     */
+    public function onWorkerError(\swoole_server $serv, int $worker_id, int $worker_pid, int $exit_code)
     {
         Output::output(sprintf('Server[%s] Worker error', $this->server->getPid()));
     }
