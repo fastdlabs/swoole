@@ -69,13 +69,9 @@ abstract class Server implements ServerInterface
     protected $sock;
 
     /**
-     * @var array
+     * @var Listener
      */
-    protected $listener = [
-        'listen' => 'off',
-        'host' => '127.0.0.1',
-        'port' => 9599
-    ];
+    protected $manage;
 
     /**
      * Swoole server run configuration.
@@ -137,6 +133,22 @@ abstract class Server implements ServerInterface
     final public static function create($host = null, $port = null, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         return new static($host, $port, $mode, $sock_type);
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPort()
+    {
+        return $this->port;
     }
 
     /**
@@ -202,7 +214,7 @@ abstract class Server implements ServerInterface
                     $this->mode = $configure['server']['mode'] ?? SwooleInterface::SWOOLE_PROCESS;
                     $this->sock = $configure['server']['sock'] ?? SwooleInterface::SWOOLE_SOCK_TCP;
                     $this->pid_file = $configure['server']['pid'] ?? 'run/' . Server::SERVER_NAME . '.pid';
-                    $this->listener = array_merge($this->listener, $configure['listen']);
+                    $this->manage = $configure['manage'] ?? ['host' => '127.0.0.1', 'port' => 9599];
                     $configure = $configure[static::NAME];
                     break;
                 case 'php':
@@ -247,15 +259,19 @@ abstract class Server implements ServerInterface
      * @param $host
      * @param $port
      * @param int $mode
-     * @return $this
+     * @return \swoole_server_port
      */
     public function listen($host = null, $port = null, $mode = SwooleInterface::SWOOLE_SOCK_UDP)
     {
-        $listener = new Listener($host, $port, $mode);
+        if (null === $host) {
+            return null;
+        }
 
-        $listener->setServer($this);
+        $this->manage = new Listener($host, $port, $mode);
 
-        return $this;
+        $this->manage->setServer($this);
+
+        return $this->manage->getServerPort();
     }
 
     /**
@@ -275,9 +291,7 @@ abstract class Server implements ServerInterface
     {
         $this->initServer($this->host, $this->port, $this->mode, $this->sock);
 
-        if ($this->listener['listen'] == 1) {
-            $this->listen($this->listener['host'], $this->listener['port'], SwooleInterface::SWOOLE_SOCK_UDP);
-        }
+        call_user_func_array([$this, 'listen'], $this->manage);
 
         $this->server->set($this->config);
 
@@ -297,6 +311,8 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * Shutdown server
+     *
      * @return void
      */
     public function shutdown()
@@ -305,10 +321,10 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return void
+     * @return mixed
      */
-    public function stop()
+    public function status()
     {
-        $this->server->stop();
+        return $this->server->stats();
     }
 }

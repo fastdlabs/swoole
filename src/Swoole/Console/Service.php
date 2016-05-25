@@ -49,13 +49,17 @@ class Service
      */
     public function start()
     {
-        $this->server->start();
+        try {
+            $this->server->start();
+        } catch (\Exception $e) {
+            Output::output(sprintf('Server[%s] host[%s] port[%s] is already in use', $this->server->getPid(), $this->server->getHost(), $this->server->getPort()));
+        }
     }
 
     /**
      * @return void
      */
-    public function stop()
+    public function shutdown()
     {
         $pid = $this->server->getPid();
 
@@ -75,18 +79,11 @@ class Service
     /**
      * @return void
      */
-    public function restart()
-    {
-        $this->stop();
-        $this->start();
-    }
-
-    /**
-     * @return void
-     */
     public function status()
     {
+        $status = $this->server->status();
 
+        print_r($status);
     }
 
     /**

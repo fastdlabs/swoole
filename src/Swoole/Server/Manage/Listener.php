@@ -47,6 +47,11 @@ class Listener
     protected $server;
 
     /**
+     * @var \swoole_server_port
+     */
+    protected $server_port;
+
+    /**
      * Listener constructor.
      * @param $host
      * @param $port
@@ -62,15 +67,23 @@ class Listener
     }
 
     /**
+     * @return \swoole_server_port
+     */
+    public function getServerPort()
+    {
+        return $this->server_port;
+    }
+
+    /**
      * @param Server $server
      */
     public function setServer(Server $server)
     {
         $this->server = $server;
 
-        $listen = $this->server->getServer()->listen($this->host, $this->port, $this->mode);
+        $this->server_port = $this->server->getServer()->listen($this->host, $this->port, $this->mode);
 
-        $listen->on('receive', [$this, 'onReceive']);
+        $this->server_port->on('receive', [$this, 'onReceive']);
     }
 
     /**
@@ -91,20 +104,13 @@ class Listener
         switch ($action) {
             case 'stop':
                 $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server[%s] is shutdown...', $server->master_pid)
+                    'msg' => sprintf('Server[%s] is shutdown...', $this->server->getPid())
                 ]), $from_id);
                 $this->server->getServer()->shutdown();
-                break;
-            case 'restart':
-                $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server[%s] is restart...', $server->master_pid)
-                ]), $from_id);
-                $this->server->getServer()->shutdown();
-                $this->server->getServer()->start();
                 break;
             case 'reload':
                 $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server[%s] is reloading...', $server->master_pid)
+                    'msg' => sprintf('Server[%s] is reloading...', $this->server->getPid())
                 ]), $from_id);
                 $this->server->getServer()->reload();
                 break;
