@@ -15,35 +15,55 @@
 namespace FastD\Swoole\Tests;
 
 use FastD\Swoole\Server\TcpServer;
-use FastD\Swoole\Tests\Handle\TestHandler;
 
 class ServerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testIniConfig()
+    protected $workspace_dir;
+
+    public function setUp()
+    {
+        $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
+    }
+
+    public function testDefaultParseServerIniFileConfig()
     {
         $server = TcpServer::create();
 
-//        $server->listen('127.0.0.1', '9599');
+        $this->assertEquals($server->getWorkSpace(), $this->workspace_dir);
 
-        print_r($server);
+        $this->assertEquals($server->getPidFile(), $this->workspace_dir . '/run/fd-server.pid');
+
+        $this->assertEquals($server->getLogFile(), $this->workspace_dir . '/var/fd-server.log');
+
+        $this->assertEquals('127.0.0.1', $server->getHost());
+
+        $this->assertEquals('9527', $server->getPort());
+
+        $this->assertEquals([
+            'start','shutdown', 'managerStart', 'managerStop', 'workerStart', 'workerStop', 'workerError'
+        ], array_keys($server->getHandles()));
     }
 
-    public function testInit()
+    public function testConstructionArgumetns()
     {
-        $server = TcpServer::create('0.0.0.0', '1111');
+        $server = TcpServer::create('0.0.0.0', '1234');
 
-//        print_r($server);
+        $this->assertEquals('0.0.0.0', $server->getHost());
+
+        $this->assertEquals('1234', $server->getPort());
     }
 
-    public function testConfigure()
+    public function testConfiguration()
     {
-        $server = TcpServer::create('0.0.0.0', '1112');
+        $server = TcpServer::create();
 
         $server->configure([
-            'log_level' => 3,
-            'log_file' => '/tmp/error.log'
+            'host' => '::1',
+            'port' => '9999'
         ]);
 
-//        print_r($server);
+        $this->assertEquals('::1', $server->getHost());
+
+        $this->assertEquals('9999', $server->getPort());
     }
 }

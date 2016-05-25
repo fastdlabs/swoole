@@ -108,6 +108,8 @@ abstract class Server implements ServerInterface
         $this->port = null === $port ? $this->port : $port;
         $this->mode = null === $mode ? $this->mode : $mode;
         $this->sock = null === $sock_type ? $this->sock : $sock_type;
+
+        $this->handle(new Handle());
     }
 
     /**
@@ -119,8 +121,6 @@ abstract class Server implements ServerInterface
     public function initServer($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
     {
         $this->server = new \swoole_server($host, $port, $mode, $sock_type);
-
-        $this->handle(new Handle());
     }
 
     /**
@@ -200,6 +200,14 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @return array
+     */
+    public function getHandles()
+    {
+        return $this->handles;
+    }
+
+    /**
      * @param array $configure
      * @return $this
      */
@@ -208,14 +216,7 @@ abstract class Server implements ServerInterface
         if (is_string($configure)) {
             switch(pathinfo($configure, PATHINFO_EXTENSION)) {
                 case 'ini':
-                    $configure = parse_ini_file($configure, true);
-                    $this->host = $configure['server']['host'] ?? '127.0.0.1';
-                    $this->port = $configure['server']['port'] ?? 9501;
-                    $this->mode = $configure['server']['mode'] ?? SwooleInterface::SWOOLE_PROCESS;
-                    $this->sock = $configure['server']['sock'] ?? SwooleInterface::SWOOLE_SOCK_TCP;
-                    $this->pid_file = $configure['server']['pid'] ?? 'run/' . Server::SERVER_NAME . '.pid';
-                    $this->manage = $configure['manage'] ?? ['host' => '127.0.0.1', 'port' => 9599];
-                    $configure = $configure[static::NAME];
+                    $configure = parse_ini_file($configure);
                     break;
                 case 'php':
                 default:
@@ -224,6 +225,12 @@ abstract class Server implements ServerInterface
         }
 
         $this->config = array_merge($this->config, $configure);
+
+        $this->host = $this->config['host'] ?? '127.0.0.1';
+        $this->port = $this->config['port'] ?? 9527;
+        $this->mode = $this->config['mode'] ?? SwooleInterface::SWOOLE_PROCESS;
+        $this->sock = $this->config['sock'] ?? SwooleInterface::SWOOLE_SOCK_TCP;
+        $this->pid_file = $this->config['pid'] ?? 'run/' . Server::SERVER_NAME . '.pid';
 
         if (substr($this->pid_file, 0, 1) != '/') {
             $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->pid_file);
@@ -290,8 +297,6 @@ abstract class Server implements ServerInterface
     public function start()
     {
         $this->initServer($this->host, $this->port, $this->mode, $this->sock);
-
-        call_user_func_array([$this, 'listen'], $this->manage);
 
         $this->server->set($this->config);
 

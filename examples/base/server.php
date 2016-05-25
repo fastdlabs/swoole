@@ -35,10 +35,11 @@ switch ($action) {
         Service::server($server)->start();
         break;
     case 'stop':
-        Service::server($server)->stop();
+        Service::server($server)->shutdown();
         break;
     case 'restart':
-        Service::server($server)->restart();
+        Service::server($server)->shutdown();
+        Service::server($server)->start();
         break;
     case 'reload':
         Service::server($server)->reload();

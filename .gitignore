@@ -2,7 +2,6 @@
 .idea
 *.orig
 composer.lock
-swoole.php
-/etc
+swoole.php;
 /run
 /var
