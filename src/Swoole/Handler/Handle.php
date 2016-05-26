@@ -89,7 +89,7 @@ class Handle extends HandlerAbstract
      */
     public function onWorkerStart(\swoole_server $server, int $worker_id)
     {
-        Output::output(sprintf('Server[%s] Worker started', $this->server->getPid()));
+        Output::output(sprintf('Server[%s] Worker started [#%s]', $this->server->getPid(), $worker_id));
     }
 
     /**

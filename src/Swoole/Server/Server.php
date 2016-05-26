@@ -83,60 +83,6 @@ abstract class Server implements ServerInterface
     ];
 
     /**
-     * Server constructor.
-     * @param $host
-     * @param $port
-     * @param int $mode
-     * @param int $sock_type
-     */
-    final public function __construct($host = null, $port = null, $mode = null, $sock_type = null)
-    {
-        $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
-
-        $conf = $this->workspace_dir . '/etc/server.ini';
-
-        if (file_exists($conf)) {
-            $this->configure($conf);
-        }
-
-        if (null === $host && null === $this->host) {
-            throw new \RuntimeException(sprintf('Server is not configuration.'));
-        }
-
-        $this->host = null === $host ? $this->host : $host;
-        $this->port = null === $port ? $this->port : $port;
-        $this->mode = null === $mode ? $this->mode : $mode;
-        $this->sock = null === $sock_type ? $this->sock : $sock_type;
-
-        $this->handle(new Handle());
-
-        $this->manager = new Manager($this);
-    }
-
-    /**
-     * @param $host
-     * @param $port
-     * @param int $mode
-     * @param int $sock_type
-     */
-    public function initServer($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
-    {
-        $this->server = new \swoole_server($host, $port, $mode, $sock_type);
-    }
-
-    /**
-     * @param $host
-     * @param $port
-     * @param int $mode
-     * @param int $sock_type
-     * @return static
-     */
-    final public static function create($host = null, $port = null, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
-    {
-        return new static($host, $port, $mode, $sock_type);
-    }
-
-    /**
      * @return null|string
      */
     public function getHost()
@@ -206,6 +152,68 @@ abstract class Server implements ServerInterface
     public function getHandles()
     {
         return $this->handles;
+    }
+
+    /**
+     * @return Manager
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+    /**
+     * Server constructor.
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     */
+    final public function __construct($host = null, $port = null, $mode = null, $sock_type = null)
+    {
+        $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
+
+        $conf = $this->workspace_dir . '/etc/server.ini';
+
+        if (file_exists($conf)) {
+            $this->configure($conf);
+        }
+
+        if (null === $host && null === $this->host) {
+            throw new \RuntimeException(sprintf('Server is not configuration.'));
+        }
+
+        $this->host = null === $host ? $this->host : $host;
+        $this->port = null === $port ? $this->port : $port;
+        $this->mode = null === $mode ? $this->mode : $mode;
+        $this->sock = null === $sock_type ? $this->sock : $sock_type;
+
+        $this->handle(new Handle());
+
+        $this->manager = new Manager($this);
+    }
+
+    /**
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     */
+    public function initServer($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    {
+        $this->server = new \swoole_server($host, $port, $mode, $sock_type);
+    }
+
+    /**
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     * @return static
+     */
+    final public static function create($host = null, $port = null, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    {
+        return new static($host, $port, $mode, $sock_type);
     }
 
     /**
@@ -282,14 +290,6 @@ abstract class Server implements ServerInterface
         ;
 
         return $this->manager->getServerPort();
-    }
-
-    /**
-     * @return Manager
-     */
-    public function getManager()
-    {
-        return $this->manager;
     }
 
     /**
