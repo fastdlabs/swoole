@@ -44,7 +44,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         ], array_keys($server->getHandles()));
     }
 
-    public function testConstructionArgumetns()
+    public function testConstructionArguments()
     {
         $server = TcpServer::create('0.0.0.0', '1234');
 
@@ -59,11 +59,14 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         $server->configure([
             'host' => '::1',
-            'port' => '9999'
+            'port' => '9999',
+            'pid' => '/tmp/server.pid'
         ]);
 
         $this->assertEquals('::1', $server->getHost());
 
         $this->assertEquals('9999', $server->getPort());
+
+        $this->assertEquals('/tmp/server.pid', $server->getPidFile());
     }
 }
