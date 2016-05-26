@@ -12,7 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Manager;
+namespace FastD\Swoole\Monitor;
 
 use FastD\Swoole\Server\Server;
 

@@ -12,28 +12,34 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Manager;
+namespace FastD\Swoole\Monitor;
 
 use FastD\Swoole\Server\Server;
 use FastD\Packet\PacketException;
 use FastD\Packet\Packet;
+use FastD\Swoole\SwooleInterface;
 
 abstract class Monitor implements MonitorInterface
 {
     /**
      * @var string
      */
-    protected $host;
+    protected $host = '127.0.0.1';
 
     /**
      * @var int|string
      */
-    protected $port;
+    protected $port = '9599';
 
     /**
      * @var int
      */
-    protected $mode;
+    protected $mode = SwooleInterface::SWOOLE_SOCK_UDP;
+
+    /**
+     * @var bool
+     */
+    protected $booted = false;
 
     /**
      * @var Server
@@ -49,9 +55,14 @@ abstract class Monitor implements MonitorInterface
      * Manager constructor.
      * @param Server $server
      */
-    public function __construct(Server $server = null)
+    public function __construct(Server $server)
     {
         $this->setServer($server);
+    }
+
+    public function isBooted()
+    {
+        return $this->booted;
     }
 
     /**
@@ -66,7 +77,7 @@ abstract class Monitor implements MonitorInterface
      * @param Server $server
      * @return $this
      */
-    public function setServer(Server $server = null)
+    public function setServer(Server $server)
     {
         $this->server = $server;
         return $this;
@@ -126,17 +137,20 @@ abstract class Monitor implements MonitorInterface
         return $this;
     }
 
+    public function bootstrap()
+    {
+        $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getMode());
+
+        $this->server_port->on('receive', [$this, 'onReceive']);
+
+        return $this;
+    }
+
     /**
      * @return \swoole_server_port
      */
     public function getServerPort()
     {
-        if (null === $this->server_port) {
-            $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getMode());
-
-            $this->server_port->on('receive', [$this, 'onReceive']);
-        }
-
         return $this->server_port;
     }
 

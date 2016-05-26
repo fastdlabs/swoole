@@ -21,6 +21,10 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 {
     public function testDefaultConfiguration()
     {
+        $server = TcpServer::create();
 
+        $monitor = new Manager();
+
+        $server->setMonitor($monitor);
     }
 }

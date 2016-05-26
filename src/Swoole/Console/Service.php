@@ -41,13 +41,9 @@ class Service
      * Service constructor.
      * @param Server $server
      */
-    public function __construct(Server $server)
+    public function __construct(Server $server = null)
     {
         $this->server= $server;
-
-        if (null !== $this->server->getManager()) {
-
-        }
     }
 
     /**
@@ -67,9 +63,10 @@ class Service
      */
     public function shutdown()
     {
-        $pid = $this->server->getPid();
-
-        posix_kill($pid, SIGTERM);
+        if (null === $this->server->getMonitor()) {
+            $pid = $this->server->getPid();
+            posix_kill($pid, SIGTERM);
+        }
     }
 
     /**
@@ -77,9 +74,10 @@ class Service
      */
     public function reload()
     {
-        $pid = $this->server->getPid();
-
-        posix_kill($pid, SIGUSR1);
+        if (null === $this->server->getMonitor()) {
+            $pid = $this->server->getPid();
+            posix_kill($pid, SIGUSR1);
+        }
     }
 
     /**
@@ -87,9 +85,10 @@ class Service
      */
     public function status()
     {
-        $status = $this->server->status();
-
-        print_r($status);
+        if (null === $this->server->getMonitor()) {
+            $status = $this->server->status();
+            print_r($status);
+        }
     }
 
     /**

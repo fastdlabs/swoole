@@ -15,10 +15,10 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
-use FastD\Swoole\Manager\Monitor;
+use FastD\Swoole\Monitor\Monitor;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
-use FastD\Swoole\Server\Monitor\Manager;
+use FastD\Swoole\Monitor\Manager;
 
 /**
  * Class Server
@@ -234,11 +234,22 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @return \swoole_server
+     */
+    abstract public function initSwooleServer();
+
+    /**
      * @return $this
      */
     public function bootstrap()
     {
-        $this->server = new \swoole_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
+        $this->server = $this->initSwooleServer();
+
+        $this->booted = true;
+
+        if (null !== $this->getMonitor()) {
+            $this->getMonitor()->bootstrap();
+        }
 
         return $this;
     }

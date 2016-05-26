@@ -12,11 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server\Monitor;
-
-use FastD\Packet\Packet;
-use FastD\Packet\PacketException;
-use FastD\Swoole\Manager\Monitor;
+namespace FastD\Swoole\Monitor;
 
 /**
  * Class Manager
