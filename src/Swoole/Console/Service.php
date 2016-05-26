@@ -35,6 +35,8 @@ class Service
      */
     protected $server;
 
+    protected $client;
+
     /**
      * Service constructor.
      * @param Server $server
@@ -42,6 +44,10 @@ class Service
     public function __construct(Server $server)
     {
         $this->server= $server;
+
+        if (null !== $this->server->getManager()) {
+
+        }
     }
 
     /**
@@ -52,7 +58,7 @@ class Service
         try {
             $this->server->start();
         } catch (\Exception $e) {
-            Output::output(sprintf('Server[%s] host[%s] port[%s] is already in use', $this->server->getPid(), $this->server->getHost(), $this->server->getPort()));
+            Output::output($e->getMessage());
         }
     }
 

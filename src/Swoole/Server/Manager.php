@@ -12,19 +12,17 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server\Manage;
+namespace FastD\Swoole\Server;
 
 use FastD\Packet\Packet;
 use FastD\Packet\PacketException;
-use FastD\Swoole\Server\Server;
-use FastD\Swoole\SwooleInterface;
 
 /**
- * Class Listener
+ * Class Manager
  *
- * @package FastD\Swoole\Server\Listen
+ * @package FastD\Swoole\Server
  */
-class Listener
+class Manager
 {
     /**
      * @var string
@@ -52,18 +50,66 @@ class Listener
     protected $server_port;
 
     /**
-     * Listener constructor.
-     * @param $host
-     * @param $port
-     * @param int $mode
+     * Manager constructor.
+     * @param Server $server
      */
-    public function __construct($host, $port, $mode = SwooleInterface::SWOOLE_SOCK_UDP)
+    public function __construct(Server $server)
+    {
+        $this->server = $server;
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * @param int|string $port
+     * @return $this
+     */
+    public function setPort($port)
+    {
+        $this->port = $port;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @param int $mode
+     * @return $this
+     */
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param string $host
+     * @return $this
+     */
+    public function setHost($host)
     {
         $this->host = $host;
-
-        $this->port = $port;
-
-        $this->mode = $mode;
+        return $this;
     }
 
     /**
@@ -71,19 +117,13 @@ class Listener
      */
     public function getServerPort()
     {
+        if (null === $this->server_port) {
+            $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getMode());
+
+            $this->server_port->on('receive', [$this, 'onReceive']);
+        }
+
         return $this->server_port;
-    }
-
-    /**
-     * @param Server $server
-     */
-    public function setServer(Server $server)
-    {
-        $this->server = $server;
-
-        $this->server_port = $this->server->getServer()->listen($this->host, $this->port, $this->mode);
-
-        $this->server_port->on('receive', [$this, 'onReceive']);
     }
 
     /**

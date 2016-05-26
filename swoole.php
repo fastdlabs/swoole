@@ -202,6 +202,7 @@ class swoole_server{
     * @param $host[required]
     * @param $port[required]
     * @param $sock_type[required]
+    * @return \swoole_server_port
     */
     public function listen($host,$port,$sock_type){}
 

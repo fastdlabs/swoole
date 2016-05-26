@@ -16,7 +16,6 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
 use FastD\Swoole\SwooleInterface;
-use FastD\Swoole\Server\Manage\Listener;
 use FastD\Swoole\Handler\HandlerAbstract;
 
 /**
@@ -69,9 +68,9 @@ abstract class Server implements ServerInterface
     protected $sock;
 
     /**
-     * @var Listener
+     * @var Manager
      */
-    protected $manage;
+    protected $manager;
 
     /**
      * Swoole server run configuration.
@@ -110,6 +109,8 @@ abstract class Server implements ServerInterface
         $this->sock = null === $sock_type ? $this->sock : $sock_type;
 
         $this->handle(new Handle());
+
+        $this->manager = new Manager($this);
     }
 
     /**
@@ -274,11 +275,21 @@ abstract class Server implements ServerInterface
             return null;
         }
 
-        $this->manage = new Listener($host, $port, $mode);
+        $this->manager
+            ->setHost($host)
+            ->setPort($port)
+            ->setMode($mode)
+        ;
 
-        $this->manage->setServer($this);
+        return $this->manager->getServerPort();
+    }
 
-        return $this->manage->getServerPort();
+    /**
+     * @return Manager
+     */
+    public function getManager()
+    {
+        return $this->manager;
     }
 
     /**
