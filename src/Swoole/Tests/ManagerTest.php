@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/5/18
- * Time: 上午12:20
+ * Date: 16/5/26
+ * Time: 下午5:09
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,11 +12,15 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Manager;
+namespace FastD\Swoole\Tests;
 
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server\Monitor\Manager;
+use FastD\Swoole\Server\TcpServer;
 
-interface MonitorInterface
+class ManagerTest extends \PHPUnit_Framework_TestCase
 {
-    public function setServer(Server $server);
+    public function testDefaultConfiguration()
+    {
+
+    }
 }

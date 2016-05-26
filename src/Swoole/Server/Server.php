@@ -15,8 +15,10 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
+use FastD\Swoole\Manager\Monitor;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
+use FastD\Swoole\Server\Monitor\Manager;
 
 /**
  * Class Server
@@ -73,6 +75,11 @@ abstract class Server implements ServerInterface
     protected $manager;
 
     /**
+     * @var bool
+     */
+    protected $booted = false;
+
+    /**
      * Swoole server run configuration.
      *
      * @var array
@@ -81,6 +88,14 @@ abstract class Server implements ServerInterface
         'log_level' => 2,
         'log_file' => 'var/' . Server::SERVER_NAME . '.log',
     ];
+
+    /**
+     * @return boolean
+     */
+    public function isBooted()
+    {
+        return $this->booted;
+    }
 
     /**
      * @return null|string
@@ -96,6 +111,22 @@ abstract class Server implements ServerInterface
     public function getPort()
     {
         return $this->port;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSock()
+    {
+        return $this->sock;
     }
 
     /**
@@ -155,9 +186,20 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @param Monitor $monitor
+     * @return $this
+     */
+    public function setMonitor(Monitor $monitor)
+    {
+        $this->manager = $monitor;
+
+        return $this;
+    }
+
+    /**
      * @return Manager
      */
-    public function getManager()
+    public function getMonitor()
     {
         return $this->manager;
     }
@@ -171,6 +213,8 @@ abstract class Server implements ServerInterface
      */
     final public function __construct($host = null, $port = null, $mode = null, $sock_type = null)
     {
+        $this->handle(new Handle());
+
         $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
 
         $conf = $this->workspace_dir . '/etc/server.ini';
@@ -187,21 +231,16 @@ abstract class Server implements ServerInterface
         $this->port = null === $port ? $this->port : $port;
         $this->mode = null === $mode ? $this->mode : $mode;
         $this->sock = null === $sock_type ? $this->sock : $sock_type;
-
-        $this->handle(new Handle());
-
-        $this->manager = new Manager($this);
     }
 
     /**
-     * @param $host
-     * @param $port
-     * @param int $mode
-     * @param int $sock_type
+     * @return $this
      */
-    public function initServer($host, $port, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    public function bootstrap()
     {
-        $this->server = new \swoole_server($host, $port, $mode, $sock_type);
+        $this->server = new \swoole_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
+
+        return $this;
     }
 
     /**
@@ -225,11 +264,11 @@ abstract class Server implements ServerInterface
         if (is_string($configure)) {
             switch(pathinfo($configure, PATHINFO_EXTENSION)) {
                 case 'ini':
-                    $configure = parse_ini_file($configure);
+                    $configure = parse_ini_file($configure, true);
                     break;
                 case 'php':
                 default:
-                $configure = include $configure;
+                    $configure = include $configure;
             }
         }
 
@@ -272,27 +311,6 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @param $host
-     * @param $port
-     * @param int $mode
-     * @return \swoole_server_port
-     */
-    public function listen($host = null, $port = null, $mode = SwooleInterface::SWOOLE_SOCK_UDP)
-    {
-        if (null === $host) {
-            return null;
-        }
-
-        $this->manager
-            ->setHost($host)
-            ->setPort($port)
-            ->setMode($mode)
-        ;
-
-        return $this->manager->getServerPort();
-    }
-
-    /**
      * @return $this
      */
     public function daemonize()
@@ -307,7 +325,9 @@ abstract class Server implements ServerInterface
      */
     public function start()
     {
-        $this->initServer($this->host, $this->port, $this->mode, $this->sock);
+        if (!$this->isBooted()) {
+            $this->bootstrap();
+        }
 
         $this->server->set($this->config);
 

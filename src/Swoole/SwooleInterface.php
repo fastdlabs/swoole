@@ -27,6 +27,7 @@ interface SwooleInterface
   / /_/ __  /
  / __/ /_/ /
 /_/  \__,_/
+
 LOGO;
 
     // server mode
@@ -41,6 +42,10 @@ LOGO;
 
     const SWOOLE_TCP = SWOOLE_TCP;
     const SWOOLE_UDP = SWOOLE_UDP;
+
+    const CONFIG_KEYS = [
+
+    ];
 
     /**
      * @param $name

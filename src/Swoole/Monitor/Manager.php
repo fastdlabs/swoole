@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/5/18
- * Time: 上午12:20
+ * Date: 16/5/19
+ * Time: 上午1:22
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,11 +12,18 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Manager;
+namespace FastD\Swoole\Server\Monitor;
 
-use FastD\Swoole\Server\Server;
+use FastD\Packet\Packet;
+use FastD\Packet\PacketException;
+use FastD\Swoole\Manager\Monitor;
 
-interface MonitorInterface
+/**
+ * Class Manager
+ *
+ * @package FastD\Swoole\Server
+ */
+class Manager extends Monitor
 {
-    public function setServer(Server $server);
+
 }

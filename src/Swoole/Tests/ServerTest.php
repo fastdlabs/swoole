@@ -42,6 +42,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals([
             'start','shutdown', 'managerStart', 'managerStop', 'workerStart', 'workerStop', 'workerError'
         ], array_keys($server->getHandles()));
+
+        unset($server);
     }
 
     public function testConstructionArguments()
@@ -51,6 +53,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('0.0.0.0', $server->getHost());
 
         $this->assertEquals('1234', $server->getPort());
+
+        unset($server);
     }
 
     public function testConfiguration()
@@ -58,15 +62,17 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $server = TcpServer::create();
 
         $server->configure([
-            'host' => '::1',
+            'host' => '11.11.11.22',
             'port' => '9999',
             'pid' => '/tmp/server.pid'
         ]);
 
-        $this->assertEquals('::1', $server->getHost());
+        $this->assertEquals('11.11.11.22', $server->getHost());
 
         $this->assertEquals('9999', $server->getPort());
 
         $this->assertEquals('/tmp/server.pid', $server->getPidFile());
+
+        unset($server);
     }
 }
