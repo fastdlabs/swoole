@@ -16,3 +16,4 @@ Stack trace:
 #0 /htdocs/me/fastd/library/swoole/src/Swoole/Monitor/Monitor.php(185): FastD\Swoole\Monitor\Monitor->FastD\Swoole\Monitor\{closure}('Serve
 [2016-05-27 15:33:25 *20374.0]	NOTICE	Server is shutdown now.
 [2016-05-27 15:34:12 *20377.0]	NOTICE	Server is shutdown now.
+[2016-05-27 16:35:05 *20408.0]	NOTICE	Server is shutdown now.

@@ -15,6 +15,7 @@
 namespace FastD\Swoole\Console;
 
 use FastD\Packet\Packet;
+use FastD\Swoole\Client\Client;
 use FastD\Swoole\Server\Server;
 
 /**
@@ -36,8 +37,14 @@ class Service
      */
     protected $server;
 
+    /**
+     * @var Client
+     */
     protected $client;
 
+    /**
+     * @var \FastD\Swoole\Monitor\Manager
+     */
     protected $monitor;
 
     /**
@@ -51,7 +58,7 @@ class Service
         $this->monitor = $server->getMonitor();
 
         if (null !== $this->monitor) {
-            $this->client = new \swoole_client($this->monitor->getSock());
+            $this->client = new Client($this->monitor->getSock());
         }
     }
 
@@ -61,7 +68,7 @@ class Service
 
         $this->client->send(Packet::encode($cmd));
 
-        $receive = Packet::decode($this->client->recv());
+        $receive = Packet::decode($this->client->receive());
 
         $this->client->close();
 
@@ -85,18 +92,18 @@ class Service
      */
     public function shutdown()
     {
-        if (null === $this->server->getMonitor()) {
-            $pid = $this->server->getPid();
-            posix_kill($pid, SIGTERM);
+        if (null !== $this->monitor) {
+            $receive = $this->send([
+                'cmd' => 'stop'
+            ]);
+
+            Output::output($receive['msg']);
+
             return 0;
         }
 
-        $receive = $this->send([
-            'cmd' => 'stop'
-        ]);
-
-        Output::output($receive['msg']);
-
+        $pid = $this->server->getPid();
+        posix_kill($pid, SIGTERM);
         return 0;
     }
 
@@ -105,18 +112,18 @@ class Service
      */
     public function reload()
     {
-        if (null === $this->monitor) {
-            $pid = $this->server->getPid();
-            posix_kill($pid, SIGUSR1);
+        if (null !== $this->monitor) {
+            $receive = $this->send([
+                'cmd' => 'reload'
+            ]);
+
+            Output::output($receive['msg']);
+
             return 0;
         }
 
-        $receive = $this->send([
-            'cmd' => 'reload'
-        ]);
-
-        Output::output($receive['msg']);
-
+        $pid = $this->server->getPid();
+        posix_kill($pid, SIGUSR1);
         return 0;
     }
 
@@ -125,27 +132,20 @@ class Service
      */
     public function status()
     {
-        if (null === $this->monitor) {
-            $status = $this->server->status();
-            print_r($status);
+        if (null !== $this->monitor) {
+            $data = $this->send([
+                'cmd' => 'status'
+            ]);
+
+            print_r($data);
+
             return 0;
         }
-
-        $data = $this->send([
-            'cmd' => 'status'
-        ]);
-
-        print_r($data);
 
         return 0;
     }
 
-    public function watch()
-    {
-
-    }
-
-    public function onReceive(\swoole_client $client, string $data)
+    public function watch(array $directories = ['.'])
     {
 
     }

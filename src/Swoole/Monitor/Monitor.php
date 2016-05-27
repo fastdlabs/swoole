@@ -19,6 +19,11 @@ use FastD\Packet\PacketException;
 use FastD\Packet\Packet;
 use FastD\Swoole\SwooleInterface;
 
+/**
+ * Class Monitor
+ *
+ * @package FastD\Swoole\Monitor
+ */
 abstract class Monitor implements MonitorInterface
 {
     /**
@@ -60,6 +65,9 @@ abstract class Monitor implements MonitorInterface
         $this->setServer($server);
     }
 
+    /**
+     * @return bool
+     */
     public function isBooted()
     {
         return $this->booted;
@@ -80,6 +88,7 @@ abstract class Monitor implements MonitorInterface
     public function setServer(Server $server)
     {
         $this->server = $server;
+
         return $this;
     }
 
@@ -137,11 +146,16 @@ abstract class Monitor implements MonitorInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function bootstrap()
     {
-        $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getSock());
+        if (!$this->isBooted()) {
+            $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getSock());
 
-        $this->server_port->on('receive', [$this, 'onReceive']);
+            $this->server_port->on('receive', [$this, 'onReceive']);
+        }
 
         return $this;
     }
