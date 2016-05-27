@@ -37,6 +37,8 @@ class Service
 
     protected $client;
 
+    protected $monitor;
+
     /**
      * Service constructor.
      * @param Server $server
@@ -44,6 +46,10 @@ class Service
     public function __construct(Server $server = null)
     {
         $this->server= $server;
+
+//        $this->client = new \swoole_client();
+
+        $this->monitor = $server->getMonitor();
     }
 
     /**
@@ -74,7 +80,7 @@ class Service
      */
     public function reload()
     {
-        if (null === $this->server->getMonitor()) {
+        if (null === $this->monitor) {
             $pid = $this->server->getPid();
             posix_kill($pid, SIGUSR1);
         }
@@ -85,10 +91,12 @@ class Service
      */
     public function status()
     {
-        if (null === $this->server->getMonitor()) {
+        if (null === $this->monitor) {
             $status = $this->server->status();
             print_r($status);
         }
+
+
     }
 
     /**
