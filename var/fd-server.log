@@ -10,3 +10,9 @@
 [2016-05-24 15:37:43 *9836.0]	NOTICE	Server is shutdown now.
 [2016-05-26 07:39:50 *19600.0]	NOTICE	Server is shutdown now.
 [2016-05-26 07:39:55 *19618.0]	NOTICE	Server is shutdown now.
+[2016-05-27 15:31:45 *20363.0]	NOTICE	Server is shutdown now.
+[2016-05-27 15:31:54 *20371.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Uncaught TypeError: Argument 1 passed to FastD\Swoole\Monitor\Monitor::FastD\Swoole\Monitor\{closure}() must be of the type array, string given, called in /htdocs/me/fastd/library/swoole/src/Swoole/Monitor/Monitor.php on line 185 and defined in /htdocs/me/fastd/library/swoole/src/Swoole/Monitor/Monitor.php:172
+Stack trace:
+#0 /htdocs/me/fastd/library/swoole/src/Swoole/Monitor/Monitor.php(185): FastD\Swoole\Monitor\Monitor->FastD\Swoole\Monitor\{closure}('Serve
+[2016-05-27 15:33:25 *20374.0]	NOTICE	Server is shutdown now.
+[2016-05-27 15:34:12 *20377.0]	NOTICE	Server is shutdown now.

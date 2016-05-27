@@ -34,7 +34,7 @@ abstract class Monitor implements MonitorInterface
     /**
      * @var int
      */
-    protected $mode = SwooleInterface::SWOOLE_SOCK_UDP;
+    protected $sock = SwooleInterface::SWOOLE_SOCK_TCP;
 
     /**
      * @var bool
@@ -104,18 +104,18 @@ abstract class Monitor implements MonitorInterface
     /**
      * @return int
      */
-    public function getMode()
+    public function getSock()
     {
-        return $this->mode;
+        return $this->sock;
     }
 
     /**
-     * @param int $mode
+     * @param int $sock
      * @return $this
      */
-    public function setMode($mode)
+    public function setSock($sock)
     {
-        $this->mode = $mode;
+        $this->sock = $sock;
         return $this;
     }
 
@@ -139,7 +139,7 @@ abstract class Monitor implements MonitorInterface
 
     public function bootstrap()
     {
-        $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getMode());
+        $this->server_port = $this->server->getServer()->listen($this->getHost(), $this->getPort(), $this->getSock());
 
         $this->server_port->on('receive', [$this, 'onReceive']);
 
@@ -169,25 +169,35 @@ abstract class Monitor implements MonitorInterface
             $action = 'status';
         }
 
+        $response = function (array $data = [], $code) use ($server, $fd, $from_id) {
+            $server->send($fd, Packet::encode([
+                'code' => $code,
+                'ret' => $data
+            ]), $from_id);
+        };
+
         switch ($action) {
             case 'stop':
-                $server->send($fd, Packet::encode([
+                $response([
                     'msg' => sprintf('Server[%s] is shutdown...', $this->server->getPid())
-                ]), $from_id);
+                ], 0);
                 $this->server->getServer()->shutdown();
                 break;
             case 'reload':
-                $server->send($fd, Packet::encode([
-                    'msg' => sprintf('Server[%s] is reloading...', $this->server->getPid())
-                ]), $from_id);
+                $response([
+                    'msg' => sprintf('Server[%s] is reloaded...', $this->server->getPid())
+                ], 0);
                 $this->server->getServer()->reload();
                 break;
             case 'status':
+                $response([
+                    'state' => $this->server->getServer()->stats()
+                ], 0);
+                break;
             default:
-                $server->send($fd, Packet::encode([
-                    'state' => $this->server->getServer()->stats(),
-                    'connections' => $this->server->getServer()->connections,
-                ]), $from_id);
+                $response([
+                    'msg' => 'forbidden'
+                ], -1);
         }
     }
 
@@ -200,6 +210,6 @@ abstract class Monitor implements MonitorInterface
     {
         $data = Packet::decode($data);
 
-        return $data;
+        return $data['cmd'];
     }
 }

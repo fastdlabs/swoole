@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Console;
 
+use FastD\Packet\Packet;
 use FastD\Swoole\Server\Server;
 
 /**
@@ -47,9 +48,24 @@ class Service
     {
         $this->server= $server;
 
-//        $this->client = new \swoole_client();
-
         $this->monitor = $server->getMonitor();
+
+        if (null !== $this->monitor) {
+            $this->client = new \swoole_client($this->monitor->getSock());
+        }
+    }
+
+    protected function send($cmd)
+    {
+        $this->client->connect($this->monitor->getHost(), $this->monitor->getPort());
+
+        $this->client->send(Packet::encode($cmd));
+
+        $receive = Packet::decode($this->client->recv());
+
+        $this->client->close();
+
+        return $receive['ret'];
     }
 
     /**
@@ -65,37 +81,72 @@ class Service
     }
 
     /**
-     * @return void
+     * @return int
      */
     public function shutdown()
     {
         if (null === $this->server->getMonitor()) {
             $pid = $this->server->getPid();
             posix_kill($pid, SIGTERM);
+            return 0;
         }
+
+        $receive = $this->send([
+            'cmd' => 'stop'
+        ]);
+
+        Output::output($receive['msg']);
+
+        return 0;
     }
 
     /**
-     * @return void
+     * @return int
      */
     public function reload()
     {
         if (null === $this->monitor) {
             $pid = $this->server->getPid();
             posix_kill($pid, SIGUSR1);
+            return 0;
         }
+
+        $receive = $this->send([
+            'cmd' => 'reload'
+        ]);
+
+        Output::output($receive['msg']);
+
+        return 0;
     }
 
     /**
-     * @return void
+     * @return int
      */
     public function status()
     {
         if (null === $this->monitor) {
             $status = $this->server->status();
             print_r($status);
+            return 0;
         }
 
+        $data = $this->send([
+            'cmd' => 'status'
+        ]);
+
+        print_r($data);
+
+        return 0;
+    }
+
+    public function watch()
+    {
+
+    }
+
+    public function onReceive(\swoole_client $client, string $data)
+    {
 
     }
 
