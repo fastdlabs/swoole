@@ -15,7 +15,7 @@
 namespace FastD\Swoole\Server;
 
 /**
- * Class Http
+ * Class HttpServer
  *
  * @package FastD\Swoole\Server
  */
@@ -25,8 +25,6 @@ class HttpServer extends Server
      * @var string
      */
     const SERVER_NAME = 'fd-http';
-
-    const NAME = 'http';
 
     /**
      * Enable Http2 Support.
@@ -53,5 +51,13 @@ class HttpServer extends Server
         $this->config['ssl_key_file'] = $key;
 
         return $this;
+    }
+
+    /**
+     * @return \swoole_server
+     */
+    public function initSwooleServer()
+    {
+        return new \swoole_http_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
     }
 }

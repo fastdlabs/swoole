@@ -14,14 +14,14 @@
 
 namespace FastD\Swoole\Handler\Base;
 
-use FastD\Swoole\Handler\HandlerAbstract;
+use FastD\Swoole\Handler\Handle;
 
 /**
  * Class HttpHandleAbstract
  *
  * @package FastD\Swoole\Handler
  */
-abstract class HttpHandleAbstract extends HandlerAbstract
+abstract class HttpHandleAbstract extends Handle
 {
     /**
      * @param \swoole_http_request $request

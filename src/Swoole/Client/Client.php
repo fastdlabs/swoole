@@ -14,7 +14,6 @@
 
 namespace FastD\Swoole\Client;
 
-use FastD\Swoole\Handler\HandlerInterface;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -22,13 +21,8 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole\Client
  */
-class Client implements ClientInterface
+class Client implements ClientInterface, SwooleInterface
 {
-    /**
-     * @var HandlerInterface
-     */
-    protected $handler;
-
     /**
      * @var \swoole_client
      */
@@ -48,12 +42,14 @@ class Client implements ClientInterface
     /**
      * @param      $host
      * @param      $port
-     * @param null $flag
-     * @return mixed
+     * @param int  $timeout
+     * @return $this
      */
-    public function connect($host, $port, $flag = null)
+    public function connect($host, $port, $timeout = 5)
     {
-        return $this->client->connect($host, $port);
+        $this->client->connect($host, $port);
+
+        return $this;
     }
 
     /**
@@ -62,7 +58,9 @@ class Client implements ClientInterface
      */
     public function send($data)
     {
-        return $this->client->send($data);
+        $this->client->send($data);
+
+        return $this;
     }
 
     /**
@@ -82,17 +80,6 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param HandlerInterface $handlerInterface
-     * @return $this
-     */
-    public function handle(HandlerInterface $handlerInterface)
-    {
-        $this->handler = $handlerInterface->handle($this);
-
-        return $this;
-    }
-
-    /**
      * @param $name
      * @param $callback
      * @return mixed
@@ -100,5 +87,18 @@ class Client implements ClientInterface
     public function on($name, $callback)
     {
         $this->client->on($name, $callback);
+
+        return $this;
+    }
+
+    /**
+     * @param $configure
+     * @return $this
+     */
+    public function configure($configure)
+    {
+        $this->client->set($configure);
+
+        return $this;
     }
 }

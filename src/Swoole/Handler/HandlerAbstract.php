@@ -28,6 +28,10 @@ abstract class HandlerAbstract implements HandlerInterface
      */
     protected $server;
 
+    /**
+     * @param Server $server
+     * @return $this
+     */
     public function handle(Server $server)
     {
         $this->server = $server;

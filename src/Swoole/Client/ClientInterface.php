@@ -15,7 +15,6 @@
 namespace FastD\Swoole\Client;
 
 use FastD\Swoole\Handler\HandlerInterface;
-use FastD\Swoole\SwooleInterface;
 
 /**
  * Interface ClientInterface
@@ -25,12 +24,6 @@ use FastD\Swoole\SwooleInterface;
 interface ClientInterface
 {
     /**
-     * @param HandlerInterface $handlerInterface
-     * @return mixed
-     */
-    public function handle(HandlerInterface $handlerInterface);
-
-    /**
      * @param $data
      * @return mixed
      */
@@ -39,10 +32,10 @@ interface ClientInterface
     /**
      * @param      $host
      * @param      $port
-     * @param null $flag
+     * @param int  $timeout
      * @return mixed
      */
-    public function connect($host, $port, $flag = null);
+    public function connect($host, $port, $timeout = 5);
 
     /**
      * @return mixed

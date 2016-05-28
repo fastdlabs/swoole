@@ -14,14 +14,14 @@
 
 namespace FastD\Swoole\Handler\Base;
 
-use FastD\Swoole\Handler\HandlerAbstract;
+use FastD\Swoole\Handler\Handle;
 
 /**
  * Class ServerHandlerAbstract
  *
  * @package FastD\Swoole\Handler
  */
-abstract class TcpHandlerAbstract extends HandlerAbstract
+abstract class TcpHandlerAbstract extends Handle
 {
     /**
      * @param \swoole_server $server
