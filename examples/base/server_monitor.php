@@ -19,7 +19,7 @@ use FastD\Swoole\Console\Service;
 use FastD\Swoole\Monitor\Manager;
 
 $server = TcpServer::create();
-$manager = new Manager($server);
+$manager = new Manager();
 $manager
     ->setHost('11.11.11.22')
     ->setPort('9555')

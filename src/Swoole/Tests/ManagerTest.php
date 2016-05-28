@@ -14,7 +14,7 @@
 
 namespace FastD\Swoole\Tests;
 
-use FastD\Swoole\Server\Monitor\Manager;
+use FastD\Swoole\Monitor\Manager;
 use FastD\Swoole\Server\TcpServer;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
@@ -26,5 +26,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $monitor = new Manager();
 
         $server->setMonitor($monitor);
+
+        print_r($server);
     }
 }

@@ -29,12 +29,12 @@ abstract class Monitor implements MonitorInterface
     /**
      * @var string
      */
-    protected $host = '127.0.0.1';
+    protected $host;
 
     /**
      * @var int|string
      */
-    protected $port = '9599';
+    protected $port;
 
     /**
      * @var int
@@ -56,13 +56,13 @@ abstract class Monitor implements MonitorInterface
      */
     protected $server_port;
 
-    /**
-     * Manager constructor.
-     * @param Server $server
-     */
-    public function __construct(Server $server)
+    public function __construct($host = '127.0.0.1', $port = '9599', $sock = SwooleInterface::SWOOLE_SOCK_UDP)
     {
-        $this->setServer($server);
+        $this
+            ->setHost($host)
+            ->setPort($port)
+            ->setSock($sock)
+        ;
     }
 
     /**

@@ -193,6 +193,8 @@ abstract class Server implements ServerInterface
     {
         $this->manager = $monitor;
 
+        $monitor->setServer($this);
+
         return $this;
     }
 
