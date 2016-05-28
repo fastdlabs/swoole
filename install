@@ -29,6 +29,12 @@ $target = function ($dir) {
     }
 };
 
+if (!extension_loaded('swoole')) {
+    echo '[php version ' . PHP_VERSION  . ']' . PHP_EOL;
+    echo sprintf('Extension ["%s"] no installed into %s', 'swoole', PHP_EXTENSION_DIR);
+    die(1);
+}
+
 switch ($action) {
     case 'check':
         (function () use ($root, $pwd) {
@@ -43,8 +49,8 @@ switch ($action) {
             }
 
             echo PHP_EOL;
-            echo 'var dir: ' . (file_exists($pwd . '/var') ? $pwd . '/var' : '(none)') . PHP_EOL;
-            echo 'run dir: ' . (file_exists($pwd . '/run') ? $pwd . '/run' : '(none)') . PHP_EOL;
+            echo 'loaded server var dir: ' . (file_exists($pwd . '/var') ? $pwd . '/var' : '(none)') . PHP_EOL;
+            echo 'loaded server run dir: ' . (file_exists($pwd . '/run') ? $pwd . '/run' : '(none)') . PHP_EOL;
             echo 'loaded server configuration dir: ' . (file_exists($pwd . '/etc') ? $pwd . '/etc' : '(none)') . PHP_EOL;
             echo 'loaded server configuration file: ' . (file_exists($pwd . '/etc/server.ini') ? $pwd . '/etc/server.ini' : '(none)') . PHP_EOL;
         })();

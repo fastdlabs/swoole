@@ -38,6 +38,6 @@ composer require "fastd/swoole:2.0.x-dev" -vvv
 
 ## 使用
 
-最近组件在优化服务管理和监控中...请大家在耐心等待多几天，敬请原谅
+组件提供处理脚本，用于检测配置环境和安装骨架环境。
 
 # License MIT
