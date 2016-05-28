@@ -14,10 +14,16 @@
 
 namespace FastD\Swoole\Server;
 
+/**
+ * Class TcpServer
+ *
+ * @package FastD\Swoole\Server
+ */
 class TcpServer extends Server
 {
-    const NAME = 'tcp';
-
+    /**
+     * @return \swoole_server
+     */
     public function initSwooleServer()
     {
         return new \swoole_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
