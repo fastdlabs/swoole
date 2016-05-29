@@ -63,7 +63,7 @@ class Watcher
      *
      * @return void
      */
-    function clearWatch()
+    public function clearWatch()
     {
         foreach ($this->watch_dir as $wd) {
             inotify_rm_watch($this->inotify, $wd);

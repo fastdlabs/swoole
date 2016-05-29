@@ -17,6 +17,7 @@ namespace FastD\Swoole\Console;
 use FastD\Packet\Packet;
 use FastD\Swoole\Client\Client;
 use FastD\Swoole\Server\Server;
+use FastD\Swoole\Watch\Watcher;
 
 /**
  * Service 管理脚本
@@ -62,6 +63,11 @@ class Service
         }
     }
 
+    /**
+     * @param $cmd
+     * @return mixed
+     * @throws \FastD\Packet\PacketException
+     */
     protected function send($cmd)
     {
         $this->client->connect($this->monitor->getHost(), $this->monitor->getPort());
@@ -145,9 +151,15 @@ class Service
         return 0;
     }
 
+    /**
+     * @param array $directories
+     * @return void
+     */
     public function watch(array $directories = ['.'])
     {
-        new Wat
+        $watcher = new Watcher();
+
+        $watcher->watch($directories);
     }
 
     /**
