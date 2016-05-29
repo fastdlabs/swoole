@@ -12,7 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Watcher;
+namespace FastD\Swoole\Watch;
 
 use FastD\Swoole\Console\Output;
 

@@ -147,7 +147,7 @@ class Service
 
     public function watch(array $directories = ['.'])
     {
-
+        new Wat
     }
 
     /**
