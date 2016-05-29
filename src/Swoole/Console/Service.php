@@ -159,7 +159,13 @@ class Service
     {
         $watcher = new Watcher();
 
-        $watcher->watch($directories);
+        $self = $this;
+
+        $watcher->watch($directories, function () use ($self) {
+            $self->reload();
+        });
+
+        unset($watcher);
     }
 
     /**
