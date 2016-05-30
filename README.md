@@ -120,13 +120,13 @@ public function initSwooleServer()
 
 ##### ＃Client 客户端
 
-`Client` 客户端继承 `\swoole_client`，因此在使用上没有差别。
+`Client` 内部使用 `swoole_client` 进行封装，因此在使用上没有差别。
 
 ```php
 use FastD\Swoole\Client\Client;
 
 $client = new Client();
-∂
+
 $client->connect($host, $port);
 
 $client->send('hello world');
