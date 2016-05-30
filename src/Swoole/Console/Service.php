@@ -82,6 +82,38 @@ class Service
     }
 
     /**
+     * @param bool $display
+     * @return bool
+     */
+    protected function checkProcessState($display = true)
+    {
+        $processName = $this->server->getProcessName();
+
+        if ('Linux' !== PHP_OS) {
+            $processName = $_SERVER['SCRIPT_NAME'];
+        }
+
+        exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11}'", $output);
+
+        if (empty($output)) {
+            if ($display) {
+                Output::output(sprintf('Not process running.'));
+            }
+            return false;
+        }
+
+        $keys = ['User', 'Pid', '', '', '', 'Name'];
+
+        foreach ($output as $key => $value) {
+            $output[$key] = array_combine($keys, explode(' ', $value));
+        }
+
+        unset($keys);
+
+        return $output;
+    }
+
+    /**
      * @return void
      */
     public function start()
@@ -98,6 +130,12 @@ class Service
      */
     public function shutdown()
     {
+        $output = $this->checkProcessState();
+
+        if (false === $output) {
+            return -1;
+        }
+
         if (null !== $this->monitor) {
             $receive = $this->send([
                 'cmd' => 'stop'
@@ -109,7 +147,15 @@ class Service
         }
 
         $pid = $this->server->getPid();
+
         posix_kill($pid, SIGTERM);
+
+        if (false === $this->checkProcessState()) {
+            Output::output($this->server->getProcessName() . ' is shutdown...');
+        } else {
+            Output::output($this->server->getProcessName() . ' is shutdown fail...');
+        }
+
         return 0;
     }
 
@@ -118,6 +164,12 @@ class Service
      */
     public function reload()
     {
+        $output = $this->checkProcessState();
+
+        if (false === $output) {
+            return -1;
+        }
+
         if (null !== $this->monitor) {
             $receive = $this->send([
                 'cmd' => 'reload'
@@ -129,7 +181,15 @@ class Service
         }
 
         $pid = $this->server->getPid();
+
         posix_kill($pid, SIGUSR1);
+
+        if (false === $this->checkProcessState()) {
+            Output::output($this->server->getProcessName() . ' is reloaded...');
+        } else {
+            Output::output($this->server->getProcessName() . ' is reload fail...');
+        }
+
         return 0;
     }
 
@@ -138,26 +198,11 @@ class Service
      */
     public function status()
     {
-        $processName = $this->server->getProcessName();
+        $output = $this->checkProcessState();
 
-        if ('Linux' !== PHP_OS) {
-            $processName = $_SERVER['SCRIPT_NAME'];
+        if (false === $output) {
+            return -1;
         }
-
-        exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11}'", $output);
-
-        if (empty($output)) {
-            Output::output('Not process running.');
-            return 0;
-        }
-
-        $keys = ['User', 'Pid', '', '', '', 'Name'];
-
-        foreach ($output as $key => $value) {
-            $out[$key] = array_combine($keys, explode(' ', $value));
-        }
-
-        print_r($output);
 
         if (null !== $this->monitor) {
             $data = $this->send([
@@ -174,19 +219,32 @@ class Service
 
     /**
      * @param array $directories
-     * @return void
+     * @return void|int
      */
     public function watch(array $directories = ['.'])
     {
-        $watcher = new Watcher();
-
         $self = $this;
+
+        if (false === $this->checkProcessState(false)) {
+            $process = new \swoole_process(function () use ($self) {
+                $self->start();
+            }, true);
+            $process->start();
+        }
+
+        foreach ($directories as $directory) {
+            Output::output(sprintf('Watching directory: ["%s"]', realpath($directory)));
+        }
+
+        $watcher = new Watcher();
 
         $watcher->watch($directories, function () use ($self) {
             $self->reload();
         });
 
-        unset($watcher);
+        $watcher->run();
+
+        \swoole_process::wait();
     }
 
     /**

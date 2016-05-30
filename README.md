@@ -152,6 +152,12 @@ $server->handle(new \FastD\Swoole\Handler\Handle());
 
 ##### ＃Watcher 开发环境配置
 
+通过文件变化而自动启动重启服务，建议在开发环境下使用，生产环境不推荐。
 
+```php
+php examples/base/server.php watch
+```
+
+`watch` 方法支持多个目录监听，但是不支持目录递归，因此在使用或者配置的时候需要指定正确的目录地址。
 
 # License MIT

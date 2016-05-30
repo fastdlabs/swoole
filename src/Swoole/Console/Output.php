@@ -46,7 +46,7 @@ class Output
      */
     public static function format($msg)
     {
-        return sprintf("[%s]\t" . $msg . '...' . PHP_EOL, date('Y-m-d H:i:s'));
+        return sprintf("[%s]\t" . $msg . PHP_EOL, date('Y-m-d H:i:s'));
     }
 
     /**

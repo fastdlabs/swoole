@@ -52,6 +52,9 @@ switch ($action) {
     case 'reload':
         Service::server($server)->reload();
         break;
+    case 'watch':
+        Service::server($server)->watch();
+        break;
     case 'status':
     default:
         Service::server($server)->status();

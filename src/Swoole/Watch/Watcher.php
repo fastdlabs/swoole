@@ -118,6 +118,7 @@ class Watcher
     public function __destruct()
     {
         $this->clearWatch();
+
         fclose($this->inotify);
     }
 
