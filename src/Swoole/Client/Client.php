@@ -21,14 +21,74 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole\Client
  */
-class Client extends \swoole_client implements ClientInterface, SwooleInterface
+class Client implements ClientInterface, SwooleInterface
 {
+    /**
+     * @var \swoole_client
+     */
+    protected $client;
+
+    /**
+     * Client constructor.
+     *
+     * @param $mode
+     * @param $async
+     */
+    public function __construct($mode = SwooleInterface::SWOOLE_SOCK_TCP, $async = null)
+    {
+        $this->client = new \swoole_client($mode, $async);
+    }
+
+    /**
+     * @param      $host
+     * @param      $port
+     * @param int  $timeout
+     * @return $this
+     */
+    public function connect($host, $port, $timeout = 5)
+    {
+        $this->client->connect($host, $port);
+
+        return $this;
+    }
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    public function send($data)
+    {
+        $this->client->send($data);
+
+        return $this;
+    }
+
     /**
      * @return mixed
      */
     public function receive()
     {
-        return $this->recv();
+        return $this->client->recv();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function close()
+    {
+        return $this->client->close();
+    }
+
+    /**
+     * @param $name
+     * @param $callback
+     * @return mixed
+     */
+    public function on($name, $callback)
+    {
+        $this->client->on($name, $callback);
+
+        return $this;
     }
 
     /**
@@ -37,7 +97,7 @@ class Client extends \swoole_client implements ClientInterface, SwooleInterface
      */
     public function configure($configure)
     {
-        $this->set($configure);
+        $this->client->set($configure);
 
         return $this;
     }

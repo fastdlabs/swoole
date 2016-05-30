@@ -207,6 +207,14 @@ abstract class Server implements ServerInterface
     }
 
     /**
+     * @return string
+     */
+    public function getProcessName()
+    {
+        return static::SERVER_NAME;
+    }
+
+    /**
      * Server constructor.
      * @param $host
      * @param $port

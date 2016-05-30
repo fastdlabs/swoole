@@ -138,15 +138,36 @@ class Service
      */
     public function status()
     {
+        $processName = $this->server->getProcessName();
+
+        if ('Linux' !== PHP_OS) {
+            $processName = $_SERVER['SCRIPT_NAME'];
+        }
+
+        exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11}'", $output);
+
+        if (empty($output)) {
+            Output::output('Not process running.');
+            return 0;
+        }
+
+        $keys = ['User', 'Pid', '', '', '', 'Name'];
+
+        foreach ($output as $key => $value) {
+            $out[$key] = array_combine($keys, explode(' ', $value));
+        }
+
+        print_r($output);
+
         if (null !== $this->monitor) {
             $data = $this->send([
                 'cmd' => 'status'
             ]);
 
             print_r($data);
-
-            return 0;
         }
+
+//        Output::output($output);
 
         return 0;
     }

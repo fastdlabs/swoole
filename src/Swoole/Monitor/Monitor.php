@@ -205,7 +205,8 @@ abstract class Monitor implements MonitorInterface
                 break;
             case 'status':
                 $response([
-                    'state' => $this->server->getServer()->stats()
+                    'state' => $this->server->getServer()->stats(),
+                    'pid' => $this->server->getPid(),
                 ], 0);
                 break;
             default:

@@ -41,7 +41,7 @@ class Handle extends HandlerAbstract
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
-        Process::rename(Server::SERVER_NAME);
+        Process::rename($this->server->getProcessName() . ' master');
 
         Output::output(sprintf('Server[%s] Master started', $this->server->getPid()));
     }
@@ -69,6 +69,8 @@ class Handle extends HandlerAbstract
      */
     public function onManagerStart(\swoole_server $server)
     {
+        Process::rename($this->server->getProcessName() . ' manager');
+
         Output::output(sprintf('Server[%s] Manager started', $this->server->getPid()));
     }
 
@@ -89,6 +91,8 @@ class Handle extends HandlerAbstract
      */
     public function onWorkerStart(\swoole_server $server, int $worker_id)
     {
+        Process::rename($this->server->getProcessName() . ' worker');
+
         Output::output(sprintf('Server[%s] Worker started [#%s]', $this->server->getPid(), $worker_id));
     }
 
