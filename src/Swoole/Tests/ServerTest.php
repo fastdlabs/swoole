@@ -31,9 +31,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($server->getWorkSpace(), $this->workspace_dir);
 
-        $this->assertEquals($server->getPidFile(), $this->workspace_dir . '/run/fd-server.pid');
+        $this->assertEquals($server->getPidFile(), $this->workspace_dir . '/run/fds.pid');
 
-        $this->assertEquals($server->getLogFile(), $this->workspace_dir . '/var/fd-server.log');
+        $this->assertEquals($server->getLogFile(), $this->workspace_dir . '/var/fds.log');
 
         $this->assertEquals('127.0.0.1', $server->getHost());
 
