@@ -14,7 +14,7 @@
 
 namespace FastD\Swoole\Console;
 
-use FastD\Packet\Packet;
+use FastD\Packet\Binary;
 use FastD\Swoole\Client\Client;
 use FastD\Swoole\Server\Server;
 use FastD\Swoole\Watch\Watcher;
@@ -72,9 +72,9 @@ class Service
     {
         $this->client->connect($this->monitor->getHost(), $this->monitor->getPort());
 
-        $this->client->send(Packet::encode($cmd));
+        $this->client->send(Binary::encode($cmd));
 
-        $receive = Packet::decode($this->client->receive());
+        $receive = Binary::decode($this->client->receive());
 
         $this->client->close();
 

@@ -14,9 +14,9 @@
 
 namespace FastD\Swoole\Monitor;
 
+use FastD\Packet\Binary;
 use FastD\Swoole\Server\Server;
 use FastD\Packet\PacketException;
-use FastD\Packet\Packet;
 use FastD\Swoole\SwooleInterface;
 
 /**
@@ -184,7 +184,7 @@ abstract class Monitor implements MonitorInterface
         }
 
         $response = function (array $data = [], $code) use ($server, $fd, $from_id) {
-            $server->send($fd, Packet::encode([
+            $server->send($fd, Binary::encode([
                 'code' => $code,
                 'ret' => $data
             ]), $from_id);
@@ -223,7 +223,7 @@ abstract class Monitor implements MonitorInterface
      */
     public function getAction($data)
     {
-        $data = Packet::decode($data);
+        $data = Binary::decode($data);
 
         return $data['cmd'];
     }
