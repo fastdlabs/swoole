@@ -17,7 +17,7 @@ include __DIR__ . '/bootstrap.php';
 define('NAME', 'swoole');
 $root = __DIR__;
 $pwd = $_SERVER['PWD'];
-$action = 'install';
+$action = 'check';
 
 if (isset($_SERVER['argv'][1])) {
     $action = $_SERVER['argv'][1];
