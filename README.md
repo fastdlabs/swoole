@@ -8,7 +8,7 @@
 
 * PHP 7+
 
-* Swoole 1.8+
+* Swoole 1.8+ (期待2.0)
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
