@@ -18,6 +18,6 @@ use FastD\Swoole\Server\Server;
 
 $server = Server::create('0.0.0.0', '9123');
 
-print_r($server);
+$server->start();
 
 

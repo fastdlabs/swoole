@@ -85,10 +85,7 @@ class Server implements ServerInterface
      *
      * @var array
      */
-    protected $config = [
-        'log_level' => 2,
-        'log_file' => 'var/' . Server::SERVER_NAME . '.log',
-    ];
+    protected $config = [];
 
     /**
      * Server constructor.
