@@ -19,13 +19,14 @@ use FastD\Swoole\Monitor\Monitor;
 use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
 use FastD\Swoole\Monitor\Manager;
+use swoole_server;
 
 /**
  * Class Server
  *
  * @package FastD\Swoole\Server
  */
-abstract class Server implements ServerInterface
+class Server implements ServerInterface
 {
     /**
      * @var \swoole_server
@@ -90,6 +91,49 @@ abstract class Server implements ServerInterface
     ];
 
     /**
+     * Server constructor.
+     * @param $host
+     * @param $port
+     * @param int $mode
+     * @param int $sock_type
+     */
+    final public function __construct($host, $port, $mode = SWOOLE_BASE, $sock_type = SWOOLE_SOCK_TCP)
+    {
+        $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
+
+        $this->host = $host;
+        $this->port = $port;
+        $this->mode = $mode;
+        $this->sock = $sock_type;
+
+        $this->bootstrap();
+    }
+
+    /**
+     * Bootstrap server.
+     *
+     * @return $this
+     */
+    public function bootstrap()
+    {
+        $this->handle(new Handle());
+
+        $this->server = $this->initServer();
+
+        $this->booted = true;
+
+        return $this;
+    }
+
+    /**
+     * @return swoole_server
+     */
+    public function initServer()
+    {
+        return new swoole_server($this->host, $this->port, $this->mode, $this->sock);
+    }
+
+    /**
      * @return boolean
      */
     public function isBooted()
@@ -98,45 +142,13 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @return null|string
+     * @return string
      */
-    public function getHost()
+    public function getProcessName()
     {
-        return $this->host;
+        return static::SERVER_NAME;
     }
-
-    /**
-     * @return int|null
-     */
-    public function getPort()
-    {
-        return $this->port;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMode()
-    {
-        return $this->mode;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSock()
-    {
-        return $this->sock;
-    }
-
-    /**
-     * @return \swoole_server
-     */
-    public function getServer()
-    {
-        return $this->server;
-    }
-
+    
     /**
      * @return array
      */
@@ -186,92 +198,13 @@ abstract class Server implements ServerInterface
     }
 
     /**
-     * @param Monitor $monitor
-     * @return $this
-     */
-    public function setMonitor(Monitor $monitor)
-    {
-        $this->manager = $monitor;
-
-        $monitor->setServer($this);
-
-        return $this;
-    }
-
-    /**
-     * @return Manager
-     */
-    public function getMonitor()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * @return string
-     */
-    public function getProcessName()
-    {
-        return static::SERVER_NAME;
-    }
-
-    /**
-     * Server constructor.
-     * @param $host
-     * @param $port
-     * @param int $mode
-     * @param int $sock_type
-     */
-    final public function __construct($host = null, $port = null, $mode = null, $sock_type = null)
-    {
-        $this->handle(new Handle());
-
-        $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
-
-        $conf = $this->workspace_dir . '/etc/server.ini';
-
-        if (file_exists($conf)) {
-            $this->configure($conf);
-        }
-
-        if (null === $host && null === $this->host) {
-            throw new \RuntimeException(sprintf('Server is not configuration.'));
-        }
-
-        $this->host = null === $host ? $this->host : $host;
-        $this->port = null === $port ? $this->port : $port;
-        $this->mode = null === $mode ? $this->mode : $mode;
-        $this->sock = null === $sock_type ? $this->sock : $sock_type;
-    }
-
-    /**
-     * @return \swoole_server
-     */
-    abstract public function initSwooleServer();
-
-    /**
-     * @return $this
-     */
-    public function bootstrap()
-    {
-        $this->server = $this->initSwooleServer();
-
-        $this->booted = true;
-
-        if (null !== $this->getMonitor()) {
-            $this->getMonitor()->bootstrap();
-        }
-
-        return $this;
-    }
-
-    /**
      * @param $host
      * @param $port
      * @param int $mode
      * @param int $sock_type
      * @return static
      */
-    final public static function create($host = null, $port = null, $mode = SwooleInterface::SWOOLE_BASE, $sock_type = SwooleInterface::SWOOLE_SOCK_TCP)
+    final public static function create($host, $port, $mode = SWOOLE_BASE, $sock_type = SWOOLE_SOCK_TCP)
     {
         return new static($host, $port, $mode, $sock_type);
     }
@@ -294,20 +227,6 @@ abstract class Server implements ServerInterface
         }
 
         $this->config = array_merge($this->config, $configure);
-
-        $this->host = $this->config['host'] ?? '127.0.0.1';
-        $this->port = $this->config['port'] ?? 9527;
-        $this->mode = $this->config['mode'] ?? SwooleInterface::SWOOLE_PROCESS;
-        $this->sock = $this->config['sock'] ?? SwooleInterface::SWOOLE_SOCK_TCP;
-        $this->pid_file = $this->config['pid'] ?? 'run/' . Server::SERVER_NAME . '.pid';
-
-        if (substr($this->pid_file, 0, 1) != '/') {
-            $this->pid_file = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->pid_file);
-        }
-
-        if (substr($this->config['log_file'], 0, 1) != '/') {
-            $this->config['log_file'] = str_replace('//', '/' , $this->workspace_dir . DIRECTORY_SEPARATOR . $this->config['log_file']);
-        }
     }
 
     /**

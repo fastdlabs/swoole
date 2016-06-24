@@ -14,41 +14,10 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-use FastD\Swoole\Server\TcpServer;
-use FastD\Swoole\Console\Service;
+use FastD\Swoole\Server\Server;
 
-$server = TcpServer::create();
+$server = Server::create('0.0.0.0', '9123');
 
-$server->on('receive', function (\swoole_server $server, $fd) {
-    echo 'receive' . PHP_EOL;
-    $server->close($fd);
-});
+print_r($server);
 
-$action = 'status';
-
-if (isset($_SERVER['argv'][1])) {
-    $action = $_SERVER['argv'][1];
-}
-
-switch ($action) {
-    case 'start':
-        Service::server($server)->start();
-        break;
-    case 'stop':
-        Service::server($server)->shutdown();
-        break;
-    case 'restart':
-        Service::server($server)->shutdown();
-        Service::server($server)->start();
-        break;
-    case 'reload':
-        Service::server($server)->reload();
-        break;
-    case 'watch':
-        Service::server($server)->watch();
-        break;
-    case 'status':
-    default:
-        Service::server($server)->status();
-}
 

@@ -24,7 +24,7 @@ use FastD\Swoole\SwooleInterface;
  */
 interface ServerInterface extends SwooleInterface
 {
-    const SERVER_NAME = 'fds';
+    const SERVER_NAME = 'fds'; // FastD Swoole
     const SERVER_VERSION = 2.0;
 
     /**
@@ -32,4 +32,19 @@ interface ServerInterface extends SwooleInterface
      * @return mixed
      */
     public function handle(HandlerAbstract $handlerAbstract);
+
+    /**
+     * @return void
+     */
+    public function daemonize();
+
+    /**
+     * @return void
+     */
+    public function bootstrap();
+
+    /**
+     * @return int|bool
+     */
+    public function getPid();
 }

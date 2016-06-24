@@ -28,4 +28,20 @@ class TcpServer extends Server
     {
         return new \swoole_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
     }
+
+    /**
+     * @return void
+     */
+    public function deamonize()
+    {
+        // TODO: Implement deamonize() method.
+    }
+
+    /**
+     * @return string|bool
+     */
+    public function getLog()
+    {
+        // TODO: Implement getLog() method.
+    }
 }
