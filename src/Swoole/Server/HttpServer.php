@@ -19,53 +19,50 @@ namespace FastD\Swoole\Server;
  *
  * @package FastD\Swoole\Server
  */
-class HttpServer extends Server
+abstract class HttpServer extends Server implements HttpServerInterface
 {
-    /**
-     * @var string
-     */
-    const SERVER_NAME = 'fd-http';
-
-    /**
-     * Enable Http2 Support.
-     *
-     * @return $this
-     */
-    public function enableHttp2()
-    {
-        $this->config['open_http2_protocol'] = true;
-
-        return $this;
-    }
-
-    /**
-     * Enable SSL Support.
-     *
-     * @param $crt
-     * @param $key
-     * @return $this
-     */
-    public function enableSSL($crt, $key)
-    {
-        $this->config['ssl_cert_file'] = $crt;
-        $this->config['ssl_key_file'] = $key;
-
-        return $this;
-    }
-
     /**
      * @return \swoole_server
      */
-    public function initSwooleServer()
+    public function initSwoole()
     {
-        return new \swoole_http_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
+        return new \swoole_http_server($this->host, $this->port, $this->mode, $this->sockType);
     }
 
     /**
-     * @return array
+     * @param \swoole_http_request $request
+     * @param \swoole_http_response $response
      */
-    public function configure()
+    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
-        // TODO: Implement configure() method.
+        $this->doRequest($request, $response);
+    }
+
+    /**
+     * Nothing to do.
+     *
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    {
+        return;
+    }
+
+    /**
+     * Nothing to do.
+     *
+     * @param \swoole_server $server
+     * @param int $task_id
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data)
+    {
+        return;
     }
 }

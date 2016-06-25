@@ -14,37 +14,36 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handler\HandlerAbstract;
-use FastD\Swoole\SwooleInterface;
-
 /**
  * Interface ServerInterface
  *
  * @package FastD\Swoole\Server
  */
-interface ServerInterface extends SwooleInterface
+interface ServerInterface
 {
-    const SERVER_NAME = 'fds'; // FastD Swoole
+    const SERVER_NAME = 'fds';
     const SERVER_VERSION = 2.0;
 
     /**
-     * @param HandlerAbstract $handlerAbstract
-     * @return mixed
-     */
-    public function handle(HandlerAbstract $handlerAbstract);
-
-    /**
-     * @return void
-     */
-    public function daemonize();
-
-    /**
-     * @return void
-     */
-    public function bootstrap();
-
-    /**
-     * @return int|bool
+     * @return string
      */
     public function getPid();
+    
+    /**
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data);
+
+    /**
+     * @param \swoole_server $server
+     * @param int $task_id
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data);
 }

@@ -24,7 +24,7 @@ use FastD\Swoole\SwooleInterface;
  *
  * @package FastD\Swoole\Monitor
  */
-abstract class Monitor implements MonitorInterface
+class Monitor implements MonitorInterface
 {
     /**
      * @var string
@@ -39,7 +39,7 @@ abstract class Monitor implements MonitorInterface
     /**
      * @var int
      */
-    protected $sock = SwooleInterface::SWOOLE_SOCK_TCP;
+    protected $sock = SWOOLE_SOCK_TCP;
 
     /**
      * @var bool
@@ -56,7 +56,7 @@ abstract class Monitor implements MonitorInterface
      */
     protected $server_port;
 
-    public function __construct($host = '127.0.0.1', $port = '9599', $sock = SwooleInterface::SWOOLE_SOCK_UDP)
+    public function __construct($host = '127.0.0.1', $port = '9599', $sock = SWOOLE_SOCK_UDP)
     {
         $this
             ->setHost($host)
