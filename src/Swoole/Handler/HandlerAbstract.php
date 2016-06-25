@@ -32,7 +32,7 @@ abstract class HandlerAbstract implements HandlerInterface
      * @param Server $server
      * @return $this
      */
-    public function handle(Server $server)
+    public function scan(Server $server)
     {
         $this->server = $server;
 

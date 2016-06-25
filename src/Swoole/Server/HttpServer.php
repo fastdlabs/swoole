@@ -60,4 +60,12 @@ class HttpServer extends Server
     {
         return new \swoole_http_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
     }
+
+    /**
+     * @return array
+     */
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }

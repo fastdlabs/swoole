@@ -12,9 +12,7 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Handler\Base;
-
-use FastD\Swoole\Handler\Handle;
+namespace FastD\Swoole\Handler;
 
 /**
  * Class ServerHandlerAbstract

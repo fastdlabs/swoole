@@ -38,8 +38,7 @@ LOGO;
     public function on($name, $callback);
 
     /**
-     * @param $configure
-     * @return $this
+     * @return array
      */
-    public function configure($configure);
+    public function configure();
 }

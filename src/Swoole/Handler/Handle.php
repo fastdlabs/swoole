@@ -16,7 +16,6 @@ namespace FastD\Swoole\Handler;
 
 use FastD\Swoole\Console\Output;
 use FastD\Swoole\Console\Process;
-use FastD\Swoole\Server\Server;
 
 /**
  * Class Handle
@@ -33,7 +32,7 @@ class Handle extends HandlerAbstract
      */
     public function onStart(\swoole_server $server)
     {
-        if (null !== ($file = $this->server->getPidFile())) {
+        if (null !== ($file = $this->server->getPid())) {
             if (!is_dir($dir = dirname($file))) {
                 mkdir($dir, 0755, true);
             }
@@ -43,7 +42,7 @@ class Handle extends HandlerAbstract
 
         Process::rename($this->server->getProcessName() . ' master');
 
-        Output::output(sprintf('Server[%s] Master started', $this->server->getPid()));
+        Output::output(sprintf('Server Master[%s] started', $server->master_pid));
     }
 
     /**
@@ -51,15 +50,13 @@ class Handle extends HandlerAbstract
      *
      * @return void
      */
-    public function onShutdown()
+    public function onShutdown(\swoole_server $server)
     {
-        $pid = $this->server->getPid();
-
-        if (null !== ($file = $this->server->getPidFile())) {
+        if (null !== ($file = $this->server->getPid()) && !empty(trim(file_get_contents($file)))) {
             unlink($file);
         }
 
-        Output::output(sprintf('Server[%s] Master shutdown ', $pid));
+        Output::output(sprintf('Server Master[%s] shutdown ', $server->master_pid));
     }
 
     /**
@@ -71,7 +68,7 @@ class Handle extends HandlerAbstract
     {
         Process::rename($this->server->getProcessName() . ' manager');
 
-        Output::output(sprintf('Server[%s] Manager started', $this->server->getPid()));
+        Output::output(sprintf('Server Manager[%s] started', $this->server->getPid()));
     }
 
     /**
@@ -81,7 +78,8 @@ class Handle extends HandlerAbstract
      */
     public function onManagerStop(\swoole_server $server)
     {
-        Output::output(sprintf('Server[%s] Manager stop', $this->server->getPid()));
+        Output::output(sprintf('Server Manager[%s]' .
+            ' stop', $server->manager_pid));
     }
 
     /**
@@ -93,7 +91,7 @@ class Handle extends HandlerAbstract
     {
         Process::rename($this->server->getProcessName() . ' worker');
 
-        Output::output(sprintf('Server[%s] Worker started [#%s]', $this->server->getPid(), $worker_id));
+        Output::output(sprintf('Server Worker[%s] started [#%s]', $server->worker_pid, $worker_id));
     }
 
     /**
@@ -103,7 +101,7 @@ class Handle extends HandlerAbstract
      */
     public function onWorkerStop(\swoole_server $server, int $worker_id)
     {
-        Output::output(sprintf('Server[%s] Worker stop', $this->server->getPid()));
+        Output::output(sprintf('Server Worker[%s] stop', $worker_id));
     }
 
     /**
@@ -115,6 +113,6 @@ class Handle extends HandlerAbstract
      */
     public function onWorkerError(\swoole_server $serv, int $worker_id, int $worker_pid, int $exit_code)
     {
-        Output::output(sprintf('Server[%s] Worker error', $this->server->getPid()));
+        Output::output(sprintf('Server Worker[%s] error', $worker_pid));
     }
 }

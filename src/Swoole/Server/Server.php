@@ -15,10 +15,7 @@
 namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handler\Handle;
-use FastD\Swoole\Monitor\Monitor;
-use FastD\Swoole\SwooleInterface;
 use FastD\Swoole\Handler\HandlerAbstract;
-use FastD\Swoole\Monitor\Manager;
 use swoole_server;
 
 /**
@@ -26,7 +23,7 @@ use swoole_server;
  *
  * @package FastD\Swoole\Server
  */
-class Server implements ServerInterface
+abstract class Server implements ServerInterface
 {
     /**
      * @var \swoole_server
@@ -42,13 +39,6 @@ class Server implements ServerInterface
      * @var string
      */
     protected $workspace_dir;
-
-    /**
-     * Swoole server pid file path.
-     *
-     * @var string
-     */
-    protected $pid_file;
 
     /**
      * @var string
@@ -71,16 +61,6 @@ class Server implements ServerInterface
     protected $sock;
 
     /**
-     * @var Manager
-     */
-    protected $manager;
-
-    /**
-     * @var bool
-     */
-    protected $booted = false;
-
-    /**
      * Swoole server run configuration.
      *
      * @var array
@@ -94,7 +74,7 @@ class Server implements ServerInterface
      * @param int $mode
      * @param int $sock_type
      */
-    final public function __construct($host, $port, $mode = SWOOLE_BASE, $sock_type = SWOOLE_SOCK_TCP)
+    final public function __construct($host = '127.0.0.1', $port = '9527', $mode = SWOOLE_BASE, $sock_type = SWOOLE_SOCK_TCP)
     {
         $this->workspace_dir = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : realpath('.');
 
@@ -115,9 +95,9 @@ class Server implements ServerInterface
     {
         $this->handle(new Handle());
 
-        $this->server = $this->initServer();
+        $this->config = $this->configure();
 
-        $this->booted = true;
+        $this->server = $this->initServer();
 
         return $this;
     }
@@ -131,27 +111,11 @@ class Server implements ServerInterface
     }
 
     /**
-     * @return boolean
-     */
-    public function isBooted()
-    {
-        return $this->booted;
-    }
-
-    /**
      * @return string
      */
     public function getProcessName()
     {
         return static::SERVER_NAME;
-    }
-    
-    /**
-     * @return array
-     */
-    public function getConfig()
-    {
-        return $this->config;
     }
 
     /**
@@ -163,35 +127,11 @@ class Server implements ServerInterface
     }
 
     /**
-     * @return string
-     */
-    public function getLogFile()
-    {
-        return $this->config['log_file'];
-    }
-
-    /**
-     * @return string
-     */
-    public function getPidFile()
-    {
-        return $this->pid_file;
-    }
-
-    /**
-     * @return int
+     * @return string Return pid file.
      */
     public function getPid()
     {
-        return (int) trim(@file_get_contents($this->getPidFile()));
-    }
-
-    /**
-     * @return array
-     */
-    public function getHandles()
-    {
-        return $this->handles;
+        return $this->workspace_dir . '/' . $this->getProcessName() . '.pid';
     }
 
     /**
@@ -201,29 +141,9 @@ class Server implements ServerInterface
      * @param int $sock_type
      * @return static
      */
-    final public static function create($host, $port, $mode = SWOOLE_BASE, $sock_type = SWOOLE_SOCK_TCP)
+    final public static function create($host = '127.0.0.1', $port = '9527', $mode = SWOOLE_BASE, $sock_type = SWOOLE_SOCK_TCP)
     {
         return new static($host, $port, $mode, $sock_type);
-    }
-
-    /**
-     * @param array $configure
-     * @return $this
-     */
-    public function configure($configure)
-    {
-        if (is_string($configure)) {
-            switch(pathinfo($configure, PATHINFO_EXTENSION)) {
-                case 'ini':
-                    $configure = parse_ini_file($configure, true);
-                    break;
-                case 'php':
-                default:
-                    $configure = include $configure;
-            }
-        }
-
-        $this->config = array_merge($this->config, $configure);
     }
 
     /**
@@ -244,7 +164,7 @@ class Server implements ServerInterface
      */
     public function handle(HandlerAbstract $handlerAbstract)
     {
-        $handlerAbstract->handle($this);
+        $handlerAbstract->scan($this);
     }
 
     /**
@@ -262,10 +182,6 @@ class Server implements ServerInterface
      */
     public function start()
     {
-        if (!$this->isBooted()) {
-            $this->bootstrap();
-        }
-
         $this->server->set($this->config);
 
         foreach ($this->handles as $name => $handle) {

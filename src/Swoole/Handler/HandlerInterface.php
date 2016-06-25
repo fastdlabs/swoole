@@ -30,5 +30,5 @@ interface HandlerInterface
      * @param Server $server
      * @return mixed
      */
-    public function handle(Server $server);
+    public function scan(Server $server);
 }
