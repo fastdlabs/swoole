@@ -175,13 +175,45 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     }
 
     /**
+     * @return string
+     */
+    public function getServerName()
+    {
+        return static::SERVER_NAME;
+    }
+
+    /**
      * @return void
      */
-    protected function start()
+    public function start()
     {
         $this->swoole->set($this->config);
 
         $this->swoole->start();
+    }
+
+    /**
+     * @return void
+     */
+    public function status()
+    {
+        $this->swoole->stats();
+    }
+
+    /**
+     * @return void
+     */
+    public function reload()
+    {
+        $this->swoole->reload();
+    }
+
+    /**
+     * @return void
+     */
+    public function shutdown()
+    {
+        $this->swoole->shutdown();
     }
 
     /**

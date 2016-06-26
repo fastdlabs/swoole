@@ -59,7 +59,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
 
         Process::rename(static::SERVER_NAME . ' master');
 
-        Output::output(sprintf('Server Master[%s] started', $server->master_pid));
+        Output::output(sprintf('Server Master[%s] is started', $server->master_pid));
     }
 
     /**
@@ -74,7 +74,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
             unlink($file);
         }
 
-        Output::output(sprintf('Server Master[%s] shutdown ', $server->master_pid));
+        Output::output(sprintf('Server Master[%s] is shutdown ', $server->master_pid));
     }
 
     /**
@@ -86,7 +86,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
     {
         Process::rename(static::SERVER_NAME . ' manager');
 
-        Output::output(sprintf('Server Manager[%s] started', $server->manager_pid));
+        Output::output(sprintf('Server Manager[%s] is started', $server->manager_pid));
     }
 
     /**
@@ -96,7 +96,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
      */
     public function onManagerStop(\swoole_server $server)
     {
-        Output::output(sprintf('Server Manager[%s] stop', $server->manager_pid));
+        Output::output(sprintf('Server Manager[%s] is shutdown.', $server->manager_pid));
     }
 
     /**
@@ -108,7 +108,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
     {
         Process::rename(static::SERVER_NAME . ' worker');
 
-        Output::output(sprintf('Server Worker[%s] started [#%s]', $server->worker_pid, $worker_id));
+        Output::output(sprintf('Server Worker[%s] is started [#%s]', $server->worker_pid, $worker_id));
     }
 
     /**
@@ -118,7 +118,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
      */
     public function onWorkerStop(\swoole_server $server, int $worker_id)
     {
-        Output::output(sprintf('Server Worker[%s] stop', $worker_id));
+        Output::output(sprintf('Server Worker[#%s] is shutdown', $worker_id));
     }
 
     /**

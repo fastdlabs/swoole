@@ -32,6 +32,6 @@ class Demo extends Server
     }
 }
 
-Service::run(Demo::class, [
-    
-]);
+Service::server(Demo::class, [
+
+])->watch();

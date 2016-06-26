@@ -44,50 +44,24 @@ class Service
     protected $client;
 
     /**
-     * @var \FastD\Swoole\Monitor\Manager
-     */
-    protected $monitor;
-
-    /**
      * Service constructor.
-     * @param Server $server
+     *
+     * @param $server
+     * @param array $config
      */
-    public function __construct(Server $server = null, array $config = null)
+    public function __construct($server, array $config)
     {
-        $this->server= $server;
+        $this->server = new $server();
 
-        $this->monitor = $server->getMonitor();
-
-        if (null !== $this->monitor) {
-            $this->client = new Client($this->monitor->getSock());
-        }
+        $this->server->configure($config);
     }
-
+    
     /**
-     * @param $cmd
-     * @return mixed
-     * @throws \FastD\Packet\PacketException
-     */
-    protected function send($cmd)
-    {
-        $this->client->connect($this->monitor->getHost(), $this->monitor->getPort());
-
-        $this->client->send(Binary::encode($cmd));
-
-        $receive = Binary::decode($this->client->receive());
-
-        $this->client->close();
-
-        return $receive['ret'];
-    }
-
-    /**
-     * @param bool $display
      * @return bool
      */
-    protected function checkProcessState($display = true)
+    protected function isRunning()
     {
-        $processName = $this->server->getProcessName();
+        $processName = $this->server->getServerName();
 
         if ('Linux' !== PHP_OS) {
             $processName = $_SERVER['SCRIPT_NAME'];
@@ -96,9 +70,6 @@ class Service
         exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11}'", $output);
 
         if (empty($output)) {
-            if ($display) {
-                Output::output(sprintf('Not process running.'));
-            }
             return false;
         }
 
@@ -119,6 +90,7 @@ class Service
     public function start()
     {
         try {
+            $this->server->bootstrap();
             $this->server->start();
         } catch (\Exception $e) {
             Output::output($e->getMessage());
@@ -130,31 +102,16 @@ class Service
      */
     public function shutdown()
     {
-        $output = $this->checkProcessState();
-
-        if (false === $output) {
+        if (false === ($status = $this->isRunning())) {
+            Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
             return -1;
         }
 
-        if (null !== $this->monitor) {
-            $receive = $this->send([
-                'cmd' => 'stop'
-            ]);
-
-            Output::output($receive['msg']);
-
-            return 0;
-        }
-
-        $pid = $this->server->getPid();
+        $pid = (int) @file_get_contents($this->server->getPid());
 
         posix_kill($pid, SIGTERM);
 
-        if (false === $this->checkProcessState()) {
-            Output::output($this->server->getProcessName() . ' is shutdown...');
-        } else {
-            Output::output($this->server->getProcessName() . ' is shutdown fail...');
-        }
+        Output::output(sprintf('Server[%s] is shutdown...', $this->server->getServerName()));
 
         return 0;
     }
@@ -164,31 +121,16 @@ class Service
      */
     public function reload()
     {
-        $output = $this->checkProcessState();
-
-        if (false === $output) {
+        if (false === ($status = $this->isRunning())) {
+            Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
             return -1;
         }
 
-        if (null !== $this->monitor) {
-            $receive = $this->send([
-                'cmd' => 'reload'
-            ]);
-
-            Output::output($receive['msg']);
-
-            return 0;
-        }
-
-        $pid = $this->server->getPid();
+        $pid = (int) @file_get_contents($this->server->getPid());
 
         posix_kill($pid, SIGUSR1);
 
-        if (false === $this->checkProcessState()) {
-            Output::output($this->server->getProcessName() . ' is reloaded...');
-        } else {
-            Output::output($this->server->getProcessName() . ' is reload fail...');
-        }
+        Output::output(sprintf('Server[%s] is reloading...', $this->server->getServerName()));
 
         return 0;
     }
@@ -198,21 +140,13 @@ class Service
      */
     public function status()
     {
-        $output = $this->checkProcessState();
-
-        if (false === $output) {
+        if (!($status = $this->isRunning())) {
+            Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
             return -1;
         }
+        print_r($status);
 
-        if (null !== $this->monitor) {
-            $data = $this->send([
-                'cmd' => 'status'
-            ]);
-
-            print_r($data);
-        }
-
-//        Output::output($output);
+//        Output::output($status);
 
         return 0;
     }
@@ -225,7 +159,7 @@ class Service
     {
         $self = $this;
 
-        if (false === $this->checkProcessState(false)) {
+        if (false === ($status = $this->isRunning())) {
             $process = new \swoole_process(function () use ($self) {
                 $self->start();
             }, true);
@@ -248,11 +182,11 @@ class Service
     }
 
     /**
-     * @param Server $server
+     * @param $server
      * @param array $config
-     * @return static
+     * @return Service
      */
-    public static function run($server, array $config)
+    public static function server($server, array $config = [])
     {
         if (null === static::$service) {
             static::$service = new static($server, $config);

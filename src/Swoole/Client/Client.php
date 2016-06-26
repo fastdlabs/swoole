@@ -14,14 +14,12 @@
 
 namespace FastD\Swoole\Client;
 
-use FastD\Swoole\SwooleInterface;
-
 /**
  * Class Client
  *
  * @package FastD\Swoole\Client
  */
-class Client implements ClientInterface, SwooleInterface
+class Client implements ClientInterface
 {
     /**
      * @var \swoole_client
@@ -34,7 +32,7 @@ class Client implements ClientInterface, SwooleInterface
      * @param $mode
      * @param $async
      */
-    public function __construct($mode = SwooleInterface::SWOOLE_SOCK_TCP, $async = null)
+    public function __construct($mode = SWOOLE_SOCK_TCP, $async = null)
     {
         $this->client = new \swoole_client($mode, $async);
     }
