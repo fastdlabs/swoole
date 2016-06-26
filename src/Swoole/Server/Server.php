@@ -70,7 +70,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function __construct()
     {
-        $this->pid = realpath('.') . '/' . static::SERVER_NAME . '.pid';
+        $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
     }
 
     /**
@@ -78,7 +78,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      *
      * @return $this
      */
-    protected function bootstrap()
+    public function bootstrap()
     {
         $this->swoole = $this->initSwoole();
 
@@ -111,7 +111,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      * @param array $config
      * @return array
      */
-    protected function configure(array $config)
+    public function configure(array $config)
     {
         if (isset($config['host'])) {
             $this->host = $config['host'];

@@ -52,7 +52,7 @@ class Service
      * Service constructor.
      * @param Server $server
      */
-    public function __construct(Server $server = null)
+    public function __construct(Server $server = null, array $config = null)
     {
         $this->server= $server;
 
@@ -249,12 +249,13 @@ class Service
 
     /**
      * @param Server $server
+     * @param array $config
      * @return static
      */
-    public static function server(Server $server)
+    public static function run($server, array $config)
     {
         if (null === static::$service) {
-            static::$service = new static($server);
+            static::$service = new static($server, $config);
         }
 
         return static::$service;
