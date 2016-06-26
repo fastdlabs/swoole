@@ -27,7 +27,8 @@ class DemoServer extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        // TODO: Implement doWork() method.
+        $server->send($fd, $data, $from_id);
+        $server->close($fd);
     }
 }
 

@@ -32,4 +32,6 @@ class Demo extends Server
     }
 }
 
-Service::run(Demo::class);
+Service::run(Demo::class, [
+    
+]);
