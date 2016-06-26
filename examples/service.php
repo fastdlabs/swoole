@@ -34,4 +34,4 @@ class Demo extends Server
 
 Service::server(Demo::class, [
 
-])->watch();
+])->start();

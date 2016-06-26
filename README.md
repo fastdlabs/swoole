@@ -40,124 +40,93 @@ pecl install inotify
 
 ## ＃使用
 
-组件提供处理脚本，用于检测配置环境和安装骨架环境。
+服务继承 `FastD\Swoole\Server\Server`, 实现 `doWork` 方法, 服务器在接收信息 `onReceive` 回调中会调用 `doWork` 方法。
+
+具体逻辑在 `doWork` 方法中实现。
+
+服务器通过 `run` 方法执行, `run` 方法中注入配置, 配置按照 `swoole` 原生扩展参数配置。
+
+配置扩展了几个常用参数.
 
 ```php
-php install check
+return [
+    'pid' => 'pid 文件目录地址',
+    'host' => '机器ip',
+    'port' => '机器端口',
+    'mode' => '服务模式,参考官网',
+    'sock' => 'sock类型,参考官网',
+];
 ```
 
-检测服务器环境配置。安装 `fastd/swoole` 配置。
-
 ```php
-php install
+use FastD\Swoole\Server\Server;
+
+class DemoServer extends Server
+{
+    /**
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    {
+        $server->send($fd, $data, $from_id);
+        $server->close($fd);
+    }
+}
+
+DemoServer::run([]);
 ```
 
-脚本自动生成 `etc/server.ini` 配置文件，服务在运行时会自动读取配置文件配置信息。
+同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
 
 ```php
-use FastD\Swoole\Server\TcpServer;
+use FastD\Swoole\Server\HttpServer;
+
+class Http extends HttpServer
+{
+    /**
+     * @param \swoole_http_request $request
+     * @param \swoole_http_response $response
+     * @return mixed
+     */
+    public function doRequest(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        $response->end('hello world');
+    }
+}
+
+Http::run([]);
+```
+
+服务 `Service` 管理, 修改服务 `Service` 管理, 可以通过注入服务, 对其进行 `{start|status|stop|reload}` 等操作管理。
+
+```php
+use FastD\Swoole\Server\Server;
 use FastD\Swoole\Console\Service;
 
-$server = TcpServer::create();
-
-$server->on('receive', function (\swoole_server $server, $fd) {
-    echo 'receive' . PHP_EOL;
-    $server->close($fd);
-});
-
-$server->start();
-```
-
-在服务 `create`，也就是实例化的时候加载系统配置文件内容。
-
-也可以在构造方法中注入服务基础配置信息: `Server::__construct($host, $port, $mode, $sock_type)`
-
-使用 `on` 方法对服务方法绑定回调处理。
-
-### ＃Examples
-
-示例目录: `examples`
-
-```php
-php examples/base/server.php start
-```
-
-服务管理脚本:
-
-```php
-php examples/base/server.php {status|stop|reload}
-```
-
-##### ＃开启 monitor 监控端口
-
-```php
-php examples/base/server_monitor.php start
-```
-
-开启 monitor 监听端口默认端口是 9599，IP 为本地IP，**仅供**内网管理。
-
-```php
-php examples/base/server_monitor.php {status|stop|reload}
-```
-
-##### ＃Server 服务端
-
-提供 TCP 基础服务，演示请看: [server.php](examples/base/server.php)
-
-实现自: `FastD\Swoole\Server\ServerInterface` 继承自: `FastD\Swoole\Server\Server` 抽象类
-
-实现 `initServer` 抽象方法，返回 `\swoole_server` 实例。
-
-```php
-/**
- * @return \swoole_server
- */
-public function initSwooleServer()
+class Demo extends Server
 {
-    return new \swoole_server($this->getHost(), $this->getPort(), $this->getMode(), $this->getSock());
+    /**
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    {
+        // TODO: Implement doWork() method logic.
+    }
 }
+
+Service::server(Demo::class, [
+
+])->start();
 ```
 
-##### ＃Client 客户端
-
-`Client` 内部使用 `swoole_client` 进行封装，因此在使用上没有差别。
-
-```php
-use FastD\Swoole\Client\Client;
-
-$client = new Client();
-
-$client->connect($host, $port);
-
-$client->send('hello world');
-
-echo $client->receive();
-
-$client->close();
-```
-
-##### ＃Handle 事件回调处理
-
-服务器，客户端均可以设置回调处理，客户端(`Client`)因为是继承 `\swoole_cilent` 因此操作方法上没有差别，而服务端是在 `\swoole_server` 在扩展了一层，新增一个处理方法 `handle(\FastD\Swoole\Handler\HandlerAbstract $handle)`。
-
-方法中会调用服务中的 `on` 方法，而设置的 `handle` 对象则会将所有以 `on` 开头的方法进行绑定。如下：
-
-```php
-$server = TcpServer::create();
-
-$server->handle(new \FastD\Swoole\Handler\Handle());
-```
-
-自动解析类方法并且绑定回调处理。
-
-##### ＃Watcher 开发环境配置
-
-通过文件变化而自动启动重启服务，建议在开发环境下使用，生产环境不推荐。
-
-```php
-php examples/base/server.php watch
-```
-
-`watch` 方法支持多个目录监听，但是不支持目录递归，因此在使用或者配置的时候需要指定正确的目录地址。
+`Service` 通过 `server($server, array $config)` 注入服务, 实现管理。
 
 # License MIT
