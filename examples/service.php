@@ -28,10 +28,31 @@ class Demo extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        // TODO: Implement doWork() method.
+        $server->send($fd, $data);
+        $server->close($fd);
     }
 }
 
-Service::server(Demo::class, [
+$service = Service::server(Demo::class, [
 
-])->start();
+]);
+
+$action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'status';
+
+switch ($action) {
+    case 'status':
+        $service->status();
+        break;
+    case 'start':
+        $service->start();
+        break;
+    case 'stop':
+        $service->shutdown();
+        break;
+    case 'reload':
+        $service->reload();
+        break;
+    case 'watch':
+        $service->watch(['.']);
+        break;
+}

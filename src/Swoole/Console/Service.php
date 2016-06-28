@@ -14,7 +14,6 @@
 
 namespace FastD\Swoole\Console;
 
-use FastD\Packet\Binary;
 use FastD\Swoole\Client\Client;
 use FastD\Swoole\Server\Server;
 use FastD\Swoole\Watch\Watcher;
@@ -55,7 +54,7 @@ class Service
 
         $this->server->configure($config);
     }
-    
+
     /**
      * @return bool
      */
@@ -67,16 +66,19 @@ class Service
             $processName = $_SERVER['SCRIPT_NAME'];
         }
 
-        exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11}'", $output);
+        exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11, $12}'", $output);
 
         if (empty($output)) {
             return false;
         }
 
-        $keys = ['User', 'Pid', '', '', '', 'Name'];
+        $keys = ['user', 'pid', 'rss', 'stat', 'start', 'command'];
 
         foreach ($output as $key => $value) {
-            $output[$key] = array_combine($keys, explode(' ', $value));
+            $value = explode(' ', $value);
+            $name = array_pop($value);
+            $value[count($value) - 1] .= ' ' . $name;
+            $output[$key] = array_combine($keys, $value);
         }
 
         unset($keys);
@@ -89,11 +91,15 @@ class Service
      */
     public function start()
     {
-        try {
-            $this->server->bootstrap();
-            $this->server->start();
-        } catch (\Exception $e) {
-            Output::output($e->getMessage());
+        if ($this->isRunning()) {
+            Output::output('::1:9527 address already in use');
+        } else {
+            try {
+                $this->server->bootstrap();
+                $this->server->start();
+            } catch (\Exception $e) {
+                Output::output($e->getMessage());
+            }
         }
     }
 
@@ -107,7 +113,7 @@ class Service
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->server->getPid());
+        $pid = (int)@file_get_contents($this->server->getPid());
 
         posix_kill($pid, SIGTERM);
 
@@ -126,7 +132,7 @@ class Service
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->server->getPid());
+        $pid = (int)@file_get_contents($this->server->getPid());
 
         posix_kill($pid, SIGUSR1);
 
@@ -144,9 +150,28 @@ class Service
             Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
             return -1;
         }
-        print_r($status);
 
-//        Output::output($status);
+        $keys = array_map(function ($v) {
+            return strtoupper($v);
+        }, array_keys($status[0]));
+
+        $length = 15;
+
+        $format = function ($v) use ($length) {
+            $l = floor($length - strlen($v)) / 2;
+            return str_repeat(' ', $l) . $v . str_repeat(' ', (strlen($v) % 2 == 1 ? ($l) : $l + 1));
+        };
+
+        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
+
+        echo '|' . implode('|', array_map($format, $keys)) . '|' . PHP_EOL;
+
+        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
+        foreach ($status as $stats) {
+            echo '|' . implode('|', array_map($format, array_values($stats))) . '|' . PHP_EOL;
+        }
+
+        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
 
         return 0;
     }
