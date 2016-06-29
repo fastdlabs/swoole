@@ -12,16 +12,16 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../../vendor/autoload.php';
+include __DIR__ . '/../vendor/autoload.php';
 
 use FastD\Swoole\Client\Client;
 
 $client = new Client();
 
-$client->connect('11.11.11.44', '9321');
+$client->connect('127.0.0.1', '9527');
 
-$client->send('hello world');
+echo $client->send('hello world') . PHP_EOL;
 
-echo $client->receive();
+echo $client->receive() . PHP_EOL;
 
 $client->close();

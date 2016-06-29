@@ -58,7 +58,7 @@ class Client implements ClientInterface
     {
         $this->client->send($data);
 
-        return $this;
+        return $this->receive();
     }
 
     /**

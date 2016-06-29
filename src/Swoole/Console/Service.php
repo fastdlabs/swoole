@@ -50,7 +50,11 @@ class Service
      */
     public function __construct($server, array $config)
     {
-        $this->server = new $server();
+        if ($server instanceof Server) {
+            $this->server = $server;
+        } else {
+            $this->server = new $server();
+        }
 
         $this->server->configure($config);
     }
@@ -92,7 +96,7 @@ class Service
     public function start()
     {
         if ($this->isRunning()) {
-            Output::output('::1:9527 address already in use');
+            Output::output(sprintf('%s:%s address already in use', $this->server->getHost(), $this->server->getPort()));
         } else {
             try {
                 $this->server->bootstrap();

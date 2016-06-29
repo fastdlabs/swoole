@@ -142,6 +142,22 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     /**
      * @return string
      */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * @return string
+     */
     public function getPid()
     {
         return $this->pid;
