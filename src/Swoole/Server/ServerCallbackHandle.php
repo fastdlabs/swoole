@@ -59,6 +59,7 @@ abstract class ServerCallbackHandle implements ServerCallbackInterface, ServerIn
 
         Process::rename(static::SERVER_NAME . ' master');
 
+        Output::output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
         Output::output(sprintf('Server Master[%s] is started', $server->master_pid));
     }
 

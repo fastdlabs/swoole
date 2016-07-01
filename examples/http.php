@@ -29,4 +29,6 @@ class Http extends HttpServer
     }
 }
 
-Http::run([]);
+Http::run([
+    'host' => '0.0.0.0',
+]);

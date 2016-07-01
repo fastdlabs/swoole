@@ -27,6 +27,21 @@ interface ServerInterface
     /**
      * @return string
      */
+    public function getHost();
+
+    /**
+     * @return string
+     */
+    public function getPort();
+
+    /**
+     * @return string
+     */
+    public function getServerType();
+
+    /**
+     * @return string
+     */
     public function getPid();
     
     /**

@@ -158,6 +158,21 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     /**
      * @return string
      */
+    public function getServerType()
+    {
+        switch (get_class($this->swoole)) {
+            case 'swoole_http_server':
+                return 'http';
+            case 'swoole_websocket_server':
+                return '';
+            case 'swoole_server':
+                return ($this->sockType === SWOOLE_SOCK_UDP || $this->sockType === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
+        }
+    }
+
+    /**
+     * @return string
+     */
     public function getPid()
     {
         return $this->pid;
