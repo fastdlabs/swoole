@@ -14,16 +14,24 @@
 
 namespace FastD\Swoole\Monitor;
 
-use FastD\Packet\Binary;
 use FastD\Swoole\Server\Server;
-use FastD\Packet\PacketException;
-use FastD\Swoole\SwooleInterface;
 
 /**
  * Class Monitor
  *
  * @package FastD\Swoole\Monitor
  */
-class Monitor implements MonitorInterface
+class Monitor extends Server
 {
+    /**
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    {
+        // TODO: Implement doWork() method.
+    }
 }

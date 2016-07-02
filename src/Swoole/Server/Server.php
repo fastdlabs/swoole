@@ -14,8 +14,6 @@
 
 namespace FastD\Swoole\Server;
 
-use swoole_server;
-
 /**
  * Class Server
  *
@@ -38,7 +36,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     /**
      * @var string
      */
-    protected $host = '::1';
+    protected $host = '127.0.0.1';
 
     /**
      * @var string
@@ -61,16 +59,38 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     protected $pid;
 
     /**
+     * @var bool
+     */
+    protected $booted = false;
+
+    /**
+     * @var array
+     */
+    protected $monitor = [];
+
+    /**
      * @var Server
      */
     protected static $instance;
 
     /**
      * Server constructor.
+     *
+     * @param array $config
      */
-    public function __construct()
+    public function __construct(array $config = [])
     {
         $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
+
+        $this->configure($config);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBooted()
+    {
+        return $this->booted;
     }
 
     /**
@@ -80,19 +100,23 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function bootstrap()
     {
-        $this->swoole = $this->initSwoole();
+        if (!$this->isBooted()) {
+            $self = $this;
 
-        $self = static::getInstance();
+            $this->swoole = $this->initSwoole();
 
-        $this->scan($this->swoole);
+            $this->scan($this->swoole);
 
-        $this->swoole->on('receive', function (\swoole_server $server, int $fd, int $from_id, string $data) use ($self) {
-            $self->doWork($server, $fd, $from_id, $data);
-        });
+            $this->swoole->on('receive', function (\swoole_server $server, int $fd, int $from_id, string $data) use ($self) {
+                $self->doWork($server, $fd, $from_id, $data);
+            });
 
-        $this->swoole->on('task', function (\swoole_server $server, int $task_id, int $from_id, string $data) use ($self) {
-            return $self->doTask($server, $task_id, $from_id, $data);
-        });
+            $this->swoole->on('task', function (\swoole_server $server, int $task_id, int $from_id, string $data) use ($self) {
+                return $self->doTask($server, $task_id, $from_id, $data);
+            });
+
+            $this->booted = true;
+        }
 
         return $this;
     }
@@ -104,7 +128,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function initSwoole()
     {
-        return new swoole_server($this->host, $this->port, $this->mode, $this->sockType);
+        return new \swoole_server($this->host, $this->port, $this->mode, $this->sockType);
     }
 
     /**
@@ -167,6 +191,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
                 return '';
             case 'swoole_server':
                 return ($this->sockType === SWOOLE_SOCK_UDP || $this->sockType === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
+            default:
+                return 'tcp';
         }
     }
 
@@ -179,12 +205,13 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     }
 
     /**
+     * @param array $config
      * @return Server
      */
-    public static function getInstance()
+    public static function getInstance(array $config = [])
     {
         if (null === static::$instance) {
-            static::$instance = new static();
+            static::$instance = new static($config);
         }
 
         return static::$instance;
@@ -196,11 +223,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public static function run(array $config)
     {
-        $server = static::getInstance();
-
-        $server->configure($config);
-
-        $server->bootstrap();
+        $server = static::getInstance($config);
 
         $server->start();
     }
@@ -218,6 +241,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function start()
     {
+        $this->bootstrap();
+
         $this->swoole->set($this->config);
 
         $this->swoole->start();
@@ -228,6 +253,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function status()
     {
+        $this->bootstrap();
+
         $this->swoole->stats();
     }
 
@@ -236,6 +263,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function reload()
     {
+        $this->bootstrap();
+
         $this->swoole->reload();
     }
 
@@ -244,6 +273,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
      */
     public function shutdown()
     {
+        $this->bootstrap();
+        
         $this->swoole->shutdown();
     }
 
@@ -280,7 +311,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     }
 
     /**
-     * @param swoole_server $server
+     * @param \swoole_server $server
      * @param int $task_id
      * @param int $from_id
      * @param string $data
