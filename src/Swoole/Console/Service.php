@@ -117,7 +117,7 @@ class Service
             return -1;
         }
 
-        $pid = (int)@file_get_contents($this->server->getPid());
+        $pid = (int) @file_get_contents($this->server->getPid());
 
         posix_kill($pid, SIGTERM);
 
