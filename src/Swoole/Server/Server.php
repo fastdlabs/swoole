@@ -14,6 +14,8 @@
 
 namespace FastD\Swoole\Server;
 
+use Exception;
+
 /**
  * Class Server
  *
@@ -234,6 +236,16 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     public function getServerName()
     {
         return static::SERVER_NAME;
+    }
+
+    public function reportException(Exception $exception)
+    {
+
+    }
+
+    public function reportStatus()
+    {
+        $this->swoole->stats();
     }
 
     /**

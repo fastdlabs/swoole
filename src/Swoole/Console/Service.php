@@ -69,19 +69,28 @@ class Service
         if ('Linux' !== PHP_OS) {
             $processName = $_SERVER['SCRIPT_NAME'];
         }
-
-        exec("ps axu | grep {$processName} | grep -v grep | awk '{print $1, $2, $6, $8, $9, $11, $12}'", $output);
+        // | awk '{print $1, $2, $6, $8, $9, $11, $12}'
+        exec("ps axu | grep '{$processName}' | grep -v grep", $output);
 
         if (empty($output)) {
             return false;
         }
 
+        $output = array_map(function ($v) {
+            $status = preg_split('/\s+/', $v);
+
+            unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
+
+            $status = array_values($status);
+
+            $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
+
+            return array_slice($status, 0, 6);
+        }, $output);
+
         $keys = ['user', 'pid', 'rss', 'stat', 'start', 'command'];
 
         foreach ($output as $key => $value) {
-            $value = explode(' ', $value);
-            $name = array_pop($value);
-            $value[count($value) - 1] .= ' ' . $name;
             $output[$key] = array_combine($keys, $value);
         }
 
@@ -159,7 +168,7 @@ class Service
             return strtoupper($v);
         }, array_keys($status[0]));
 
-        $length = 15;
+        $length = 20;
 
         $format = function ($v) use ($length) {
             $l = floor($length - strlen($v)) / 2;

@@ -33,3 +33,10 @@ class DemoServer extends Server
 }
 
 DemoServer::run([]);
+
+/**
+ * 以上写法和以下写法效果一致
+ *
+ * $test = new DemoServer();
+ * $test->start();
+ */

@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Monitor;
 
+use FastD\Packet\Binary;
 use FastD\Swoole\Server\Server;
 
 /**
@@ -23,6 +24,10 @@ use FastD\Swoole\Server\Server;
  */
 class Monitor extends Server
 {
+    const SERVER_NAME = 'fds monitor';
+
+    protected $sockType = SWOOLE_SOCK_UDP;
+
     /**
      * @param \swoole_server $server
      * @param int $fd
@@ -32,6 +37,11 @@ class Monitor extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        // TODO: Implement doWork() method.
+        $data = Binary::decode($data);
+
+        print_r($data);
+
+        $server->send($fd, 'hello world');
+        $server->close($fd);
     }
 }
