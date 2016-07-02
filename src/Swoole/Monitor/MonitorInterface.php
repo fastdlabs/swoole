@@ -14,9 +14,7 @@
 
 namespace FastD\Swoole\Monitor;
 
-use FastD\Swoole\Server\Server;
-
 interface MonitorInterface
 {
-    public function setServer(Server $server);
+    
 }
