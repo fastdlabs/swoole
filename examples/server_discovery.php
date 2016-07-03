@@ -8,12 +8,11 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Monitor;
+include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Packet\Binary;
 use FastD\Swoole\Server\Server;
 
-class Monitor extends Server
+class DemoServer extends Server
 {
     /**
      * @param \swoole_server $server
@@ -24,10 +23,19 @@ class Monitor extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        $data = Binary::decode($data);
-        print_r($data);
-
-        $server->send($fd, 'hello world');
-        $server->close($fd);
+        // TODO: Implement doWork() method.
     }
 }
+
+DemoServer::run([
+    'discoveries' => [
+        [
+            'host' => '127.0.0.1',
+            'port' => '',
+        ],
+        [
+            'host' => '0.0.0.0',
+            'port' => '',
+        ],
+    ],
+]);

@@ -13,8 +13,8 @@
  */
 
 namespace FastD\Swoole\Server;
-
-use Exception;
+use FastD\Packet\Binary;
+use FastD\Swoole\Client\Client;
 
 /**
  * Class Server
@@ -66,16 +66,16 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     protected $booted = false;
 
     /**
-     * @var array
-     */
-    protected $discoveries = [];
-
-    /**
      * 多端口支持
      *
      * @var array
      */
     protected $ports = [];
+
+    /**
+     * @var array
+     */
+    protected $monitors = [];
 
     /**
      * @var Server
@@ -132,6 +132,16 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
                 $this->ports[$key] = $serverPort;
             }
 
+            if (isset($this->config['discoveries']) && !empty($this->config['discoveries'])) {
+                $this->discovery($this->config['discoveries']);
+                unset($this->config['discoveries']);
+            }
+
+            if (isset($this->config['monitors']) && !empty($this->config['monitors'])) {
+                $this->monitoring($this->config['monitors']);
+                unset($this->config['monitors']);
+            }
+
             $this->booted = true;
         }
 
@@ -175,12 +185,12 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
             unset($config['pid']);
         }
 
-        $this->config = $config;
-
         if (isset($config['ports'])) {
             $this->ports = $config['ports'];
             unset($config['ports']);
         }
+
+        $this->config = $config;
 
         return $config;
     }
@@ -214,7 +224,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
             case 'swoole_server':
                 return ($this->sockType === SWOOLE_SOCK_UDP || $this->sockType === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
             default:
-                return 'tcp';
+                return 'unknow';
         }
     }
 
@@ -224,6 +234,68 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     public function getPid()
     {
         return $this->pid;
+    }
+
+    /**
+     * @return string
+     */
+    public function getServerName()
+    {
+        return static::SERVER_NAME;
+    }
+
+    /**
+     * 服务发现
+     *
+     * @param array $discoveries
+     * @return $this
+     */
+    public function discovery(array $discoveries)
+    {
+        foreach ($discoveries as $discovery) {
+            $process = new \swoole_process(function () use ($discovery) {
+                while (true) {
+                    sleep(1);
+                    echo 'discovery ' . $discovery['host'] . PHP_EOL;
+                }
+            });
+
+            $this->swoole->addProcess($process);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $monitors
+     * @return $this
+     */
+    public function monitoring(array $monitors)
+    {
+        $self = $this;
+        foreach ($monitors as $monitor) {
+            $process = new \swoole_process(function () use ($monitor, $self) {
+                $client = new Client($monitor['sock']);
+                while (true) {
+                    sleep(1);
+                    $client->connect($monitor['host'], $monitor['port']);
+                    $data = $client->send(Binary::encode([
+                        'host' => $self->getHost(),
+                        'port' => $self->getPort(),
+                        'status' => $self->getSwooleInstance()->stats(),
+                    ]));
+                }
+            });
+
+            $this->swoole->addProcess($process);
+        }
+
+        return $this;
+    }
+
+    protected function report($monitor, $msg)
+    {
+
     }
 
     /**
@@ -248,27 +320,6 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
         $server = static::getInstance($config);
 
         $server->start();
-    }
-
-    /**
-     * @return string
-     */
-    public function getServerName()
-    {
-        return static::SERVER_NAME;
-    }
-
-    /**
-     * 服务发现
-     *
-     * @param array $discoveries
-     * @return $this
-     */
-    public function discovery(array $discoveries)
-    {
-        $this->discoveries = $discoveries;
-
-        return $this;
     }
 
     /**

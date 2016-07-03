@@ -14,7 +14,8 @@ use FastD\Swoole\Monitor\Monitor;
 use FastD\Swoole\Console\Service;
 
 $service = Service::server(Monitor::class, [
-
+    'host' => '0.0.0.0',
+    'port' => '9882',
 ]);
 
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'status';
