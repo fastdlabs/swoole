@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: janhuang
- * Date: 16/1/29
- * Time: 下午10:43
+ * Date: 16/1/18
+ * Time: 下午9:47
  * Github: https://www.github.com/janhuang
  * Coding: https://www.coding.net/janhuang
  * SegmentFault: http://segmentfault.com/u/janhuang
@@ -12,27 +12,12 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Monitor;
+include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Packet\Binary;
 use FastD\Swoole\Server\Server;
 
-/**
- * Class Monitor
- *
- * @package FastD\Swoole\Monitor
- */
-class Monitor extends Server
+class DemoServer extends Server
 {
-    const SERVER_NAME = 'fds monitor';
-
-    protected $sockType = SWOOLE_SOCK_UDP;
-
-    protected function getRedis()
-    {
-
-    }
-
     /**
      * @param \swoole_server $server
      * @param int $fd
@@ -42,11 +27,29 @@ class Monitor extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        $data = Binary::decode($data);
-
-        print_r($data);
-
-        $server->send($fd, 'hello world');
+        $server->send($fd, $data, $from_id);
         $server->close($fd);
     }
 }
+
+DemoServer::run([
+    'ports' => [
+        [
+            'host' => '0.0.0.0',
+            'port' => '9999',
+            'sock' => SWOOLE_SOCK_TCP,
+        ],
+        [
+            'host' => '0.0.0.0',
+            'port' => '9998',
+            'sock' => SWOOLE_SOCK_TCP,
+        ],
+    ]
+]);
+
+/**
+ * 以上写法和以下写法效果一致
+ *
+ * $test = new DemoServer();
+ * $test->start();
+ */

@@ -68,7 +68,14 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
     /**
      * @var array
      */
-    protected $monitor = [];
+    protected $discoveries = [];
+
+    /**
+     * 多端口支持
+     *
+     * @var array
+     */
+    protected $ports = [];
 
     /**
      * @var Server
@@ -117,6 +124,14 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
                 return $self->doTask($server, $task_id, $from_id, $data);
             });
 
+            foreach ($this->ports as $key => $port) {
+                $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock']);
+                if (isset($port['config'])) {
+                    $serverPort->set($port['config']);
+                }
+                $this->ports[$key] = $serverPort;
+            }
+
             $this->booted = true;
         }
 
@@ -161,6 +176,11 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
         }
 
         $this->config = $config;
+
+        if (isset($config['ports'])) {
+            $this->ports = $config['ports'];
+            unset($config['ports']);
+        }
 
         return $config;
     }
@@ -238,14 +258,17 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
         return static::SERVER_NAME;
     }
 
-    public function reportException(Exception $exception)
+    /**
+     * 服务发现
+     *
+     * @param array $discoveries
+     * @return $this
+     */
+    public function discovery(array $discoveries)
     {
+        $this->discoveries = $discoveries;
 
-    }
-
-    public function reportStatus()
-    {
-        $this->swoole->stats();
+        return $this;
     }
 
     /**
