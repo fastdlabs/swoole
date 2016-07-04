@@ -81,6 +81,11 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
     protected $monitors = [];
 
     /**
+     * @var array
+     */
+    protected $discoveries = [];
+
+    /**
      * @var Server
      */
     protected static $instance;
@@ -251,6 +256,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      */
     public function discovery(array $discoveries)
     {
+        $this->discoveries = $discoveries;
+        
         foreach ($discoveries as $discovery) {
             $process = new \swoole_process(function () use ($discovery) {
                 while (true) {
