@@ -13,6 +13,7 @@
  */
 
 namespace FastD\Swoole\Server;
+
 use FastD\Packet\Binary;
 use FastD\Swoole\Client\Client;
 
@@ -21,7 +22,7 @@ use FastD\Swoole\Client\Client;
  *
  * @package FastD\Swoole\Server
  */
-abstract class Server extends ServerCallbackHandle implements ServerInterface
+abstract class Server extends ServerCallbackHandle implements ServerInterface, ServerDiscoveryInterface, ServerMonitorInterface
 {
     /**
      * @var \swoole_server
