@@ -22,7 +22,9 @@ use FastD\Swoole\Client\Client;
  *
  * @package FastD\Swoole\Server
  */
-abstract class Server extends ServerCallbackHandle implements ServerInterface, ServerDiscoveryInterface, ServerMonitorInterface
+abstract class Server extends ServerCallbackHandle implements ServerInterface,
+    ServerDiscoveryInterface,
+    ServerMonitorInterface
 {
     /**
      * @var \swoole_server
@@ -117,13 +119,9 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
 
             $this->scan($this->swoole);
 
-            $this->swoole->on('receive', function (\swoole_server $server, int $fd, int $from_id, string $data) use ($self) {
-                $self->doWork($server, $fd, $from_id, $data);
-            });
+            $this->swoole->on('receive', [$this, 'onReceive']);
 
-            $this->swoole->on('task', function (\swoole_server $server, int $task_id, int $from_id, string $data) use ($self) {
-                return $self->doTask($server, $task_id, $from_id, $data);
-            });
+            $this->swoole->on('task', [$this, 'onTask']);
 
             foreach ($this->ports as $key => $port) {
                 $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock']);
@@ -273,20 +271,21 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
      */
     public function monitoring(array $monitors)
     {
+        $this->monitors = $monitors;
+
         $self = $this;
-        foreach ($monitors as $monitor) {
+
+        foreach ($this->monitors as $monitor) {
             $process = new \swoole_process(function () use ($monitor, $self) {
                 $client = new Client($monitor['sock']);
                 while (true) {
-                    sleep(1);
                     $client->connect($monitor['host'], $monitor['port']);
-                    $data = $client->send(Binary::encode([
+                    $client->send(Binary::encode([
                         'host' => $self->getHost(),
                         'port' => $self->getPort(),
                         'status' => $self->getSwooleInstance()->stats(),
                     ]));
-                    print_r($data);
-                    echo 'monitor ' . $monitor['host'] . PHP_EOL;
+                    sleep(20);
                 }
             });
 
@@ -296,9 +295,42 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
         return $this;
     }
 
-    protected function report($monitor, $msg)
+    /**
+     * @param callable $callable
+     * @return void
+     */
+    public function report(callable $callable)
     {
+        try {
+            $start = microtime(true);
+            $callable();
+            $end = microtime(true);
+            $tc = $end - $start;
+            $message = [
+                'code' => 0,
+                'content' => [
+                    'start' => $start,
+                    'end' => $end,
+                    'tc' => $tc,
+                ]
+            ];
+        } catch (\Exception $e) {
+            $message = [
+                'error' => $e->getCode(),
+                'content' => [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]
+            ];
+        }
 
+        foreach ($this->monitors as $monitor) {
+            $client = new Client($monitor['sock']);
+            $client->connect($monitor['host'], $monitor['port']);
+            $client->send(Binary::encode($message));
+            unset($client);
+        }
     }
 
     /**
@@ -312,6 +344,14 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
         }
 
         return static::$instance;
+    }
+
+    /**
+     * @return swoole_server
+     */
+    public function getSwooleInstance()
+    {
+        return $this->swoole;
     }
 
     /**
@@ -363,19 +403,13 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
     public function shutdown()
     {
         $this->bootstrap();
-        
+
         $this->swoole->shutdown();
     }
 
     /**
-     * @return swoole_server
-     */
-    public function getSwooleInstance()
-    {
-        return $this->swoole;
-    }
-
-    /**
+     * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
+     *
      * @param \swoole_server $server
      * @param $fd
      * @param $from_id
@@ -384,7 +418,46 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
      */
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
-        $this->doWork($server, $fd, $from_id, $data);
+        $self = $this;
+
+        $this->report(function () use ($self, $server, $fd, $from_id, $data) {
+            $self->doWork($server, $fd, $from_id, $data);
+        });
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param int $fd
+     * @param int $from_id
+     * @param string $data
+     * @return mixed
+     */
+    abstract public function doWork(\swoole_server $server, int $fd, int $from_id, string $data);
+
+    /**
+     * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
+     *
+     * @param \swoole_server $server
+     * @param string $data
+     * @param array $client_info
+     */
+    public function onPacket(\swoole_server $server, string $data, array $client_info)
+    {
+        $self = $this;
+
+        $this->report(function () use ($self, $server, $data, $client_info) {
+            $self->doPacket($server, $data, $client_info);
+        });
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param string $data
+     * @param array $client_info
+     */
+    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    {
+        return;
     }
 
     /**
@@ -407,6 +480,28 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface, S
      * @return mixed
      */
     public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data)
+    {
+        return;
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param int $task_id
+     * @param string $data
+     * @return mixed
+     */
+    public function onFinish(\swoole_server $server, int $task_id, string $data)
+    {
+        return $this->doFinish($server, $task_id, $data);
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param int $task_id
+     * @param string $data
+     * @return mixed
+     */
+    public function doFinish(\swoole_server $server, int $task_id, string $data)
     {
         return;
     }

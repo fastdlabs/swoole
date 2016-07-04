@@ -22,4 +22,10 @@ interface ServerMonitorInterface
      * @return mixed
      */
     public function monitoring(array $monitors);
+
+    /**
+     * @param callable $callable
+     * @return mixed
+     */
+    public function report(callable $callable);
 }

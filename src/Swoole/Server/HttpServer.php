@@ -35,7 +35,11 @@ abstract class HttpServer extends Server implements HttpServerInterface
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
+        $start = microtime(true);
         $this->doRequest($request, $response);
+        $end = microtime(true);
+        $tc = $end - $start;
+        $this->report();
     }
 
     /**

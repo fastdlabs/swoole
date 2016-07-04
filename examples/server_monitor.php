@@ -23,7 +23,8 @@ class DemoServer extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        // TODO: Implement doWork() method.
+        $server->send($fd, 'hello ' . $from_id);
+        $server->close($fd);
     }
 }
 
@@ -36,3 +37,17 @@ DemoServer::run([
         ]
     ]
 ]);
+
+/**
+ *
+ * $server = new DemoServer();
+ * $server->monitoring([
+ * [
+ *      'host' => '127.0.0.1',
+ *      'port' => '9883',
+ *      'sock' => SWOOLE_SOCK_TCP
+ * ]
+ * ]);
+ * $server->start();
+ */
+
