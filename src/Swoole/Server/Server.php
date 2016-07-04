@@ -284,6 +284,8 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface
                         'port' => $self->getPort(),
                         'status' => $self->getSwooleInstance()->stats(),
                     ]));
+                    print_r($data);
+                    echo 'monitor ' . $monitor['host'] . PHP_EOL;
                 }
             });
 

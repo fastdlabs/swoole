@@ -16,6 +16,14 @@ use FastD\Swoole\Console\Service;
 $service = Service::server(Monitor::class, [
     'host' => '0.0.0.0',
     'port' => '9882',
+    'ports' => [
+        [
+            'host' => '127.0.0.1',
+            'port' => '9883',
+            'sock' => SWOOLE_SOCK_TCP,
+            'config' => [],
+        ]
+    ]
 ]);
 
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'status';

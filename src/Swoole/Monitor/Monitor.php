@@ -11,9 +11,14 @@
 namespace FastD\Swoole\Monitor;
 
 use FastD\Packet\Binary;
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server\HttpServer;
 
-class Monitor extends Server
+/**
+ * Class Monitor
+ *
+ * @package FastD\Swoole\Monitor
+ */
+class Monitor extends HttpServer
 {
     /**
      * @param \swoole_server $server
@@ -26,8 +31,17 @@ class Monitor extends Server
     {
         $data = Binary::decode($data);
         print_r($data);
-
         $server->send($fd, 'hello world');
         $server->close($fd);
+    }
+
+    /**
+     * @param \swoole_http_request $request
+     * @param \swoole_http_response $response
+     * @return mixed
+     */
+    public function doRequest(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        $response->end('hello world');
     }
 }

@@ -31,7 +31,7 @@ DemoServer::run([
     'monitors' => [
         [
             'host' => '127.0.0.1',
-            'port' => '9882',
+            'port' => '9883',
             'sock' => SWOOLE_SOCK_TCP
         ]
     ]
