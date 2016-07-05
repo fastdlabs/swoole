@@ -50,6 +50,19 @@ DemoServer::run([
 /**
  * 以上写法和以下写法效果一致
  *
- * $test = new DemoServer();
+ * $test = new DemoServer([
+ *  'ports' => [
+ *      [
+ *          'host' => '0.0.0.0',
+ *          'port' => '9999',
+ *          'sock' => SWOOLE_SOCK_TCP,
+ *      ],
+ *      [
+ *          'host' => '0.0.0.0',
+ *          'port' => '9998',
+ *          'sock' => SWOOLE_SOCK_TCP,
+ *      ],
+ *  ]
+ * ]);
  * $test->start();
  */

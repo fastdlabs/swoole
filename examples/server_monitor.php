@@ -23,7 +23,7 @@ class DemoServer extends Server
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
     {
-        $server->send($fd, 'hello ' . $from_id);
+        $server->send($fd, 'hello');
         $server->close($fd);
     }
 }

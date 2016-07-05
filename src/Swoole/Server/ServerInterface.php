@@ -52,13 +52,4 @@ interface ServerInterface
      * @return mixed
      */
     public function doWork(\swoole_server $server, int $fd, int $from_id, string $data);
-
-    /**
-     * @param \swoole_server $server
-     * @param int $task_id
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
-     */
-    public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data);
 }

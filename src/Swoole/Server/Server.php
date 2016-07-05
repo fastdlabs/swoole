@@ -118,15 +118,10 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
     public function bootstrap()
     {
         if (!$this->isBooted()) {
-            $self = $this;
 
             $this->swoole = $this->initSwoole();
 
             $this->scan($this->swoole);
-
-            $this->swoole->on('receive', [$this, 'onReceive']);
-
-            $this->swoole->on('task', [$this, 'onTask']);
 
             foreach ($this->ports as $key => $port) {
                 $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock']);
@@ -302,40 +297,16 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
         return $this;
     }
 
-    /**
-     * @param callable $callable
-     * @return void
-     */
-    public function report(callable $callable)
+    public function report(\swoole_server $server, $worker_id, $task_id, $msg)
     {
-        try {
-            $start = microtime(true);
-            $callable();
-            $end = microtime(true);
-            $tc = $end - $start;
-            $message = [
-                'code' => 0,
-                'content' => [
-                    'start' => $start,
-                    'end' => $end,
-                    'tc' => $tc,
-                ]
-            ];
-        } catch (\Exception $e) {
-            $message = [
-                'error' => $e->getCode(),
-                'content' => [
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                ]
-            ];
-        }
-
         foreach ($this->monitors as $monitor) {
             $client = new Client($monitor['sock']);
             $client->connect($monitor['host'], $monitor['port']);
-            $client->send(Binary::encode($message));
+            $client->send(Binary::encode([
+                'worker_id' => $worker_id,
+                'task_id' => $task_id,
+                'msg' => $msg
+            ]));
             unset($client);
         }
     }
@@ -425,11 +396,11 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      */
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
-        $self = $this;
+        $this->doWork($server, $fd, $from_id, $data);
 
-        $this->report(function () use ($self, $server, $fd, $from_id, $data) {
-            $self->doWork($server, $fd, $from_id, $data);
-        });
+        $this->report($server, $server->worker_pid, null, [
+            'worker' => 'worker ' . $server->worker_pid,
+        ]);
     }
 
     /**
@@ -450,11 +421,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      */
     public function onPacket(\swoole_server $server, string $data, array $client_info)
     {
-        $self = $this;
-
-        $this->report(function () use ($self, $server, $data, $client_info) {
-            $self->doPacket($server, $data, $client_info);
-        });
+        $this->doPacket($server, $data, $client_info);
     }
 
     /**
@@ -463,52 +430,6 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      * @param array $client_info
      */
     public function doPacket(\swoole_server $server, string $data, array $client_info)
-    {
-        return;
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param int $task_id
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
-     */
-    public function onTask(\swoole_server $server, int $task_id, int $from_id, string $data)
-    {
-        return $this->doTask($server, $task_id, $from_id, $data);
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param int $task_id
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
-     */
-    public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data)
-    {
-        return;
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param int $task_id
-     * @param string $data
-     * @return mixed
-     */
-    public function onFinish(\swoole_server $server, int $task_id, string $data)
-    {
-        return $this->doFinish($server, $task_id, $data);
-    }
-
-    /**
-     * @param \swoole_server $server
-     * @param int $task_id
-     * @param string $data
-     * @return mixed
-     */
-    public function doFinish(\swoole_server $server, int $task_id, string $data)
     {
         return;
     }

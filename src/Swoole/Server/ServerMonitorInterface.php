@@ -27,5 +27,5 @@ interface ServerMonitorInterface
      * @param callable $callable
      * @return mixed
      */
-    public function report(callable $callable);
+//    public function report(callable $callable);
 }
