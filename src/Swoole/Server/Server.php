@@ -401,14 +401,14 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      * @param $data
      * @return mixed
      */
-    public function onReceive(\swoole_server $server, $fd, $from_id, $data)
+    public function onReceive(\swoole_server $server, int $fd, int $from_id, string $data)
     {
         try {
             $msg = [
                 'start' => microtime(true),
             ];
             $this->doWork($server, $fd, $from_id, $data);
-            $msg['emd'] = microtime(true);
+            $msg['end'] = microtime(true);
         } catch (\Exception $e) {
             $msg = [
                 'code' => $e->getCode(),
@@ -446,7 +446,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
                 'start' => microtime(true),
             ];
             $this->doPacket($server, $data, $client_info);
-            $msg['emd'] = microtime(true);
+            $msg['end'] = microtime(true);
         } catch (\Exception $e) {
             $msg = [
                 'code' => $e->getCode(),

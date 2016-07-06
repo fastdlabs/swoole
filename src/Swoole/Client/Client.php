@@ -41,9 +41,7 @@ class Client implements ClientInterface
     {
         $this->client = new \swoole_client($mode, $async);
 
-        if (null !== $async) {
-            $this->async = true;
-        }
+        $this->client->on('connect', [$this, 'onConnect']);
     }
 
     /**
@@ -55,20 +53,14 @@ class Client implements ClientInterface
     }
 
     /**
-     * 异步客户端接受
-     *
-     * @param      $host
-     * @param      $port
-     * @param int  $timeout
+     * @param $host
+     * @param $port
+     * @param int $timeout
      * @return $this
      */
-    public function connect($host, $port, $timeout = 5, callable $callable = null)
+    public function connect($host, $port, $timeout = 5)
     {
-        $this->client->connect($host, $port);
-
-        if ($this->isAsync()) {
-            $this->client->on('connect', $callable);
-        }
+        $this->client->connect($host, $port, $timeout);
 
         return $this;
     }
