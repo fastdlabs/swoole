@@ -301,7 +301,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
     {
         foreach ($this->monitors as $monitor) {
             $client = new Client($monitor['sock']);
-            $client->connect($monitor['host'], $monitor['port']);
+            $client->connect($monitor['host'], $monitor['port'], 2);
             $client->send(Binary::encode([
                 'worker_id' => $worker_id,
                 'task_id' => $task_id,
@@ -399,7 +399,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
         $this->doWork($server, $fd, $from_id, $data);
 
         $this->report($server, $server->worker_pid, null, [
-            'worker' => 'worker ' . $server->worker_pid,
+            'worker_id' => $server->worker_pid,
         ]);
     }
 
@@ -429,8 +429,5 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      * @param string $data
      * @param array $client_info
      */
-    public function doPacket(\swoole_server $server, string $data, array $client_info)
-    {
-        return;
-    }
+    abstract public function doPacket(\swoole_server $server, string $data, array $client_info);
 }
