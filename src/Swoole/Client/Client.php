@@ -27,6 +27,11 @@ class Client implements ClientInterface
     protected $client;
 
     /**
+     * @var bool
+     */
+    protected $async = false;
+
+    /**
      * Client constructor.
      *
      * @param $mode
@@ -35,17 +40,35 @@ class Client implements ClientInterface
     public function __construct($mode = SWOOLE_SOCK_TCP, $async = null)
     {
         $this->client = new \swoole_client($mode, $async);
+
+        if (null !== $async) {
+            $this->async = true;
+        }
     }
 
     /**
+     * @return bool
+     */
+    public function isAsync()
+    {
+        return $this->async;
+    }
+
+    /**
+     * 异步客户端接受
+     *
      * @param      $host
      * @param      $port
      * @param int  $timeout
      * @return $this
      */
-    public function connect($host, $port, $timeout = 5)
+    public function connect($host, $port, $timeout = 5, callable $callable = null)
     {
         $this->client->connect($host, $port);
+
+        if ($this->isAsync()) {
+            $this->client->on('connect', $callable);
+        }
 
         return $this;
     }

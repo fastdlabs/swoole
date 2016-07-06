@@ -297,16 +297,23 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
         return $this;
     }
 
+    /**
+     * @param \swoole_server $server
+     * @param $worker_id
+     * @param $task_id
+     * @param $msg
+     */
     public function report(\swoole_server $server, $worker_id, $task_id, $msg)
     {
         foreach ($this->monitors as $monitor) {
             $client = new Client($monitor['sock']);
-            $client->connect($monitor['host'], $monitor['port'], 2);
-            $client->send(Binary::encode([
-                'worker_id' => $worker_id,
-                'task_id' => $task_id,
-                'msg' => $msg
-            ]));
+            if ($client->connect($monitor['host'], $monitor['port'], 2)) {
+                $client->send(Binary::encode([
+                    'worker_id' => $worker_id,
+                    'task_id' => $task_id,
+                    'msg' => $msg
+                ]));
+            }
             unset($client);
         }
     }
@@ -325,7 +332,7 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
     }
 
     /**
-     * @return swoole_server
+     * @return \swoole_server
      */
     public function getSwooleInstance()
     {
@@ -396,11 +403,24 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      */
     public function onReceive(\swoole_server $server, $fd, $from_id, $data)
     {
-        $this->doWork($server, $fd, $from_id, $data);
+        try {
+            $msg = [
+                'start' => microtime(true),
+            ];
+            $this->doWork($server, $fd, $from_id, $data);
+            $msg['emd'] = microtime(true);
+        } catch (\Exception $e) {
+            $msg = [
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'message' => $e->getMessage(),
+            ];
+        }
 
-        $this->report($server, $server->worker_pid, null, [
-            'worker_id' => $server->worker_pid,
-        ]);
+        $msg['worker_id'] = $server->worker_pid;
+
+        $this->report($server, $server->worker_pid, null, $msg);
     }
 
     /**
@@ -421,7 +441,24 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      */
     public function onPacket(\swoole_server $server, string $data, array $client_info)
     {
-        $this->doPacket($server, $data, $client_info);
+        try {
+            $msg = [
+                'start' => microtime(true),
+            ];
+            $this->doPacket($server, $data, $client_info);
+            $msg['emd'] = microtime(true);
+        } catch (\Exception $e) {
+            $msg = [
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'message' => $e->getMessage(),
+            ];
+        }
+
+        $msg['worker_id'] = $server->worker_pid;
+
+        $this->report($server, $server->worker_pid, null, $msg);
     }
 
     /**
