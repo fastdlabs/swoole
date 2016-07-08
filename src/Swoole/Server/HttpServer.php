@@ -69,4 +69,14 @@ abstract class HttpServer extends Server implements HttpServerInterface
     {
         return;
     }
+
+    /**
+     * @param \swoole_server $server
+     * @param string $data
+     * @param array $client_info
+     */
+    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    {
+        return;
+    }
 }
