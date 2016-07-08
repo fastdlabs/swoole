@@ -31,6 +31,16 @@ class Demo extends Server
         $server->send($fd, $data);
         $server->close($fd);
     }
+
+    /**
+     * @param \swoole_server $server
+     * @param string $data
+     * @param array $client_info
+     */
+    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    {
+        // TODO: Implement doPacket() method.
+    }
 }
 
 $service = Service::server(Demo::class, [

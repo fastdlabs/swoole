@@ -25,6 +25,16 @@ class DemoServer extends Server
     {
         // TODO: Implement doWork() method.
     }
+
+    /**
+     * @param \swoole_server $server
+     * @param string $data
+     * @param array $client_info
+     */
+    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    {
+        // TODO: Implement doPacket() method.
+    }
 }
 
 DemoServer::run([
