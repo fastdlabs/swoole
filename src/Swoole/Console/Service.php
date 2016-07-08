@@ -53,10 +53,8 @@ class Service
         if ($server instanceof Server) {
             $this->server = $server;
         } else {
-            $this->server = new $server();
+            $this->server = new $server($config);
         }
-
-        $this->server->configure($config);
     }
 
     /**
