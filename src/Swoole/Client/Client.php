@@ -40,8 +40,6 @@ class Client implements ClientInterface
     public function __construct($mode = SWOOLE_SOCK_TCP, $async = null)
     {
         $this->client = new \swoole_client($mode, $async);
-
-        $this->client->on('connect', [$this, 'onConnect']);
     }
 
     /**
