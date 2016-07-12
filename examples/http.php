@@ -14,18 +14,18 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Swoole\Server\HttpServer;
+use FastD\Swoole\Http\HttpServer;
+use FastD\Http\Request;
 
 class Http extends HttpServer
 {
     /**
-     * @param \swoole_http_request $request
-     * @param \swoole_http_response $response
-     * @return mixed
+     * @param Request $request
+     * @return \FastD\Http\Response
      */
-    public function doRequest(\swoole_http_request $request, \swoole_http_response $response)
+    public function doRequest(\FastD\Http\Request $request)
     {
-        $response->end('hello world');
+        return $this->json(['name' => 'jan']);
     }
 }
 
