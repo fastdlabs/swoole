@@ -26,6 +26,16 @@ class Test extends Server
         $server->send($fd, $data, $from_id);
         $server->close($fd);
     }
+
+    /**
+     * @param \swoole_server $server
+     * @param string $data
+     * @param array $client_info
+     */
+    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    {
+        // TODO: Implement doPacket() method.
+    }
 }
 
 $test = new Test();
