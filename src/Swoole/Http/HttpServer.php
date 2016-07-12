@@ -12,7 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole\Http;
+
+use FastD\Swoole\Server\Server;
 
 /**
  * Class HttpServer

@@ -8,7 +8,9 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole\Http;
+
+use FastD\Swoole\Server\ServerInterface;
 
 /**
  * Interface HttpServerInterface
