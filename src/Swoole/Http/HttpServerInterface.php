@@ -11,7 +11,7 @@
 namespace FastD\Swoole\Http;
 
 use FastD\Http\Response;
-use FastD\Http\SwooleRequest;
+use FastD\Http\Swoole\SwooleRequest;
 use FastD\Swoole\Server\ServerInterface;
 
 /**

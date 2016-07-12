@@ -14,7 +14,7 @@
         "php": ">=7.0",
         "ext-swoole": ">=1.8",
         "fastd/packet": "~1.1.0",
-        "fastd/http": "~2.0.0",
+        "fastd/http": "dev-master",
         "fastd/storage": "~2.0.0"
     },
     "require-dev": {
@@ -30,11 +30,6 @@
             "dev-master": "2.0.x-dev"
         }
     },
-    "bin": [
-        "install",
-        "monitor",
-        "bootstrap.php"
-    ],
     "suggests": {
         "ext-swoole": "Allow php swoole extension.",
         "ext-inotify": "Allow php inotify extension."

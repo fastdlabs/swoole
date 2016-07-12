@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e748cda431bc99177c2e08a20c301585",
-    "content-hash": "5896287191e1665b8df89b1ce61a9409",
+    "hash": "3dd90bdd75c9a99451243cea33e7d4c4",
+    "content-hash": "a192118050dcf3c502d7b105384a6559",
     "packages": [
         {
             "name": "fastd/http",
@@ -13,19 +13,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JanHuang/http.git",
-                "reference": "11e4c4a29c28ad2ce85e51efff34e0ab444b50d4"
+                "reference": "43d74ca727c96296640aea566d932d987c993ad3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JanHuang/http/zipball/11e4c4a29c28ad2ce85e51efff34e0ab444b50d4",
-                "reference": "11e4c4a29c28ad2ce85e51efff34e0ab444b50d4",
+                "url": "https://api.github.com/repos/JanHuang/http/zipball/43d74ca727c96296640aea566d932d987c993ad3",
+                "reference": "43d74ca727c96296640aea566d932d987c993ad3",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.0"
             },
             "require-dev": {
-                "fastd/storage": "~2.0@beta",
+                "fastd/storage": "~2.0.0",
+                "fastd/swoole": "dev-master",
                 "phpunit/phpunit": "~5.0"
             },
             "type": "library",
@@ -54,7 +55,7 @@
                 "FastD",
                 "http"
             ],
-            "time": "2016-06-29 15:39:21"
+            "time": "2016-07-12 13:50:13"
         },
         {
             "name": "fastd/packet",
@@ -1391,7 +1392,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "fastd/http": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

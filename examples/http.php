@@ -15,7 +15,7 @@
 include __DIR__ . '/../vendor/autoload.php';
 
 use FastD\Swoole\Http\HttpServer;
-use FastD\Http\SwooleRequest;
+use FastD\Http\Swoole\SwooleRequest;
 
 class Http extends HttpServer
 {
@@ -25,9 +25,9 @@ class Http extends HttpServer
      */
     public function doRequest(SwooleRequest $request)
     {
-        $request->setSession('name', 'jan');
+        $request->setSession('name', 'janhuang');
 
-        return $this->json(['name' => 'jan']);
+        return $this->responseJson(['name' => 'jan']);
     }
 }
 

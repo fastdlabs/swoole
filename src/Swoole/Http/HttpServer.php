@@ -17,8 +17,9 @@ namespace FastD\Swoole\Http;
 use FastD\Http\JsonResponse;
 use FastD\Http\RedirectResponse;
 use FastD\Http\Response;
-use FastD\Http\SwooleRequest;
 use FastD\Swoole\Server\Server;
+use FastD\Http\Swoole\SwooleRequest;
+use FastD\Http\Swoole\SwooleSession;
 
 /**
  * Class HttpServer
@@ -27,16 +28,13 @@ use FastD\Swoole\Server\Server;
  */
 abstract class HttpServer extends Server implements HttpServerInterface
 {
-    /**
-     * @const int
-     */
     const GZIP_LEVEL = 4;
 
     /**
      * @param array $content
      * @return JsonResponse
      */
-    public function json(array $content)
+    public function responseJson(array $content)
     {
         return new JsonResponse($content);
     }
@@ -45,7 +43,7 @@ abstract class HttpServer extends Server implements HttpServerInterface
      * @param $content
      * @return Response
      */
-    public function html($content)
+    public function responseHtml($content)
     {
         return new Response($content);
     }
@@ -70,21 +68,23 @@ abstract class HttpServer extends Server implements HttpServerInterface
     /**
      * @param \swoole_http_request $request
      * @param \swoole_http_response $response
-     * @return void
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
-        $swooleRequest = SwooleRequest::createSwooleRequestHandle($request);
-
-        if (isset($this->config['session'])) {
-            $swooleRequest->setSessionConfig($this->config['session']);
-        }
-
         try {
+            $swooleRequest = SwooleRequest::createSwooleRequestHandle($request);
+
+            $swooleRequest->setSessionHandle(new SwooleSession($request));
             $returnResponse = $this->doRequest($swooleRequest);
 
             foreach ($returnResponse->getHeader()->all() as $key => $value) {
                 $response->header($key, $value);
+            }
+
+            if (isset($request->cookie)) {
+                foreach ($request->cookie as $key => $value) {
+                    $response->cookie($key, $value);
+                }
             }
 
             $response->gzip(static::GZIP_LEVEL);
@@ -93,8 +93,9 @@ abstract class HttpServer extends Server implements HttpServerInterface
 
             unset($swooleRequest, $returnResponse);
         } catch (\Exception $e) {
-            $response->status(500);
-            $response->end(session_id());
+            $response->gzip(static::GZIP_LEVEL);
+            $response->status(5);
+            $response->end($e->getMessage());
         }
     }
 
