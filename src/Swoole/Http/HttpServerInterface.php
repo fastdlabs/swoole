@@ -10,8 +10,8 @@
 
 namespace FastD\Swoole\Http;
 
-use FastD\Http\Request;
 use FastD\Http\Response;
+use FastD\Http\SwooleRequest;
 use FastD\Swoole\Server\ServerInterface;
 
 /**
@@ -22,8 +22,8 @@ use FastD\Swoole\Server\ServerInterface;
 interface HttpServerInterface extends ServerInterface
 {
     /**
-     * @param Request $request
+     * @param SwooleRequest $request
      * @return Response
      */
-    public function doRequest(Request $request);
+    public function doRequest(SwooleRequest $request);
 }

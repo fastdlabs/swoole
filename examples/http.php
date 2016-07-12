@@ -15,20 +15,26 @@
 include __DIR__ . '/../vendor/autoload.php';
 
 use FastD\Swoole\Http\HttpServer;
-use FastD\Http\Request;
+use FastD\Http\SwooleRequest;
 
 class Http extends HttpServer
 {
     /**
-     * @param Request $request
+     * @param SwooleRequest $request
      * @return \FastD\Http\Response
      */
-    public function doRequest(\FastD\Http\Request $request)
+    public function doRequest(SwooleRequest $request)
     {
+        $request->setSession('name', 'jan');
+
         return $this->json(['name' => 'jan']);
     }
 }
 
 Http::run([
     'host' => '0.0.0.0',
+    'session' => [
+        'host' => 'tcp://127.0.0.1:6379',
+        'auth' => 'test'
+    ]
 ]);

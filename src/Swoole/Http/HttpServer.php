@@ -27,18 +27,33 @@ use FastD\Swoole\Server\Server;
  */
 abstract class HttpServer extends Server implements HttpServerInterface
 {
+    /**
+     * @const int
+     */
     const GZIP_LEVEL = 4;
 
+    /**
+     * @param array $content
+     * @return JsonResponse
+     */
     public function json(array $content)
     {
         return new JsonResponse($content);
     }
 
+    /**
+     * @param $content
+     * @return Response
+     */
     public function html($content)
     {
         return new Response($content);
     }
 
+    /**
+     * @param $url
+     * @return RedirectResponse
+     */
     public function redirect($url)
     {
         return new RedirectResponse($url);
@@ -55,22 +70,32 @@ abstract class HttpServer extends Server implements HttpServerInterface
     /**
      * @param \swoole_http_request $request
      * @param \swoole_http_response $response
+     * @return void
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
-        $request = SwooleRequest::createSwooleRequestHandle($request);
+        $swooleRequest = SwooleRequest::createSwooleRequestHandle($request);
 
-        $returnResponse = $this->doRequest($request);
-
-        foreach ($returnResponse->getHeader()->all() as $key => $value) {
-            $response->header($key, $value);
+        if (isset($this->config['session'])) {
+            $swooleRequest->setSessionConfig($this->config['session']);
         }
 
-        $response->gzip(static::GZIP_LEVEL);
-        $response->status($returnResponse->getStatusCode());
-        $response->end($returnResponse->getContent());
+        try {
+            $returnResponse = $this->doRequest($swooleRequest);
 
-        unset($request, $returnResponse);
+            foreach ($returnResponse->getHeader()->all() as $key => $value) {
+                $response->header($key, $value);
+            }
+
+            $response->gzip(static::GZIP_LEVEL);
+            $response->status($returnResponse->getStatusCode());
+            $response->end($returnResponse->getContent());
+
+            unset($swooleRequest, $returnResponse);
+        } catch (\Exception $e) {
+            $response->status(500);
+            $response->end(session_id());
+        }
     }
 
     /**
