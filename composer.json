@@ -25,11 +25,6 @@
             "FastD\\": "src"
         }
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.0.x-dev"
-        }
-    },
     "suggests": {
         "ext-swoole": "Allow php swoole extension.",
         "ext-inotify": "Allow php inotify extension."
