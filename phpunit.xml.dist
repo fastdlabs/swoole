@@ -12,7 +12,7 @@
     </php>
     <testsuites>
         <testsuite name="FastD Swoole Testing">
-            <directory>./src/Swoole/Tests/</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

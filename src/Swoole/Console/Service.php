@@ -48,10 +48,13 @@ class Service
      * @param $server
      * @param array $config
      */
-    public function __construct($server, array $config)
+    public function __construct($server, array $config = [])
     {
         if ($server instanceof Server) {
             $this->server = $server;
+            if (!empty($config)) {
+                $this->server->configure($config);
+            }
         } else {
             $this->server = new $server($config);
         }

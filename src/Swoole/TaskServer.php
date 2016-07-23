@@ -8,7 +8,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole;
 
 /**
  * Class TaskServer

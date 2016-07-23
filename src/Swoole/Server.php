@@ -12,20 +12,22 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole;
 
 use FastD\Packet\Binary;
 use FastD\Swoole\Client\Client;
+use FastD\Swoole\Console\Output;
+use FastD\Swoole\Console\Process;
 
 /**
  * Class Server
  *
  * @package FastD\Swoole\Server
  */
-abstract class Server extends ServerCallbackHandle implements ServerInterface,
-    ServerDiscoveryInterface,
-    ServerMonitorInterface
+abstract class Server
 {
+    const SERVER_NAME = 'fds';
+
     /**
      * @var \swoole_server
      */
@@ -121,7 +123,15 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
 
             $this->swoole = $this->initSwoole();
 
-            $this->scan($this->swoole);
+            $this->swoole->on('start', [$this, 'onStart']);
+            $this->swoole->on('shutdown', [$this, 'onShutdown']);
+            $this->swoole->on('managerStart', [$this, 'onManagerStart']);
+            $this->swoole->on('managerStop', [$this, 'onManagerStop']);
+            $this->swoole->on('workerStart', [$this, 'onWorkerStart']);
+            $this->swoole->on('workerStop', [$this, 'onWorkerStop']);
+            $this->swoole->on('workerError', [$this, 'onWorkerError']);
+            $this->swoole->on('receive', [$this, 'onReceive']);
+            $this->swoole->on('packet', [$this, 'onPacket']);
 
             foreach ($this->ports as $key => $port) {
                 $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock']);
@@ -467,4 +477,97 @@ abstract class Server extends ServerCallbackHandle implements ServerInterface,
      * @param array $client_info
      */
     abstract public function doPacket(\swoole_server $server, string $data, array $client_info);
+
+    /**
+     * Base start handle. Storage process id.
+     *
+     * @param \swoole_server $server
+     * @return void
+     */
+    public function onStart(\swoole_server $server)
+    {
+        if (null !== ($file = $this->getPid())) {
+            if (!is_dir($dir = dirname($file))) {
+                mkdir($dir, 0755, true);
+            }
+
+            file_put_contents($file, $server->master_pid . PHP_EOL);
+        }
+
+        Process::rename(static::SERVER_NAME . ' master');
+
+        Output::output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
+        Output::output(sprintf('Server Master[%s] is started', $server->master_pid));
+    }
+
+    /**
+     * Shutdown server process.
+     *
+     * @param \swoole_server $server
+     * @return void
+     */
+    public function onShutdown(\swoole_server $server)
+    {
+        if (null !== ($file = $this->getPid()) && !empty(trim(file_get_contents($file)))) {
+            unlink($file);
+        }
+
+        Output::output(sprintf('Server Master[%s] is shutdown ', $server->master_pid));
+    }
+
+    /**
+     * @param \swoole_server $server
+     *
+     * @return void
+     */
+    public function onManagerStart(\swoole_server $server)
+    {
+        Process::rename(static::SERVER_NAME . ' manager');
+
+        Output::output(sprintf('Server Manager[%s] is started', $server->manager_pid));
+    }
+
+    /**
+     * @param \swoole_server $server
+     *
+     * @return void
+     */
+    public function onManagerStop(\swoole_server $server)
+    {
+        Output::output(sprintf('Server Manager[%s] is shutdown.', $server->manager_pid));
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param int $worker_id
+     * @return void
+     */
+    public function onWorkerStart(\swoole_server $server, int $worker_id)
+    {
+        Process::rename(static::SERVER_NAME . ' worker');
+
+        Output::output(sprintf('Server Worker[%s] is started [#%s]', $server->worker_pid, $worker_id));
+    }
+
+    /**
+     * @param \swoole_server $server
+     * @param int $worker_id
+     * @return void
+     */
+    public function onWorkerStop(\swoole_server $server, int $worker_id)
+    {
+        Output::output(sprintf('Server Worker[#%s] is shutdown', $worker_id));
+    }
+
+    /**
+     * @param \swoole_server $serv
+     * @param int $worker_id
+     * @param int $worker_pid
+     * @param int $exit_code
+     * @return void
+     */
+    public function onWorkerError(\swoole_server $serv, int $worker_id, int $worker_pid, int $exit_code)
+    {
+        Output::output(sprintf('Server Worker[%s] error', $worker_pid));
+    }
 }

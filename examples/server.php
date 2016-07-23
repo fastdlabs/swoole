@@ -14,7 +14,7 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server;
 
 class DemoServer extends Server
 {
