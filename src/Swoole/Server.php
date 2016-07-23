@@ -15,7 +15,6 @@
 namespace FastD\Swoole;
 
 use FastD\Packet\Binary;
-use FastD\Swoole\Client\Client;
 use FastD\Swoole\Console\Output;
 use FastD\Swoole\Console\Process;
 
