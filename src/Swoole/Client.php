@@ -12,14 +12,14 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Client;
+namespace FastD\Swoole;
 
 /**
  * Class Client
  *
  * @package FastD\Swoole\Client
  */
-class Client implements ClientInterface
+class Client
 {
     /**
      * @var \swoole_client

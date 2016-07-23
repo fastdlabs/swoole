@@ -17,7 +17,7 @@ namespace FastD\Swoole\Http;
 use FastD\Http\JsonResponse;
 use FastD\Http\RedirectResponse;
 use FastD\Http\Response;
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server;
 use FastD\Http\Swoole\SwooleRequest;
 use FastD\Http\Swoole\SwooleSession;
 
@@ -26,7 +26,7 @@ use FastD\Http\Swoole\SwooleSession;
  *
  * @package FastD\Swoole\Server
  */
-abstract class HttpServer extends Server implements HttpServerInterface
+abstract class HttpServer extends Server
 {
     const GZIP_LEVEL = 4;
 
@@ -136,4 +136,10 @@ abstract class HttpServer extends Server implements HttpServerInterface
     {
         return;
     }
+
+    /**
+     * @param SwooleRequest $request
+     * @return Response
+     */
+    abstract public function doRequest(SwooleRequest $request);
 }
