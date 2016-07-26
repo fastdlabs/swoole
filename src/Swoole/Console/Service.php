@@ -14,8 +14,8 @@
 
 namespace FastD\Swoole\Console;
 
-use FastD\Swoole\Client\Client;
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Client;
+use FastD\Swoole\Server;
 use FastD\Swoole\Watch\Watcher;
 
 /**

@@ -486,6 +486,9 @@ abstract class Server
         Process::rename(static::SERVER_NAME . ' master');
 
         Output::output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
+        foreach ($this->ports as $port) {
+            Output::output(sprintf("➜ Lgisten tcp://%s:%s", $port->host, $port->port));
+        }
         Output::output(sprintf('Server Master[#%s] is started', $server->master_pid));
     }
 

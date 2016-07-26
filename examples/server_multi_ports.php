@@ -14,31 +14,23 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server;
+use FastD\Swoole\Request;
 
 class DemoServer extends Server
 {
     /**
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
+     * @param Request $request
      * @return mixed
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function doWork(Request $request)
     {
-        $server->send($fd, $data, $from_id);
-        $server->close($fd);
+        return 'hello tcp server from ' . $request->getFd();
     }
 
-    /**
-     * @param \swoole_server $server
-     * @param string $data
-     * @param array $client_info
-     */
-    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    public function doPacket(Request $request)
     {
-        // TODO: Implement doPacket() method.
+
     }
 }
 
