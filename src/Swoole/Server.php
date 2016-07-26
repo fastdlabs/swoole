@@ -122,15 +122,7 @@ abstract class Server
 
             $this->swoole = $this->initSwoole();
 
-            $this->swoole->on('start', [$this, 'onStart']);
-            $this->swoole->on('shutdown', [$this, 'onShutdown']);
-            $this->swoole->on('managerStart', [$this, 'onManagerStart']);
-            $this->swoole->on('managerStop', [$this, 'onManagerStop']);
-            $this->swoole->on('workerStart', [$this, 'onWorkerStart']);
-            $this->swoole->on('workerStop', [$this, 'onWorkerStop']);
-            $this->swoole->on('workerError', [$this, 'onWorkerError']);
-            $this->swoole->on('receive', [$this, 'onReceive']);
-            $this->swoole->on('packet', [$this, 'onPacket']);
+            $this->scanOnHandles();
 
             foreach ($this->ports as $key => $port) {
                 $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock']);
@@ -413,8 +405,10 @@ abstract class Server
     public function onReceive(\swoole_server $server, int $fd, int $from_id, string $data)
     {
         try {
-            $response = $this->doWork(new Request($server, $fd, $data, $from_id));
+            $content = $this->doWork(new Request($server, $fd, $data, $from_id));
+            $response = new Response($server, $fd, $content);
             $response->send();
+            unset($response);
         } catch (\Exception $e) {
             $server->send(sprintf("Error: %s\nFile: %s \n Code: %s",
                     $e->getMessage(),
@@ -428,7 +422,7 @@ abstract class Server
 
     /**
      * @param Request $request
-     * @return Response
+     * @return string
      */
     abstract public function doWork(Request $request);
 
@@ -455,19 +449,22 @@ abstract class Server
 
     /**
      * @param Request $request
-     * @return Response
+     * @return string
      */
     abstract public function doPacket(Request $request);
 
     /**
-     * @param \swoole_server $server
-     * @param $fd
-     * @param $data
-     * @return Response
+     * @return $this
      */
-    public function response(\swoole_server $server, $fd, $data)
+    public function scanOnHandles()
     {
-        return new Response($server, $fd, $data);
+        $handles = get_class_methods($this);
+
+        foreach ($handles as $value) {
+            if ('on' == substr($value, 0, 2)) {
+                $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
+            }
+        }
     }
 
     /**

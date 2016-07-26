@@ -38,13 +38,12 @@ abstract class TaskServer extends Server
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *
-     * @param \swoole_server $server
-     * @param string $data
-     * @param array $client_info
+     * @param Request $request
+     * @return mixed
      */
-    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    public function doPacket(Request $request)
     {
-        $server->task($this->encodeTaskData([
+        $request->getServer()->task($this->encodeTaskData([
             'cmd' => 'packet',
             'content' => [
                 'data' => $data,
@@ -54,15 +53,12 @@ abstract class TaskServer extends Server
     }
 
     /**
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
+     * @param Request $request
      * @return mixed
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function doWork(Request $request)
     {
-        $server->task($this->encodeTaskData([
+        $request->getServer()->task($this->encodeTaskData([
             'cmd' => 'receive',
             'content' => [
                 'data' => $data,

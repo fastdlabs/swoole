@@ -118,10 +118,7 @@ class Response
             $this->server->end($this->getContent());
         } else {
             $this->server->send($this->getFd(), $this->getContent());
-
-            if (!$this->isKeepAlive()) {
-                $this->server->close($this->fd);
-            }
+            $this->server->close($this->fd);
         }
     }
 }

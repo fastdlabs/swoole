@@ -57,12 +57,12 @@ class Request
     /**
      * @var array
      */
-    public $headers;
+    public $headers = [];
 
     /**
      * @var array
      */
-    public $cookie;
+    public $cookie = [];
 
     /**
      * @var array
@@ -95,7 +95,7 @@ class Request
 
         $this->clientInfo = $clientInfo;
 
-        if ($this->server instanceof \swoole_http_request) {
+        if ($this->swooleServer instanceof \swoole_http_request) {
             $this->parseHttpRequest($this->swooleServer);
         }
     }

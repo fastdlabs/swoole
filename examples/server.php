@@ -20,16 +20,16 @@ class DemoServer extends Server
 {
     /**
      * @param \FastD\Swoole\Request $request
-     * @return \FastD\Swoole\Response
+     * @return string
      */
     public function doWork(\FastD\Swoole\Request $request)
     {
-        return $this->response($request->getServer(), $request->getFd(), $request->getData());
+        return $request->getData();
     }
 
     /**
      * @param \FastD\Swoole\Request $request
-     * @return \FastD\Swoole\Response
+     * @return string
      */
     public function doPacket(\FastD\Swoole\Request $request)
     {
