@@ -14,12 +14,9 @@
 
 namespace FastD\Swoole\Http;
 
-use FastD\Http\JsonResponse;
-use FastD\Http\RedirectResponse;
-use FastD\Http\Response;
+use FastD\Swoole\Request;
+use FastD\Swoole\Response;
 use FastD\Swoole\Server;
-use FastD\Http\Swoole\SwooleRequest;
-use FastD\Http\Swoole\SwooleSession;
 
 /**
  * Class HttpServer
@@ -28,33 +25,22 @@ use FastD\Http\Swoole\SwooleSession;
  */
 abstract class HttpServer extends Server
 {
-    const GZIP_LEVEL = 4;
-
     /**
      * @param array $content
-     * @return JsonResponse
+     * @return string
      */
-    public function responseJson(array $content)
+    public function json(array $content)
     {
-        return new JsonResponse($content);
+        return json_encode($content, JSON_UNESCAPED_UNICODE);
     }
 
     /**
      * @param $content
      * @return Response
      */
-    public function responseHtml($content)
+    public function html($content)
     {
-        return new Response($content);
-    }
-
-    /**
-     * @param $url
-     * @return RedirectResponse
-     */
-    public function redirect($url)
-    {
-        return new RedirectResponse($url);
+        return $content;
     }
 
     /**
@@ -62,56 +48,34 @@ abstract class HttpServer extends Server
      */
     public function initSwoole()
     {
-        return new \swoole_http_server($this->host, $this->port, $this->mode, $this->sockType);
+        return new \swoole_http_server($this->getHost(), $this->getPort(), $this->mode, $this->sockType);
     }
 
     /**
-     * @param \swoole_http_request $request
-     * @param \swoole_http_response $response
+     * @param \swoole_http_request $swoole_http_request
+     * @param \swoole_http_response $swoole_http_response
      */
-    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
+    public function onRequest(\swoole_http_request $swoole_http_request, \swoole_http_response $swoole_http_response)
     {
         try {
-            $swooleRequest = SwooleRequest::createSwooleRequestHandle($request);
-
-            $swooleRequest->setSessionHandle(new SwooleSession($request));
-            $returnResponse = $this->doRequest($swooleRequest);
-
-            foreach ($returnResponse->getHeader()->all() as $key => $value) {
-                $response->header($key, $value);
-            }
-
-            if (isset($request->cookie)) {
-                foreach ($request->cookie as $key => $value) {
-                    $response->cookie($key, $value);
-                }
-            }
-
-            $response->gzip(static::GZIP_LEVEL);
-            $response->status($returnResponse->getStatusCode());
-            $response->end($returnResponse->getContent());
-
-            unset($swooleRequest, $returnResponse);
+            $request = new Request($swoole_http_request, null, null);
+            $content = $this->doRequest($request);
+            $response = new Response($swoole_http_response, null, $content);
+            $response->setCookies($request->cookie);
+            $response->setHeaders($request->headers);
         } catch (\Exception $e) {
-            $response->gzip(static::GZIP_LEVEL);
-            $response->status(5);
-            $response->end($e->getMessage());
+            $response = new Response($swoole_http_response, null, null);
+            $response->setStatus(500);
         }
+        $response->send();
+        unset($request, $response);
     }
 
     /**
-     * Nothing to do.
-     *
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
+     * @param Request $request
+     * @return Response
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
-    {
-        return;
-    }
+    abstract public function doRequest(Request $request);
 
     /**
      * Nothing to do.
@@ -128,18 +92,14 @@ abstract class HttpServer extends Server
     }
 
     /**
-     * @param \swoole_server $server
-     * @param string $data
-     * @param array $client_info
-     */
-    public function doPacket(\swoole_server $server, string $data, array $client_info)
-    {
-        return;
-    }
-
-    /**
-     * @param SwooleRequest $request
+     * @param Request $request
      * @return Response
      */
-    abstract public function doRequest(SwooleRequest $request);
+    public function doWork(Request $request){}
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function doPacket(Request $request){}
 }

@@ -11,6 +11,8 @@
 namespace FastD\Swoole;
 
 /**
+ * 统一 Swoole 响应, 支持 tcp, udp, http。
+ *
  * Class Response
  *
  * @package FastD\Swoole
@@ -45,7 +47,7 @@ class Response
      * @param $data
      * @param bool $keepAlive
      */
-    public function __construct(\swoole_server $server, $fd, $data, $keepAlive = false)
+    public function __construct($server, $fd, $data, $keepAlive = false)
     {
         $this->server = $server;
 
@@ -54,6 +56,25 @@ class Response
         $this->data = $data;
 
         $this->keepAlive = $keepAlive;
+    }
+
+    public function setHeaders(array $header)
+    {
+        foreach ($header as $key => $value) {
+            $this->server->header($key, $value);
+        }
+    }
+
+    public function setCookies(array $cookies)
+    {
+        foreach ($cookies as $name => $value) {
+            $this->server->cookie($name, $value);
+        }
+    }
+
+    public function setStatus($status)
+    {
+        $this->server->status($status);
     }
 
     /**
@@ -93,10 +114,14 @@ class Response
      */
     public function send()
     {
-        $this->server->send($this->getFd(), $this->getContent());
+        if ($this->server instanceof \swoole_http_response) {
+            $this->server->end($this->getContent());
+        } else {
+            $this->server->send($this->getFd(), $this->getContent());
 
-        if (!$this->isKeepAlive()) {
-            $this->server->close($this->fd);
+            if (!$this->isKeepAlive()) {
+                $this->server->close($this->fd);
+            }
         }
     }
 }
