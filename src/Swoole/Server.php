@@ -125,7 +125,7 @@ abstract class Server
             $this->scanOnHandles();
 
             foreach ($this->ports as $key => $port) {
-                $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock']);
+                $serverPort = $this->swoole->listen($port['host'], $port['port'], $port['sock'] ?? SWOOLE_SOCK_TCP);
                 if (isset($port['config'])) {
                     $serverPort->set($port['config']);
                 }

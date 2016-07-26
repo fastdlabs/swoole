@@ -29,5 +29,6 @@ class Http extends HttpServer
 }
 
 Http::run([
+    'log_file' => './fds.log',
     'host' => '0.0.0.0',
 ]);
