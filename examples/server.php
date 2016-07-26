@@ -19,24 +19,19 @@ use FastD\Swoole\Server;
 class DemoServer extends Server
 {
     /**
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
+     * @param \FastD\Swoole\Request $request
+     * @return \FastD\Swoole\Response
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function doWork(\FastD\Swoole\Request $request)
     {
-        $server->send($fd, $data, $from_id);
-        $server->close($fd);
+        return $this->response($request->getServer(), $request->getFd(), $request->getData());
     }
 
     /**
-     * @param \swoole_server $server
-     * @param string $data
-     * @param array $client_info
+     * @param \FastD\Swoole\Request $request
+     * @return \FastD\Swoole\Response
      */
-    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    public function doPacket(\FastD\Swoole\Request $request)
     {
         // TODO: Implement doPacket() method.
     }
