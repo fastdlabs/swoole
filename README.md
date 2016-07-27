@@ -33,9 +33,7 @@ pecl install inotify
 ### ＃安装
 
 ```
-{
-    "fastd/swoole": "2.0.x-dev"
-}
+composer require "fastd/swoole:1.0.x-dev" -vvv
 ```
 
 ## ＃使用
