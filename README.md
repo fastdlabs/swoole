@@ -40,9 +40,9 @@ pecl install inotify
 
 ## ＃使用
 
-服务继承 `FastD\Swoole\Server\Server`, 实现 `doWork` 方法, 服务器在接收信息 `onReceive` 回调中会调用 `doWork` 方法。
+服务继承 `FastD\Swoole\Server\Server`, 实现 `doWork` 方法, 服务器在接收信息 `onReceive` 回调中会调用 `doWork` 方法, `doWork` 方法接受一个封装好的请求对象。
 
-具体逻辑在 `doWork` 方法中实现。
+具体逻辑在 `doWork` 方法中实现, `doWork` 方法中返回响应客户端的数据, 格式为: **字符串**
 
 服务器通过 `run` 方法执行, `run` 方法中注入配置, 配置按照 `swoole` 原生扩展参数配置。
 
@@ -64,16 +64,21 @@ use FastD\Swoole\Server\Server;
 class DemoServer extends Server
 {
     /**
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
+     * @param \FastD\Swoole\Request $request
+     * @return string
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function doWork(\FastD\Swoole\Request $request)
     {
-        $server->send($fd, $data, $from_id);
-        $server->close($fd);
+        return $request->getData();
+    }
+
+    /**
+     * @param \FastD\Swoole\Request $request
+     * @return string
+     */
+    public function doPacket(\FastD\Swoole\Request $request)
+    {
+        // UDP Receive
     }
 }
 
@@ -88,13 +93,12 @@ use FastD\Swoole\Server\HttpServer;
 class Http extends HttpServer
 {
     /**
-     * @param \swoole_http_request $request
-     * @param \swoole_http_response $response
-     * @return mixed
+     * @param \FastD\Swoole\Request $request
+     * @return \FastD\Swoole\Response
      */
-    public function doRequest(\swoole_http_request $request, \swoole_http_response $response)
+    public function doRequest(\FastD\Swoole\Request $request)
     {
-        $response->end('hello world');
+        return $this->html('hello world');
     }
 }
 
