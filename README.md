@@ -50,7 +50,7 @@ pecl install inotify
 
 ```php
 return [
-    'pid' => 'pid 文件目录地址',
+    'pid' => 'pid 文件目录地址', // 选填, 默认当前目录下的 run 目录, run 目录会自动创建
     'host' => '机器ip',
     'port' => '机器端口',
     'mode' => '服务模式,参考官网',

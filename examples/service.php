@@ -14,30 +14,25 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server;
 use FastD\Swoole\Console\Service;
 
 class Demo extends Server
 {
     /**
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
+     * @param \FastD\Swoole\Request $request
+     * @return string
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function doWork(\FastD\Swoole\Request $request)
     {
-        $server->send($fd, $data);
-        $server->close($fd);
+        return 'hello service';
     }
 
     /**
-     * @param \swoole_server $server
-     * @param string $data
-     * @param array $client_info
+     * @param \FastD\Swoole\Request $request
+     * @return string
      */
-    public function doPacket(\swoole_server $server, string $data, array $client_info)
+    public function doPacket(\FastD\Swoole\Request $request)
     {
         // TODO: Implement doPacket() method.
     }
@@ -63,6 +58,6 @@ switch ($action) {
         $service->reload();
         break;
     case 'watch':
-        $service->watch(['.']);
+        $service->watch(['./watch']);
         break;
 }

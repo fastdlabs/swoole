@@ -93,7 +93,7 @@ class Watcher
         $this->callback = $callback;
 
         // Listen modify.
-        swoole_event_add($this->inotify, function () use ($callback) {
+        \swoole_event_add($this->inotify, function () use ($callback) {
             $events = inotify_read($this->inotify);
             if (!$events) {
                 return;
@@ -101,7 +101,7 @@ class Watcher
 
             foreach ($events as $event) {
                 if (!empty($event['name'])) {
-                    Output::output($event['name'] . ' modify');
+                    Output::output(sprintf('["%s"] modify', $event['name']));
                 }
             }
 
@@ -127,6 +127,6 @@ class Watcher
      */
     public function run()
     {
-        swoole_event_wait();
+        \swoole_event_wait();
     }
 }

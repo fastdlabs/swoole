@@ -123,7 +123,7 @@ class Service
     public function shutdown()
     {
         if (false === ($status = $this->isRunning())) {
-            Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
+            Output::output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -131,7 +131,7 @@ class Service
 
         posix_kill($pid, SIGTERM);
 
-        Output::output(sprintf('Server[%s] is shutdown...', $this->server->getServerName()));
+        Output::output(sprintf('Server [#%s] is shutdown...', $pid));
 
         return 0;
     }
@@ -142,15 +142,15 @@ class Service
     public function reload()
     {
         if (false === ($status = $this->isRunning())) {
-            Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
+            Output::output(sprintf('Server is not running...'));
             return -1;
         }
 
-        $pid = (int)@file_get_contents($this->server->getPid());
+        $pid = (int) @file_get_contents($this->server->getPid());
 
         posix_kill($pid, SIGUSR1);
 
-        Output::output(sprintf('Server[%s] is reloading...', $this->server->getServerName()));
+        Output::output(sprintf('Server [#%s] is reloading...', $pid));
 
         return 0;
     }
@@ -161,7 +161,7 @@ class Service
     public function status()
     {
         if (!($status = $this->isRunning())) {
-            Output::output(sprintf('Server[%s] is not running...', $this->server->getServerName()));
+            Output::output(sprintf('Server is not running...'));
             return -1;
         }
 

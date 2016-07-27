@@ -73,7 +73,7 @@ abstract class HttpServer extends Server
 
     /**
      * @param Request $request
-     * @return Response
+     * @return string
      */
     abstract public function doRequest(Request $request);
 
