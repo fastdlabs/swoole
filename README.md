@@ -59,7 +59,7 @@ return [
 ```
 
 ```php
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server;
 
 class DemoServer extends Server
 {
@@ -88,7 +88,7 @@ DemoServer::run([]);
 同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
 
 ```php
-use FastD\Swoole\Server\HttpServer;
+use FastD\Swoole\Http\HttpServer;
 
 class Http extends HttpServer
 {
@@ -108,29 +108,61 @@ Http::run([]);
 服务 `Service` 管理, 修改服务 `Service` 管理, 可以通过注入服务, 对其进行 `{start|status|stop|reload}` 等操作管理。
 
 ```php
-use FastD\Swoole\Server\Server;
+use FastD\Swoole\Server;
 use FastD\Swoole\Console\Service;
 
 class Demo extends Server
 {
     /**
-     * @param \swoole_server $server
-     * @param int $fd
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
+     * @param \FastD\Swoole\Request $request
+     * @return string
      */
-    public function doWork(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function doWork(\FastD\Swoole\Request $request)
     {
-        // TODO: Implement doWork() method logic.
+        return 'hello service';
+    }
+
+    /**
+     * @param \FastD\Swoole\Request $request
+     * @return string
+     */
+    public function doPacket(\FastD\Swoole\Request $request)
+    {
+        // TODO: Implement doPacket() method.
     }
 }
 
-Service::server(Demo::class, [
+$service = Service::server(Demo::class, [
 
-])->start();
+]);
+
+$action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'status';
+
+switch ($action) {
+    case 'status':
+        $service->status();
+        break;
+    case 'start':
+        $service->start();
+        break;
+    case 'stop':
+        $service->shutdown();
+        break;
+    case 'reload':
+        $service->reload();
+        break;
+    case 'watch':
+        $service->watch(['./watch']);
+        break;
+}
 ```
 
 `Service` 通过 `server($server, array $config)` 注入服务, 实现管理。
+
+Service 提供文件监听功能, 通过监听文件实现自动重启服务。
+
+上述 `watch` 方法中, watch 方法监听多个目录, 若监听目录中, 文件发生变化, 服务会自动重启, 推荐在开发环境下使用。
+
+**watch 依赖 php inotify 扩展。**
 
 # License MIT
