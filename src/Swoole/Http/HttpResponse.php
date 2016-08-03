@@ -24,12 +24,12 @@ class HttpResponse extends Response
 
     /**
      * HttpResponse constructor.
-     * @param \swoole_http_response $swoole_http_response
+     * @param \swoole_http_response $swooleResponse
      * @param $data
      */
-    public function __construct($swoole_http_response, $data)
+    public function __construct(\swoole_http_response $swooleResponse, $data)
     {
-        parent::__construct($swoole_http_response, null, $data);
+        parent::__construct($swooleResponse, null, $data);
     }
 
     /**

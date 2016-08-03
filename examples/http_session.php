@@ -20,6 +20,8 @@ class Http extends HttpServer
      */
     public function doRequest(HttpRequest $request)
     {
+        $request->session->set('name', 'jan');
+
         return $this->html($request->getPathInfo());
     }
 }

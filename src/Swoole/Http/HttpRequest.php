@@ -48,14 +48,21 @@ class HttpRequest extends Request
     public $server;
 
     /**
-     * HttpRequest constructor.
-     * @param \swoole_http_request $swoole_http_request
+     * @var HttpSession
      */
-    public function __construct($swoole_http_request)
-    {
-        parent::__construct($swoole_http_request, null, null);
+    public $session;
 
-        $this->parseHttpRequest($swoole_http_request);
+    /**
+     * HttpRequest constructor.
+     * @param \swoole_http_request $swooleRequest
+     */
+    public function __construct(\swoole_http_request $swooleRequest)
+    {
+        parent::__construct($swooleRequest, null, null);
+
+        $this->parseHttpRequest($swooleRequest);
+
+        $this->session = new HttpSession($swooleRequest);
     }
 
     /**
