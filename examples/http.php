@@ -15,7 +15,7 @@
 include __DIR__ . '/../vendor/autoload.php';
 
 use FastD\Swoole\Http\HttpServer;
-use FastD\Swoole\Request;
+use FastD\Swoole\Http\HttpRequest;
 
 class Http extends HttpServer
 {
@@ -23,7 +23,7 @@ class Http extends HttpServer
      * @param Request $request
      * @return string
      */
-    public function doRequest(Request $request)
+    public function doRequest(HttpRequest $request)
     {
         return $this->html($request->getPathInfo());
     }

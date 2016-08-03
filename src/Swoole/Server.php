@@ -212,17 +212,22 @@ abstract class Server
     }
 
     /**
+     * @param $sock
      * @return string
      */
-    public function getServerType()
+    public function getServerType($sock = null)
     {
+        if (null === $sock) {
+            $sock = $this->sockType;
+        }
+
         switch (get_class($this->swoole)) {
             case 'swoole_http_server':
                 return 'http';
             case 'swoole_websocket_server':
                 return 'ws';
             case 'swoole_server':
-                return ($this->sockType === SWOOLE_SOCK_UDP || $this->sockType === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
+                return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
             default:
                 return 'unknown';
         }
@@ -436,7 +441,10 @@ abstract class Server
     public function onPacket(\swoole_server $server, string $data, array $client_info)
     {
         try {
-            $this->doPacket(new Request($server, null, $data, null, $client_info));
+            $content = $this->doPacket(new Request($server, null, $data, null, $client_info));
+            $response = new Response($server, null, $content);
+            $response->send();
+            unset($response);
         } catch (\Exception $e) {
             $server->send(sprintf("Error: %s\nFile: %s \n Code: %s",
                     $e->getMessage(),
@@ -487,7 +495,7 @@ abstract class Server
 
         Output::output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
         foreach ($this->ports as $port) {
-            Output::output(sprintf("➜ Lgisten tcp://%s:%s", $port->host, $port->port));
+            Output::output(sprintf("➜ Lgisten %s://%s:%s", $this->getServerType($port->type), $port->host, $port->port));
         }
         Output::output(sprintf('Server Master[#%s] is started', $server->master_pid));
     }

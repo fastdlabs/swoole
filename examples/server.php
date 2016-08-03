@@ -33,11 +33,19 @@ class DemoServer extends Server
      */
     public function doPacket(\FastD\Swoole\Request $request)
     {
-        // TODO: Implement doPacket() method.
+        return 'udp handle';
     }
 }
 
-DemoServer::run([]);
+DemoServer::run([
+    'ports' => [
+        [
+            'host' => '127.0.0.1',
+            'port' => '9528',
+            'sock' => SWOOLE_SOCK_UDP
+        ]
+    ]
+]);
 
 /**
  * 以上写法和以下写法效果一致

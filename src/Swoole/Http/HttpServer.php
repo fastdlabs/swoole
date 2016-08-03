@@ -14,9 +14,9 @@
 
 namespace FastD\Swoole\Http;
 
+use FastD\Swoole\Server;
 use FastD\Swoole\Request;
 use FastD\Swoole\Response;
-use FastD\Swoole\Server;
 
 /**
  * Class HttpServer
@@ -58,13 +58,13 @@ abstract class HttpServer extends Server
     public function onRequest(\swoole_http_request $swoole_http_request, \swoole_http_response $swoole_http_response)
     {
         try {
-            $request = new Request($swoole_http_request, null, null);
+            $request = new HttpRequest($swoole_http_request);
             $content = $this->doRequest($request);
-            $response = new Response($swoole_http_response, null, $content);
+            $response = new HttpResponse($swoole_http_response, $content);
             $response->setCookies($request->cookie);
             $response->setHeaders($request->headers);
         } catch (\Exception $e) {
-            $response = new Response($swoole_http_response, null, null);
+            $response = new HttpResponse($swoole_http_response, 'Error 500');
             $response->setStatus(500);
         }
         $response->send();
@@ -72,10 +72,10 @@ abstract class HttpServer extends Server
     }
 
     /**
-     * @param Request $request
+     * @param HttpRequest $request
      * @return string
      */
-    abstract public function doRequest(Request $request);
+    abstract public function doRequest(HttpRequest $request);
 
     /**
      * Nothing to do.

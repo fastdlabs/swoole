@@ -11,7 +11,7 @@
 namespace FastD\Swoole;
 
 /**
- * 统一 Swoole 响应, 支持 tcp, udp, http。
+ * 统一 Swoole 响应, 支持 tcp, udp。
  *
  * Class Response
  *
@@ -19,11 +19,6 @@ namespace FastD\Swoole;
  */
 class Response
 {
-    /**
-     * @var bool
-     */
-    protected $keepAlive = false;
-
     /**
      * @var int
      */
@@ -42,47 +37,17 @@ class Response
     /**
      * Response constructor.
      *
-     * @param \swoole_server $server
+     * @param \swoole_server|\swoole_http_response $server
      * @param $fd
      * @param $data
-     * @param bool $keepAlive
      */
-    public function __construct($server, $fd, $data, $keepAlive = false)
+    public function __construct($server, $fd, $data)
     {
         $this->server = $server;
 
         $this->fd = $fd;
 
         $this->data = $data;
-
-        $this->keepAlive = $keepAlive;
-    }
-
-    public function setHeaders(array $header)
-    {
-        foreach ($header as $key => $value) {
-            $this->server->header($key, $value);
-        }
-    }
-
-    public function setCookies(array $cookies)
-    {
-        foreach ($cookies as $name => $value) {
-            $this->server->cookie($name, $value);
-        }
-    }
-
-    public function setStatus($status)
-    {
-        $this->server->status($status);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isKeepAlive()
-    {
-        return $this->keepAlive;
     }
 
     /**
@@ -110,15 +75,12 @@ class Response
     }
 
     /**
-     *
+     * @return void
      */
     public function send()
     {
-        if ($this->server instanceof \swoole_http_response) {
-            $this->server->end($this->getContent());
-        } else {
-            $this->server->send($this->getFd(), $this->getContent());
-            $this->server->close($this->fd);
-        }
+        $this->server->send($this->getFd(), $this->getContent());
+
+        $this->server->close($this->fd);
     }
 }
