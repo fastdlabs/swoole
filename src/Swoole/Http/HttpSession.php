@@ -64,6 +64,7 @@ class HttpSession
             }
 
             $this->started = true;
+            echo $this->sessionId . PHP_EOL;
         }
 
         return true;
@@ -74,7 +75,7 @@ class HttpSession
      */
     protected function buildSessionId()
     {
-        return md5(password_hash(microtime(true), PASSWORD_DEFAULT));
+        return md5(microtime(true) . mt_rand(000000, 999999));
     }
 
     /**
