@@ -20,9 +20,19 @@ class Http extends HttpServer
      */
     public function doRequest(HttpRequest $request)
     {
-        $request->session->set('name', 'jan');
-
-        return $this->html($request->getPathInfo());
+        switch ($request->getPathInfo()) {
+            case '/session/set':
+                $request->session->set('user', [
+                    'name' => 'jan',
+                    'age' => 19
+                ]);
+                break;
+            case '/session/get':
+                return $this->json($request->session->toArray());
+                break;
+            default:
+                return $this->html('hello swoole http server');
+        }
     }
 }
 

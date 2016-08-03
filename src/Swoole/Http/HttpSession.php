@@ -10,8 +10,9 @@
 namespace FastD\Swoole\Http;
 
 /**
- * Class Session
- * @package FastD\Http
+ * Class HttpSession
+ *
+ * @package FastD\Swoole\Http
  */
 class HttpSession
 {
@@ -22,6 +23,9 @@ class HttpSession
      */
     protected $sessionId;
 
+    /**
+     * @var string
+     */
     protected $sessionFile;
 
     /**
@@ -36,27 +40,31 @@ class HttpSession
 
     /**
      * Session constructor.
-     * @param \swoole_http_request $request
+     * @param HttpRequest $request
      * @param string $path
      */
-    public function __construct(\swoole_http_request $request, $path = '/tmp')
+    public function __construct(HttpRequest $request, $path = '/tmp')
     {
         $this->sessionStart($request, $path);
     }
 
     /**
-     * @param \swoole_http_request $request
+     * @param HttpRequest $request
      * @param $path
      * @return bool
      */
-    protected function sessionStart(\swoole_http_request $request, $path)
+    protected function sessionStart(HttpRequest $request, $path)
     {
         if (!$this->started) {
             if (isset($request->cookie[static::TOKEN])) {
-                $sessionHash = $request->cookie[static::TOKEN];
-                $this->sessionFile = $path . DIRECTORY_SEPARATOR . $sessionHash;
+                $this->sessionId = $request->cookie[static::TOKEN];
+                $this->sessionFile = $path . DIRECTORY_SEPARATOR . $this->sessionId;
                 if (file_exists($this->sessionFile)) {
                     $this->session = json_decode(file_get_contents($this->sessionFile), true);
+                } else {
+                    $this->sessionId = $this->buildSessionId();
+                    $this->sessionFile = $path . DIRECTORY_SEPARATOR . $this->sessionId;
+                    unset($request->cookie[static::TOKEN]);
                 }
             } else {
                 $this->sessionId = $this->buildSessionId();
@@ -64,7 +72,6 @@ class HttpSession
             }
 
             $this->started = true;
-            echo $this->sessionId . PHP_EOL;
         }
 
         return true;
@@ -76,6 +83,14 @@ class HttpSession
     protected function buildSessionId()
     {
         return md5(microtime(true) . mt_rand(000000, 999999));
+    }
+
+    /**
+     * @return string
+     */
+    public function getSessionId()
+    {
+        return $this->sessionId;
     }
 
     /**
@@ -100,15 +115,46 @@ class HttpSession
     }
 
     /**
+     * @return $this
+     */
+    public function clear()
+    {
+        $this->session = null;
+
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isHit()
     {
-        return !empty($this->session);
+        return '' != $this->session;
     }
 
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return (array) $this->session;
+    }
+
+    /**
+     * @return string
+     */
+    public function toJson()
+    {
+        return json_encode($this->session);
+    }
+
+    /**
+     * @return void
+     */
     public function __destruct()
     {
-
+        if ($this->isHit()) {
+            file_put_contents($this->sessionFile, $this->toJson());
+        }
     }
 }

@@ -62,7 +62,7 @@ class HttpRequest extends Request
 
         $this->parseHttpRequest($swooleRequest);
 
-        $this->session = new HttpSession($swooleRequest);
+        $this->session = new HttpSession($this);
     }
 
     /**

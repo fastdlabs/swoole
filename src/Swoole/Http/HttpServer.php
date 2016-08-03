@@ -52,19 +52,22 @@ abstract class HttpServer extends Server
     }
 
     /**
-     * @param \swoole_http_request $swoole_http_request
-     * @param \swoole_http_response $swoole_http_response
+     * @param \swoole_http_request $swooleRequet
+     * @param \swoole_http_response $swooleResponse
      */
-    public function onRequest(\swoole_http_request $swoole_http_request, \swoole_http_response $swoole_http_response)
+    public function onRequest(\swoole_http_request $swooleRequet, \swoole_http_response $swooleResponse)
     {
         try {
-            $request = new HttpRequest($swoole_http_request);
+            $request = new HttpRequest($swooleRequet);
             $content = $this->doRequest($request);
-            $response = new HttpResponse($swoole_http_response, $content);
+            $response = new HttpResponse($swooleResponse, $content);
+            if ($request->session->isHit()) {
+                $request->cookie[HttpSession::TOKEN] = $request->session->getSessionId();
+            }
             $response->setCookies($request->cookie);
             $response->setHeaders($request->headers);
         } catch (\Exception $e) {
-            $response = new HttpResponse($swoole_http_response, 'Error 500');
+            $response = new HttpResponse($swooleResponse, 'Error 500');
             $response->setStatus(500);
         }
         $response->send();
