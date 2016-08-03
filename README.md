@@ -94,7 +94,7 @@ class Http extends HttpServer
      * @param \FastD\Swoole\Request $request
      * @return \FastD\Swoole\Response
      */
-    public function doRequest(\FastD\Swoole\Request $request)
+    public function doRequest(\FastD\Swoole\Http\HttpRequest $request)
     {
         return $this->html('hello world');
     }
