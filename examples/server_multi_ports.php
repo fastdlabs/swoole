@@ -17,6 +17,9 @@ include __DIR__ . '/../vendor/autoload.php';
 use FastD\Swoole\Server;
 use FastD\Swoole\Request;
 
+/**
+ * Class DemoServer
+ */
 class DemoServer extends Server
 {
     /**
@@ -28,6 +31,10 @@ class DemoServer extends Server
         return 'hello tcp server from ' . $request->getFd();
     }
 
+    /**
+     * @param Request $request
+     * @return string
+     */
     public function doPacket(Request $request)
     {
 

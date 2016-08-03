@@ -14,25 +14,29 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
+use FastD\Swoole\Request;
 use FastD\Swoole\Server;
 use FastD\Swoole\Console\Service;
 
+/**
+ * Class Demo
+ */
 class Demo extends Server
 {
     /**
-     * @param \FastD\Swoole\Request $request
+     * @param Request $request
      * @return string
      */
-    public function doWork(\FastD\Swoole\Request $request)
+    public function doWork(Request $request)
     {
         return 'hello service';
     }
 
     /**
-     * @param \FastD\Swoole\Request $request
+     * @param Request $request
      * @return string
      */
-    public function doPacket(\FastD\Swoole\Request $request)
+    public function doPacket(Request $request)
     {
         // TODO: Implement doPacket() method.
     }

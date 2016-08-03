@@ -18,8 +18,15 @@ use FastD\Swoole\Http\HttpServer;
 use FastD\Swoole\Request;
 use FastD\Swoole\Http\HttpRequest;
 
+/**
+ * Class Http
+ */
 class Http extends HttpServer
 {
+    /**
+     * @param HttpRequest $request
+     * @return string
+     */
     public function doRequest(HttpRequest $request)
     {
         return $this->json([
@@ -29,7 +36,7 @@ class Http extends HttpServer
 
     /**
      * @param Request $request
-     * @return Response
+     * @return string
      */
     public function doWork(Request $request)
     {

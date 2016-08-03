@@ -106,6 +106,7 @@ class HttpRequest extends Request
                 'PATH_INFO'         => $request->server['path_info'],
                 'REQUEST_TIME'      => $request->server['request_time'],
                 'GATEWAY_INTERFACE' => 'fastd_swoole/' . SWOOLE_VERSION,
+
                 // Swoole and general server proxy or server configuration.
                 'SERVER_PROTOCOL'   => isset($request->header['server_protocol']) ? $request->header['server_protocol'] : $request->server['server_protocol'],
                 'REQUEST_SCHEMA'    => isset($request->header['request_scheme']) ? $request->header['request_scheme'] : explode('/',$request->server['server_protocol'])[0],
@@ -119,9 +120,8 @@ class HttpRequest extends Request
                 'SCRIPT_FILENAME'   => $config['script_filename'],
                 'SCRIPT_NAME'       => '/' . $config['script_name'],
                 'PHP_SELF'          => '/' . $config['script_name'],
-                'HTTP_FD'           => $request->fd,
 
-                // Header
+                // Headers
                 'HTTP_HOST'             => $request->header['host'] ?? '::1',
                 'HTTP_USER_AGENT'       => $request->header['user-agent'] ?? '',
                 'HTTP_ACCEPT'           => $request->header['accept'] ?? '*/*',
