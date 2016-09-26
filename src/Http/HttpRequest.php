@@ -112,7 +112,7 @@ class HttpRequest extends Request
                 'REQUEST_URI'       => $request->server['request_uri'],
                 'PATH_INFO'         => $request->server['path_info'],
                 'REQUEST_TIME'      => $request->server['request_time'],
-                'GATEWAY_INTERFACE' => 'fastd_swoole/' . SWOOLE_VERSION,
+                'GATEWAY_INTERFACE' => 'swoole/' . SWOOLE_VERSION,
 
                 // Swoole and general server proxy or server configuration.
                 'SERVER_PROTOCOL'   => isset($request->header['server_protocol']) ? $request->header['server_protocol'] : $request->server['server_protocol'],

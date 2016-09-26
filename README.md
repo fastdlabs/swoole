@@ -36,6 +36,10 @@ pecl install inotify
 composer require "fastd/swoole:1.0.x-dev" -vvv
 ```
 
+## ＃文档
+
+[中文文档](docs/readme.md)
+
 ## ＃使用
 
 服务继承 `FastD\Swoole\Server`, 实现 `doWork` 方法, 服务器在接收信息 `onReceive` 回调中会调用 `doWork` 方法, `doWork` 方法接受一个封装好的请求对象。

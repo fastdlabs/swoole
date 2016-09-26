@@ -14,8 +14,6 @@
 
 namespace FastD\Swoole\Tests;
 
-use FastD\Swoole\Server\TcpServer;
-
 class ServerTest extends \PHPUnit_Framework_TestCase
 {
     protected $workspace_dir;
@@ -27,52 +25,16 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testDefaultParseServerIniFileConfig()
     {
-        $server = TcpServer::create();
 
-        $this->assertEquals($server->getWorkSpace(), $this->workspace_dir);
-
-        $this->assertEquals($server->getPidFile(), $this->workspace_dir . '/run/fds.pid');
-
-        $this->assertEquals($server->getLogFile(), $this->workspace_dir . '/var/fds.log');
-
-        $this->assertEquals('127.0.0.1', $server->getHost());
-
-        $this->assertEquals('9527', $server->getPort());
-
-        $this->assertEquals([
-            'start','shutdown', 'managerStart', 'managerStop', 'workerStart', 'workerStop', 'workerError'
-        ], array_keys($server->getHandles()));
-
-        unset($server);
     }
 
     public function testConstructionArguments()
     {
-        $server = TcpServer::create('0.0.0.0', '1234');
 
-        $this->assertEquals('0.0.0.0', $server->getHost());
-
-        $this->assertEquals('1234', $server->getPort());
-
-        unset($server);
     }
 
     public function testConfiguration()
     {
-        $server = TcpServer::create();
 
-        $server->configure([
-            'host' => '11.11.11.22',
-            'port' => '9999',
-            'pid' => '/tmp/server.pid'
-        ]);
-
-        $this->assertEquals('11.11.11.22', $server->getHost());
-
-        $this->assertEquals('9999', $server->getPort());
-
-        $this->assertEquals('/tmp/server.pid', $server->getPidFile());
-
-        unset($server);
     }
 }
