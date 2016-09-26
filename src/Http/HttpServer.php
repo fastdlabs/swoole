@@ -14,9 +14,12 @@
 
 namespace FastD\Swoole\Http;
 
+use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
-use FastD\Swoole\Request;
-use FastD\Swoole\Response;
+use swoole_http_request;
+use swoole_http_response;
+use swoole_http_server;
+use swoole_server;
 
 /**
  * Class HttpServer
@@ -48,37 +51,30 @@ abstract class HttpServer extends Server
      */
     public function initSwoole()
     {
-        return new \swoole_http_server($this->getHost(), $this->getPort(), $this->mode, $this->sockType);
+        return new swoole_http_server($this->getHost(), $this->getPort(), $this->mode, $this->sockType);
     }
 
     /**
-     * @param \swoole_http_request $swooleRequet
-     * @param \swoole_http_response $swooleResponse
+     * @param swoole_http_request $swooleRequet
+     * @param swoole_http_response $swooleResponse
      */
-    public function onRequest(\swoole_http_request $swooleRequet, \swoole_http_response $swooleResponse)
+    public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse)
     {
         try {
-            $request = new HttpRequest($swooleRequet);
-            $content = $this->doRequest($request);
-            $response = new HttpResponse($swooleResponse, $content);
-            if ($request->session->isHit()) {
-                $request->cookie[HttpSession::TOKEN] = $request->session->getSessionId();
-            }
-            $response->setCookies($request->cookie);
-            $response->setHeaders($request->headers);
+            $swooleRequestServer = SwooleServerRequest::createFromSwoole($swooleRequet, $swooleResponse);
+            $content = $this->doRequest($swooleRequestServer);
+            $swooleResponse->end($content);
         } catch (\Exception $e) {
-            $response = new HttpResponse($swooleResponse, 'Error 500');
-            $response->setStatus(500);
+            $swooleResponse->status(500);
+            $swooleResponse->end('Error 500');
         }
-        $response->send();
-        unset($request, $response);
     }
 
     /**
-     * @param HttpRequest $request
-     * @return string
+     * @param SwooleServerRequest $request
+     * @return mixed
      */
-    abstract public function doRequest(HttpRequest $request);
+    abstract public function doRequest(SwooleServerRequest $request);
 
     /**
      * Nothing to do.
@@ -90,19 +86,24 @@ abstract class HttpServer extends Server
      * @return mixed
      */
     public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data)
-    {
-        return;
-    }
+    {}
 
     /**
-     * @param Request $request
-     * @return Response
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
      */
-    public function doWork(Request $request){}
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    {}
 
     /**
-     * @param Request $request
-     * @return Response
+     * @param swoole_server $server
+     * @param $data
+     * @param $client_info
+     * @return mixed
      */
-    public function doPacket(Request $request){}
+    public function doPacket(swoole_server $server, $data, $client_info)
+    {}
 }

@@ -23,21 +23,26 @@ use FastD\Swoole\Server;
 class DemoServer extends Server
 {
     /**
-     * @param Request $request
-     * @return string
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
      */
-    public function doWork(Request $request)
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
-        return $request->getData();
+        return 'hello tcp';
     }
 
     /**
-     * @param Request $request
-     * @return string
+     * @param swoole_server $server
+     * @param $data
+     * @param $client_info
+     * @return mixed
      */
-    public function doPacket(Request $request)
+    public function doPacket(swoole_server $server, $data, $client_info)
     {
-        return 'udp handle';
+        // TODO: Implement doPacket() method.
     }
 }
 

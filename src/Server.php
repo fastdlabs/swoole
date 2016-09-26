@@ -17,6 +17,8 @@ namespace FastD\Swoole;
 use FastD\Packet\Binary;
 use FastD\Swoole\Console\Output;
 use FastD\Swoole\Console\Process;
+use swoole_process;
+use swoole_server;
 
 /**
  * Class Server
@@ -28,7 +30,7 @@ abstract class Server
     const SERVER_NAME = 'fds';
 
     /**
-     * @var \swoole_server
+     * @var swoole_server
      */
     protected $swoole;
 
@@ -155,7 +157,7 @@ abstract class Server
      */
     public function initSwoole()
     {
-        return new \swoole_server($this->host, $this->port, $this->mode, $this->sockType);
+        return new swoole_server($this->host, $this->port, $this->mode, $this->sockType);
     }
 
     /**
@@ -260,7 +262,7 @@ abstract class Server
         $this->discoveries = $discoveries;
 
         foreach ($discoveries as $discovery) {
-            $process = new \swoole_process(function () use ($discovery) {
+            $process = new swoole_process(function () use ($discovery) {
                 while (true) {
                     sleep(1);
                     echo 'discovery ' . $discovery['host'] . PHP_EOL;
@@ -284,7 +286,7 @@ abstract class Server
         $self = $this;
 
         foreach ($this->monitors as $monitor) {
-            $process = new \swoole_process(function () use ($monitor, $self) {
+            $process = new swoole_process(function () use ($monitor, $self) {
                 $client = new Client($monitor['sock']);
                 while (true) {
                     $client->connect($monitor['host'], $monitor['port']);
@@ -304,12 +306,12 @@ abstract class Server
     }
 
     /**
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @param $worker_id
      * @param $task_id
      * @param $msg
      */
-    public function report(\swoole_server $server, $worker_id, $task_id, $msg)
+    public function report(swoole_server $server, $worker_id, $task_id, $msg)
     {
         foreach ($this->monitors as $monitor) {
             $client = new Client($monitor['sock']);
@@ -338,7 +340,7 @@ abstract class Server
     }
 
     /**
-     * @return \swoole_server
+     * @return swoole_server
      */
     public function getSwooleInstance()
     {
@@ -401,21 +403,20 @@ abstract class Server
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @param $fd
      * @param $from_id
      * @param $data
      * @return mixed
      */
-    public function onReceive(\swoole_server $server, int $fd, int $from_id, string $data)
+    public function onReceive(swoole_server $server, $fd, $from_id, $data)
     {
         try {
-            $content = $this->doWork(new Request($server, $fd, $data, $from_id));
-            $response = new Response($server, $fd, $content);
-            $response->send();
-            unset($response);
+            $content = $this->doWork($server, $fd, $data, $from_id);
+            $server->send($fd, $content);
+            $server->close($fd);
         } catch (\Exception $e) {
-            $server->send(sprintf("Error: %s\nFile: %s \n Code: %s",
+            $server->send($fd, sprintf("Error: %s\nFile: %s \n Code: %s",
                     $e->getMessage(),
                     $e->getFile(),
                     $e->getCode()
@@ -426,40 +427,43 @@ abstract class Server
     }
 
     /**
-     * @param Request $request
-     * @return string
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
      */
-    abstract public function doWork(Request $request);
+    abstract public function doWork(swoole_server $server, $fd, $data, $from_id);
 
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @param string $data
      * @param array $client_info
      */
-    public function onPacket(\swoole_server $server, string $data, array $client_info)
+    public function onPacket(swoole_server $server, $data, array $client_info)
     {
         try {
-            $content = $this->doPacket(new Request($server, null, $data, null, $client_info));
-            $response = new Response($server, null, $content);
-            $response->send();
-            unset($response);
+            $content = $this->doPacket($server, $data, $client_info);
         } catch (\Exception $e) {
-            $server->send(sprintf("Error: %s\nFile: %s \n Code: %s",
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getCode()
-                )
+            $content = sprintf("Error: %s\nFile: %s \n Code: %s",
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getCode()
             );
         }
+
+        $server->sendto($client_info['address'], $client_info['port'], $content);
     }
 
     /**
-     * @param Request $request
-     * @return string
+     * @param swoole_server $server
+     * @param $data
+     * @param $client_info
+     * @return mixed
      */
-    abstract public function doPacket(Request $request);
+    abstract public function doPacket(swoole_server $server, $data, $client_info);
 
     /**
      * @return $this
@@ -478,10 +482,10 @@ abstract class Server
     /**
      * Base start handle. Storage process id.
      *
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @return void
      */
-    public function onStart(\swoole_server $server)
+    public function onStart(swoole_server $server)
     {
         if (null !== ($file = $this->getPid())) {
             if (!is_dir($dir = dirname($file))) {
@@ -495,7 +499,7 @@ abstract class Server
 
         Output::output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
         foreach ($this->ports as $port) {
-            Output::output(sprintf("➜ Lgisten %s://%s:%s", $this->getServerType($port->type), $port->host, $port->port));
+            Output::output(sprintf("➜ Listen %s://%s:%s", $this->getServerType($port->type), $port->host, $port->port));
         }
         Output::output(sprintf('Server Master[#%s] is started', $server->master_pid));
     }
@@ -503,10 +507,10 @@ abstract class Server
     /**
      * Shutdown server process.
      *
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @return void
      */
-    public function onShutdown(\swoole_server $server)
+    public function onShutdown(swoole_server $server)
     {
         if (null !== ($file = $this->getPid()) && !empty(trim(file_get_contents($file)))) {
             unlink($file);
@@ -516,11 +520,11 @@ abstract class Server
     }
 
     /**
-     * @param \swoole_server $server
+     * @param swoole_server $server
      *
      * @return void
      */
-    public function onManagerStart(\swoole_server $server)
+    public function onManagerStart(swoole_server $server)
     {
         Process::rename(static::SERVER_NAME . ' manager');
 
@@ -528,21 +532,21 @@ abstract class Server
     }
 
     /**
-     * @param \swoole_server $server
+     * @param swoole_server $server
      *
      * @return void
      */
-    public function onManagerStop(\swoole_server $server)
+    public function onManagerStop(swoole_server $server)
     {
         Output::output(sprintf('Server Manager[#%s] is shutdown.', $server->manager_pid));
     }
 
     /**
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStart(\swoole_server $server, int $worker_id)
+    public function onWorkerStart(swoole_server $server, int $worker_id)
     {
         Process::rename(static::SERVER_NAME . ' worker');
 
@@ -550,23 +554,23 @@ abstract class Server
     }
 
     /**
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStop(\swoole_server $server, int $worker_id)
+    public function onWorkerStop(swoole_server $server, int $worker_id)
     {
         Output::output(sprintf('Server Worker[#%s] is shutdown', $worker_id));
     }
 
     /**
-     * @param \swoole_server $server
+     * @param swoole_server $server
      * @param int $worker_id
      * @param int $worker_pid
      * @param int $exit_code
      * @return void
      */
-    public function onWorkerError(\swoole_server $server, int $worker_id, int $worker_pid, int $exit_code)
+    public function onWorkerError(swoole_server $server, int $worker_id, int $worker_pid, int $exit_code)
     {
         Output::output(sprintf('Server Worker[#%s] error. Exit code: [%s]', $worker_pid, $exit_code));
     }
