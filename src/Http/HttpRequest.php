@@ -20,12 +20,12 @@ class HttpRequest extends Request
     /**
      * @var array
      */
-    public $get;
+    public $query;
 
     /**
      * @var array
      */
-    public $post;
+    public $request;
 
     /**
      * @var array
@@ -101,11 +101,11 @@ class HttpRequest extends Request
 
         $config['script_filename'] = str_replace('//', '/', $config['document_root'] . '/' . $config['script_name']); // Equal nginx fastcgi_params $document_root$fastcgi_script_name;
 
-        $this->get        = isset($request->get) ? $request->get : [];
-        $this->post       = isset($request->post) ? $request->post : [];
-        $this->cookie    = isset($request->cookie) ? $request->cookie : [];
-        $this->files      = isset($request->files) ? $request->files : [];
-        $this->server     = (function (\swoole_http_request $request, $config) {
+        $this->query    = isset($request->get) ? $request->get : [];
+        $this->request  = isset($request->post) ? $request->post : [];
+        $this->cookie   = isset($request->cookie) ? $request->cookie : [];
+        $this->files    = isset($request->files) ? $request->files : [];
+        $this->server   = (function (\swoole_http_request $request, $config) {
             return [
                 // Server
                 'REQUEST_METHOD'    => $request->server['request_method'],
