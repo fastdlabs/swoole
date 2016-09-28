@@ -69,16 +69,16 @@ class DemoServer extends Server
      * @param \FastD\Swoole\Request $request
      * @return string
      */
-    public function doWork(\FastD\Swoole\Request $request)
+    public function doWork(\swoole_server $server, $fd, $data, $from_id)
     {
-        return $request->getData();
+        return 'hello world';
     }
 
     /**
      * @param \FastD\Swoole\Request $request
      * @return string
      */
-    public function doPacket(\FastD\Swoole\Request $request)
+    public function doPacket(\swoole_server $server, $data, array $client_info)
     {
         // UDP Receive
     }
@@ -100,7 +100,13 @@ class Http extends HttpServer
      */
     public function doRequest(\FastD\Swoole\Http\HttpRequest $request)
     {
-        return $this->html('hello world');
+        $request->cookie->set('name', 'jan');
+
+        return new \FastD\Http\JsonResponse([
+            'msg' => 'hello world',
+        ], 400, [
+            'NAME' => "Jan"
+        ]);
     }
 }
 
@@ -119,18 +125,18 @@ class Demo extends Server
      * @param \FastD\Swoole\Request $request
      * @return string
      */
-    public function doWork(\FastD\Swoole\Request $request)
+    public function doWork(\swoole_server $server, $fd, $data, $from_id)
     {
-        return 'hello service';
+        return 'hello world';
     }
 
     /**
      * @param \FastD\Swoole\Request $request
      * @return string
      */
-    public function doPacket(\FastD\Swoole\Request $request)
+    public function doPacket(\swoole_server $server, $data, array $client_info)
     {
-        // TODO: Implement doPacket() method.
+        // UDP Receive
     }
 }
 

@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f96c21ef6a62b1e7812d636f60a90cc5",
-    "content-hash": "58a2044624a30a0d1d0918db462cf263",
+    "hash": "61aca51a058e239f97e1125217c4ec41",
+    "content-hash": "d497c5dff3c7f33ccbe5e2925c0873f3",
     "packages": [
         {
             "name": "fastd/http",
@@ -13,15 +13,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JanHuang/http.git",
-                "reference": "fb32d15237065cce90924fcd98d175ec636db9df"
+                "reference": "6a0a569690fd75ef1435123b3fb38bf2e06f72cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JanHuang/http/zipball/fb32d15237065cce90924fcd98d175ec636db9df",
-                "reference": "fb32d15237065cce90924fcd98d175ec636db9df",
+                "url": "https://api.github.com/repos/JanHuang/http/zipball/6a0a569690fd75ef1435123b3fb38bf2e06f72cc",
+                "reference": "6a0a569690fd75ef1435123b3fb38bf2e06f72cc",
                 "shasum": ""
             },
             "require": {
+                "fastd/session": "1.0.x-dev",
                 "php": ">=5.6",
                 "psr/http-message": "~1.0"
             },
@@ -49,7 +50,7 @@
                 "FastD",
                 "http"
             ],
-            "time": "2016-09-25 15:08:20"
+            "time": "2016-09-28 01:36:45"
         },
         {
             "name": "fastd/packet",
@@ -97,16 +98,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JanHuang/session.git",
-                "reference": "02cdb3a699991370c8ea9ab476412704ff816298"
+                "reference": "4f0b54d9f952a0cd41639ed6ee21fb7d0ed3fc16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JanHuang/session/zipball/02cdb3a699991370c8ea9ab476412704ff816298",
-                "reference": "02cdb3a699991370c8ea9ab476412704ff816298",
+                "url": "https://api.github.com/repos/JanHuang/session/zipball/4f0b54d9f952a0cd41639ed6ee21fb7d0ed3fc16",
+                "reference": "4f0b54d9f952a0cd41639ed6ee21fb7d0ed3fc16",
                 "shasum": ""
             },
             "require": {
-                "fastd/storage": "2.0.x-dev",
+                "fastd/storage": "2.1.x-dev",
                 "php": ">=5.6"
             },
             "require-dev": {
@@ -125,11 +126,11 @@
                     "email": "bboyjanhuang@gmail.com"
                 }
             ],
-            "time": "2016-09-26 04:44:51"
+            "time": "2016-09-27 01:49:45"
         },
         {
             "name": "fastd/storage",
-            "version": "dev-master",
+            "version": "2.1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JanHuang/storage.git",
@@ -1544,7 +1545,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.0",
+        "php": ">=5.6",
         "ext-swoole": ">=1.8"
     },
     "platform-dev": []

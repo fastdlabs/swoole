@@ -14,7 +14,10 @@
 
 namespace FastD\Swoole\Http;
 
+use FastD\Http\Exceptions\HttpException;
+use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
+use FastD\Swoole\Exceptions\CannotResponseException;
 use FastD\Swoole\Server;
 use swoole_http_request;
 use swoole_http_response;
@@ -28,6 +31,8 @@ use swoole_server;
  */
 abstract class HttpServer extends Server
 {
+    const GZIP_LEVEL = 2;
+
     /**
      * @param array $content
      * @return string
@@ -62,8 +67,32 @@ abstract class HttpServer extends Server
     {
         try {
             $swooleRequestServer = SwooleServerRequest::createFromSwoole($swooleRequet, $swooleResponse);
-            $content = $this->doRequest($swooleRequestServer);
-            $swooleResponse->end($content);
+
+            if (!(($response = $this->doRequest($swooleRequestServer)) instanceof Response)) {
+                throw new CannotResponseException();
+            }
+
+            $swooleResponse->status($response->getStatusCode());
+            foreach ($response->getHeaders() as $key => $header) {
+                $swooleResponse->header($key, $response->getHeaderLine($key));
+            }
+
+            foreach ($swooleRequestServer->getCookieParams() as $cookieParam) {
+                $swooleResponse->cookie(
+                    $cookieParam->getName(),
+                    $cookieParam->getValue(),
+                    $cookieParam->getExpire(),
+                    $cookieParam->getPath(),
+                    $cookieParam->getDomain(),
+                    $cookieParam->isSecure(),
+                    $cookieParam->isHttpOnly()
+                );
+            }
+            $swooleResponse->gzip(static::GZIP_LEVEL);
+            $swooleResponse->end($response->getContent());
+        } catch (HttpException $e) {
+            $swooleResponse->status($e->getStatusCode());
+            $swooleResponse->end($e->getMessage());
         } catch (\Exception $e) {
             $swooleResponse->status(500);
             $swooleResponse->end('Error 500');
@@ -72,7 +101,7 @@ abstract class HttpServer extends Server
 
     /**
      * @param SwooleServerRequest $request
-     * @return mixed
+     * @return Response
      */
     abstract public function doRequest(SwooleServerRequest $request);
 

@@ -14,6 +14,7 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
+use FastD\Http\Response;
 use FastD\Swoole\Http\HttpServer;
 
 class Http extends HttpServer
@@ -24,7 +25,13 @@ class Http extends HttpServer
      */
     public function doRequest(\FastD\Http\SwooleServerRequest $request)
     {
-        return 'hello http';
+        $request->cookie->set('name', 'jan');
+
+        return new \FastD\Http\JsonResponse([
+            'msg' => 'hello world',
+        ], 400, [
+            'NAME' => "Jan"
+        ]);
     }
 }
 
