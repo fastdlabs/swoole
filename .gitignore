@@ -1,8 +1,8 @@
 /vendor/
 .idea
 *.orig
-swoole.php;
 /run
 /var
 *.pid
 *.log
+composer.lock
