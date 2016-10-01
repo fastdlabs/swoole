@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole\Http;
 
+use Exception;
 use FastD\Http\Exceptions\HttpException;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
@@ -32,6 +33,7 @@ use swoole_server;
 abstract class HttpServer extends Server
 {
     const GZIP_LEVEL = 2;
+    const SERVER_INTERVAL_ERROR = 'Error 500';
 
     /**
      * @param array $content
@@ -92,10 +94,10 @@ abstract class HttpServer extends Server
             $swooleResponse->end($response->getContent());
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
-            $swooleResponse->end($e->getMessage());
-        } catch (\Exception $e) {
+            $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
+        } catch (Exception $e) {
             $swooleResponse->status(500);
-            $swooleResponse->end('Error 500');
+            $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
         }
     }
 

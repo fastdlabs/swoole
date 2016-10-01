@@ -108,6 +108,14 @@ abstract class Server
     /**
      * @return bool
      */
+    public function isDebug()
+    {
+        return isset($this->config['debug']) ? $this->config['debug'] : false;
+    }
+
+    /**
+     * @return bool
+     */
     public function isBooted()
     {
         return $this->booted;
