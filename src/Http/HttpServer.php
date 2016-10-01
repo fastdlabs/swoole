@@ -18,6 +18,7 @@ use Exception;
 use FastD\Http\Exceptions\HttpException;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
+use FastD\Session\Session;
 use FastD\Swoole\Exceptions\CannotResponseException;
 use FastD\Swoole\Server;
 use swoole_http_request;
@@ -75,6 +76,11 @@ abstract class HttpServer extends Server
             }
 
             $swooleResponse->status($response->getStatusCode());
+
+            if (!empty($sessionId = $swooleRequestServer->session->getSessionId())) {
+                $swooleResponse->header(Session::SESSION_KEY, $sessionId);
+            }
+
             foreach ($response->getHeaders() as $key => $header) {
                 $swooleResponse->header($key, $response->getHeaderLine($key));
             }
