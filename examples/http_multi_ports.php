@@ -24,23 +24,12 @@ use FastD\Swoole\Http\HttpRequest;
 class Http extends HttpServer
 {
     /**
-     * @param HttpRequest $request
-     * @return string
+     * @param \FastD\Http\SwooleServerRequest $request
+     * @return \FastD\Http\Response
      */
-    public function doRequest(HttpRequest $request)
+    public function doRequest(\FastD\Http\SwooleServerRequest $request)
     {
-        return $this->json([
-            'name' => 'jan'
-        ]);
-    }
-
-    /**
-     * @param Request $request
-     * @return string
-     */
-    public function doWork(Request $request)
-    {
-        return 'hello http port';
+        return $this->html('hello http');
     }
 }
 
@@ -51,7 +40,8 @@ Http::run([
             'host' => '0.0.0.0',
             'port' => '9988',
             'sock' => SWOOLE_SOCK_TCP,
-            'config' => [], // 重写端口配置
+            'config' => [], // 重写端口配置,
+            'callback' => 'class name'
         ],
     ]
 ]);

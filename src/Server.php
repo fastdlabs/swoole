@@ -139,6 +139,16 @@ abstract class Server
                 if (isset($port['config'])) {
                     $serverPort->set($port['config']);
                 }
+                if (isset($port['callback'])) {
+                    if (!is_object($port['callback'])) {
+                        $port['callback'] = new $port['callback'];
+                    }
+
+                    $serverPort->on('connect', [$port['callback'], 'onConnect']);
+                    $serverPort->on('receive', [$port['callback'], 'onReceive']);
+                    $serverPort->on('packet', [$port['callback'], 'onPacket']);
+                    $serverPort->on('close', [$port['callback'], 'onClose']);
+                }
                 $this->ports[$key] = $serverPort;
             }
 
