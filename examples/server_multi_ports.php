@@ -23,22 +23,32 @@ use FastD\Swoole\Request;
 class DemoServer extends Server
 {
     /**
-     * @param Request $request
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
      * @return mixed
      */
-    public function doWork(Request $request)
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
-        return 'hello tcp server from ' . $request->getFd();
+        // TODO: Implement doWork() method.
     }
 
     /**
-     * @param Request $request
-     * @return string
+     * @param swoole_server $server
+     * @param $data
+     * @param $client_info
+     * @return mixed
      */
-    public function doPacket(Request $request)
+    public function doPacket(swoole_server $server, $data, $client_info)
     {
-
+        // TODO: Implement doPacket() method.
     }
+}
+
+class MultiServer implements \FastD\Swoole\ServerInterface
+{
+
 }
 
 DemoServer::run([
@@ -47,6 +57,7 @@ DemoServer::run([
             'host' => '0.0.0.0',
             'port' => '9999',
             'sock' => SWOOLE_SOCK_TCP,
+            'callback' => MultiServer::class
         ],
         [
             'host' => '0.0.0.0',

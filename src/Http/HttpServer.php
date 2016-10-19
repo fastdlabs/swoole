@@ -34,7 +34,7 @@ use swoole_server;
 abstract class HttpServer extends Server
 {
     const GZIP_LEVEL = 2;
-    const SERVER_INTERVAL_ERROR = 'Error 500';
+    const SERVER_INTERVAL_ERROR = 'Server Interval';
 
     /**
      * @param array $content
@@ -98,6 +98,7 @@ abstract class HttpServer extends Server
             }
             $swooleResponse->gzip(static::GZIP_LEVEL);
             $swooleResponse->end($response->getContent());
+            unset($response, $swooleRequestServer);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
