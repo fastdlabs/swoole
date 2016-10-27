@@ -15,12 +15,12 @@ use FastD\Swoole\Http\HttpRequest;
 class Http extends HttpServer
 {
     /**
-     * @param HttpRequest $request
-     * @return string
+     * @param \FastD\Http\SwooleServerRequest $request
+     * @return \FastD\Http\Response
      */
-    public function doRequest(HttpRequest $request)
+    public function doRequest(\FastD\Http\SwooleServerRequest $request)
     {
-        switch ($request->getPathInfo()) {
+        switch ($request->server->getPathInfo()) {
             case '/session/set':
                 $request->session->set('user', [
                     'name' => 'jan',

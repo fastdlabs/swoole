@@ -53,23 +53,6 @@ abstract class WebSocketServer extends Server
     abstract public function doOpen(swoole_websocket_server $server, swoole_http_request $request);
 
     /**
-     * @param swoole_http_request $request
-     * @param swoole_http_response $response
-     * @return mixed
-     */
-    public function onHandShake(swoole_http_request $request, swoole_http_response $response)
-    {
-        return $this->doHandShake($request, $response);
-    }
-
-    /**
-     * @param swoole_http_request $request
-     * @param swoole_http_response $response
-     * @return mixed
-     */
-    abstract public function doHandShake(swoole_http_request $request, swoole_http_response $response);
-
-    /**
      * @param swoole_server $server
      * @param swoole_websocket_frame $frame
      * @return mixed
@@ -87,7 +70,7 @@ abstract class WebSocketServer extends Server
     abstract public function doMessage(swoole_server $server, swoole_websocket_frame $frame);
 
     /**
-     * @return swoole_websocket_server
+     * @return swoole_server
      */
     public function initSwoole()
     {

@@ -20,7 +20,7 @@ use FastD\Swoole\Server;
 /**
  * Class DemoServer
  */
-class DemoServer extends Server
+class DemoServer extends \FastD\Swoole\Tcp\TcpServer
 {
     /**
      * @param swoole_server $server
@@ -32,17 +32,6 @@ class DemoServer extends Server
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello tcp';
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $client_info
-     * @return mixed
-     */
-    public function doPacket(swoole_server $server, $data, $client_info)
-    {
-        // TODO: Implement doPacket() method.
     }
 }
 

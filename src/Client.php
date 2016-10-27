@@ -14,6 +14,8 @@
 
 namespace FastD\Swoole;
 
+use swoole_client;
+
 /**
  * Class Client
  *
@@ -22,7 +24,7 @@ namespace FastD\Swoole;
 class Client
 {
     /**
-     * @var \swoole_client
+     * @var swoole_client
      */
     protected $client;
 
@@ -39,7 +41,7 @@ class Client
      */
     public function __construct($mode = SWOOLE_SOCK_TCP, $async = null)
     {
-        $this->client = new \swoole_client($mode, $async);
+        $this->client = new swoole_client($mode, $async);
     }
 
     /**

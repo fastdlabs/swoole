@@ -113,35 +113,4 @@ abstract class HttpServer extends Server
      * @return Response
      */
     abstract public function doRequest(SwooleServerRequest $request);
-
-    /**
-     * Nothing to do.
-     *
-     * @param \swoole_server $server
-     * @param int $task_id
-     * @param int $from_id
-     * @param string $data
-     * @return mixed
-     */
-    public function doTask(\swoole_server $server, int $task_id, int $from_id, string $data)
-    {}
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
-    {}
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $client_info
-     * @return mixed
-     */
-    public function doPacket(swoole_server $server, $data, $client_info)
-    {}
 }

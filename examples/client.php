@@ -14,7 +14,7 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Swoole\Client\Client;
+use FastD\Swoole\Client;
 
 $client = new Client();
 

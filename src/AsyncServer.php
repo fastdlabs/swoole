@@ -15,7 +15,7 @@ namespace FastD\Swoole;
  *
  * @package FastD\Swoole\Server
  */
-abstract class TaskServer extends Server
+abstract class AsyncServer extends Server
 {
     /**
      * @param $data

@@ -13,6 +13,28 @@ include __DIR__ . '/../vendor/autoload.php';
 
 /*$server = new swoole_websocket_server("0.0.0.0", 9527);
 
+$server->on('start', function () {
+    echo 'start';
+});
+$server->on('Shutdown', function () {
+    echo 'start';
+});
+$server->on('ManagerStart', function () {
+    echo 'start';
+});
+$server->on('ManagerStop', function () {
+    echo 'start';
+});
+$server->on('WorkerStart', function () {
+    echo 'start';
+});
+$server->on('orkerStop', function () {
+    echo 'start';
+});
+$server->on('WorkerError', function () {
+    echo 'start';
+});
+
 $server->on('open', function (swoole_websocket_server $server, $request) {
     echo "server: handshake success with fd{$request->fd}\n";
 });
