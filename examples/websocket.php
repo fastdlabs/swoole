@@ -7,52 +7,9 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\WebSocket\WebSocketServer;
+use FastD\Swoole\Server\WebSocket\WebSocketServer;
 
 include __DIR__ . '/../vendor/autoload.php';
-
-/*$server = new swoole_websocket_server("0.0.0.0", 9527);
-
-$server->on('start', function () {
-    echo 'start';
-});
-$server->on('Shutdown', function () {
-    echo 'start';
-});
-$server->on('ManagerStart', function () {
-    echo 'start';
-});
-$server->on('ManagerStop', function () {
-    echo 'start';
-});
-$server->on('WorkerStart', function () {
-    echo 'start';
-});
-$server->on('orkerStop', function () {
-    echo 'start';
-});
-$server->on('WorkerError', function () {
-    echo 'start';
-});
-
-$server->on('open', function (swoole_websocket_server $server, $request) {
-    echo "server: handshake success with fd{$request->fd}\n";
-});
-
-$server->on('message', function (swoole_websocket_server $server, $frame) {
-    echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
-    $server->push($frame->fd, "this is server");
-});
-
-$server->on('close', function ($ser, $fd) {
-    echo "client {$fd} closed\n";
-});
-
-print_r($server);
-
-$server->start();
-
-die;*/
 
 class WebSocket extends WebSocketServer
 {
@@ -88,9 +45,6 @@ class WebSocket extends WebSocketServer
     }
 }
 
-$webSocket = new WebSocket([
-    'host' => '0.0.0.0',
-    'port' => 9527
-]);
+$webSocket = new WebSocket('ws://0.0.0.0:9527');
 
 $webSocket->start();

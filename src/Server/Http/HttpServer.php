@@ -12,10 +12,11 @@
  * WebSite: http://www.janhuang.me
  */
 
-namespace FastD\Swoole\Http;
+namespace FastD\Swoole\Server\Http;
 
 use Exception;
 use FastD\Http\Exceptions\HttpException;
+use FastD\Http\JsonResponse;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Session\Session;
@@ -42,7 +43,7 @@ abstract class HttpServer extends Server
      */
     public function json(array $content)
     {
-        return json_encode($content, JSON_UNESCAPED_UNICODE);
+        return new JsonResponse($content);
     }
 
     /**
@@ -51,7 +52,7 @@ abstract class HttpServer extends Server
      */
     public function html($content)
     {
-        return $content;
+        return new Response($content);
     }
 
     /**
@@ -59,7 +60,7 @@ abstract class HttpServer extends Server
      */
     public function initSwoole()
     {
-        return new swoole_http_server($this->getHost(), $this->getPort(), $this->mode, $this->sockType);
+        return new swoole_http_server($this->getHost(), $this->getPort(), $this->mode);
     }
 
     /**

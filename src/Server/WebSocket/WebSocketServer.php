@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\WebSocket;
+namespace FastD\Swoole\Server\WebSocket;
 
 use FastD\Swoole\Server;
 use swoole_server;
@@ -18,23 +18,6 @@ use swoole_websocket_frame;
 
 abstract class WebSocketServer extends Server
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
-    public function doWork(swoole_server $server, $fd, $data, $from_id){}
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $client_info
-     * @return mixed
-     */
-    public function doPacket(swoole_server $server, $data, $client_info){}
-
     /**
      * @param swoole_websocket_server $server
      * @param swoole_http_request $request

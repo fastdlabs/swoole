@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Tcp;
+namespace FastD\Swoole\Server\Tcp;
 
 use FastD\Swoole\Server;
 use swoole_server;

@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Udp;
+namespace FastD\Swoole\Server\Udp;
 
 use FastD\Swoole\Server;
 use swoole_server;

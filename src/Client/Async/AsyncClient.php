@@ -12,8 +12,19 @@ namespace FastD\Swoole\Async;
 use FastD\Swoole\Client;
 use swoole_client;
 
+/**
+ * Class AsyncClient
+ *
+ * @package FastD\Swoole\Async
+ */
 class AsyncClient extends Client
 {
+    /**
+     * AsyncClient constructor.
+     *
+     * @param $address
+     * @param $mode
+     */
     public function __construct($address, $mode = SWOOLE_SOCK_TCP)
     {
         $this->parseProtocol($address);
@@ -21,6 +32,10 @@ class AsyncClient extends Client
         $this->client = new swoole_client($mode, SWOOLE_SOCK_ASYNC);
     }
 
+    /**
+     * @param $callback
+     * @return $this
+     */
     public function onError($callback)
     {
         $this->on('error', $callback);
@@ -28,6 +43,10 @@ class AsyncClient extends Client
         return $this;
     }
 
+    /**
+     * @param $callback
+     * @return $this
+     */
     public function onConnect($callback)
     {
         $this->on('connect', $callback);
@@ -35,6 +54,10 @@ class AsyncClient extends Client
         return $this;
     }
 
+    /**
+     * @param $callback
+     * @return $this
+     */
     public function onReceive($callback)
     {
         $this->on('receive', $callback);
@@ -42,6 +65,10 @@ class AsyncClient extends Client
         return $this;
     }
 
+    /**
+     * @param $callback
+     * @return $this
+     */
     public function onClose($callback)
     {
         $this->on('close', $callback);
@@ -49,6 +76,11 @@ class AsyncClient extends Client
         return $this;
     }
 
+    /**
+     * @param null $callback
+     * @param int $timeout
+     * @return mixed
+     */
     public function connect($callback = null, $timeout = 5)
     {
         if (!(null === $callback)) {

@@ -12,10 +12,9 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../vendor/autoload.php';
+use FastD\Swoole\Server\Http\HttpServer;
 
-use FastD\Http\Response;
-use FastD\Swoole\Http\HttpServer;
+include __DIR__ . '/../vendor/autoload.php';
 
 class Http extends HttpServer
 {
@@ -35,7 +34,4 @@ class Http extends HttpServer
     }
 }
 
-Http::run([
-    'log_file' => './fds.log',
-    'host' => '0.0.0.0',
-]);
+Http::run('http://0.0.0.0:9527');

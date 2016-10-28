@@ -7,10 +7,9 @@
  * @link      http://www.fast-d.cn/
  */
 
-include __DIR__ . '/../vendor/autoload.php';
+use FastD\Swoole\Server\Http\HttpServer;
 
-use FastD\Swoole\Http\HttpServer;
-use FastD\Swoole\Http\HttpRequest;
+include __DIR__ . '/../vendor/autoload.php';
 
 class Http extends HttpServer
 {
@@ -26,17 +25,15 @@ class Http extends HttpServer
                     'name' => 'jan',
                     'age' => 19
                 ]);
-                break;
+                return $this->html('ok');
             case '/session/get':
                 return $this->json($request->session->toArray());
-                break;
             default:
                 return $this->html('hello swoole http server');
         }
     }
 }
 
-Http::run([
-    'log_file' => './fds.log',
-    'host' => '0.0.0.0',
+Http::run('http://0.0.0.0:9527', SWOOLE_PROCESS, [
+    'debug' => true
 ]);

@@ -12,15 +12,14 @@
  * WebSite: http://www.janhuang.me
  */
 
-include __DIR__ . '/../vendor/autoload.php';
+use FastD\Swoole\Server\Tcp\TcpServer;
 
-use FastD\Swoole\Request;
-use FastD\Swoole\Server;
+include __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Class DemoServer
  */
-class DemoServer extends \FastD\Swoole\Tcp\TcpServer
+class DemoServer extends TcpServer
 {
     /**
      * @param swoole_server $server
@@ -35,15 +34,7 @@ class DemoServer extends \FastD\Swoole\Tcp\TcpServer
     }
 }
 
-DemoServer::run([
-    'ports' => [
-        [
-            'host' => '127.0.0.1',
-            'port' => '9528',
-            'sock' => SWOOLE_SOCK_UDP
-        ]
-    ]
-]);
+DemoServer::run('tcp://127.0.0.1:9527');
 
 /**
  * 以上写法和以下写法效果一致

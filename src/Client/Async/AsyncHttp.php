@@ -13,5 +13,8 @@ use FastD\Swoole\Client;
 
 class AsyncHttp extends Client
 {
-
+    public function __construct($address, $mode)
+    {
+        parent::__construct($address, $mode);
+    }
 }

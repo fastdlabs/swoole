@@ -1,22 +1,16 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: janhuang
- * Date: 16/5/21
- * Time: 下午8:29
- * Github: https://www.github.com/janhuang
- * Coding: https://www.coding.net/janhuang
- * SegmentFault: http://segmentfault.com/u/janhuang
- * Blog: http://segmentfault.com/blog/janhuang
- * Gmail: bboyjanhuang@gmail.com
- * WebSite: http://www.janhuang.me
+ * @author    jan huang <bboyjanhuang@gmail.com>
+ * @copyright 2016
+ *
+ * @link      https://www.github.com/janhuang
+ * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Console;
+namespace FastD\Swoole\Tools;
 
-use FastD\Swoole\Client;
-use FastD\Swoole\Server;
 use FastD\Swoole\Watch\Watcher;
+use swoole_process;
 
 /**
  * Service 管理脚本
@@ -25,47 +19,55 @@ use FastD\Swoole\Watch\Watcher;
  *
  * @package FastD\Swoole\Console
  */
-class Service
+trait Console
 {
     /**
-     * @var static
+     * @param $name
      */
-    protected static $service;
-
-    /**
-     * @var Server
-     */
-    protected $server;
-
-    /**
-     * @var Client
-     */
-    protected $client;
-
-    /**
-     * Service constructor.
-     *
-     * @param $server
-     * @param array $config
-     */
-    public function __construct($server, array $config = [])
+    public function rename($name)
     {
-        if ($server instanceof Server) {
-            $this->server = $server;
-            if (!empty($config)) {
-                $this->server->configure($config);
-            }
-        } else {
-            $this->server = new $server($config);
+        // hidden Mac OS error。
+        set_error_handler(function () {});
+
+        if (function_exists('cli_set_process_title')) {
+            cli_set_process_title($name);
+        } else if (function_exists('swoole_set_process_name')) {
+            swoole_set_process_name($name);
         }
+
+        restore_error_handler();
     }
+
+    /**
+     * Return process pid.
+     *
+     * @return int
+     */
+    abstract public function getPid();
+
+    /**
+     * Driver swoole app.
+     *
+     * @return mixed
+     */
+    abstract public function bootstrap();
+
+    /**
+     * @return \swoole_server
+     */
+    abstract public function getSwoole();
+
+    /**
+     * @return string
+     */
+    abstract public function getServerName();
 
     /**
      * @return bool
      */
     protected function isRunning()
     {
-        $processName = $this->server->getServerName();
+        $processName = $this->getServerName();
 
         if ('Linux' !== PHP_OS) {
             $processName = $_SERVER['SCRIPT_NAME'];
@@ -109,8 +111,8 @@ class Service
             Output::output(sprintf('%s:%s address already in use', $this->server->getHost(), $this->server->getPort()));
         } else {
             try {
-                $this->server->bootstrap();
-                $this->server->start();
+                $this->bootstrap();
+                $this->getSwoole()->start();
             } catch (\Exception $e) {
                 Output::output($e->getMessage());
             }
@@ -127,7 +129,7 @@ class Service
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->server->getPid());
+        $pid = (int) @file_get_contents($this->getPid());
 
         posix_kill($pid, SIGTERM);
 
@@ -146,7 +148,7 @@ class Service
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->server->getPid());
+        $pid = (int) @file_get_contents($this->getPid());
 
         posix_kill($pid, SIGUSR1);
 
@@ -199,7 +201,7 @@ class Service
         $self = $this;
 
         if (false === ($status = $this->isRunning())) {
-            $process = new \swoole_process(function () use ($self) {
+            $process = new swoole_process(function () use ($self) {
                 $self->start();
             }, true);
             $process->start();
@@ -217,20 +219,6 @@ class Service
 
         $watcher->run();
 
-        \swoole_process::wait();
-    }
-
-    /**
-     * @param $server
-     * @param array $config
-     * @return Service
-     */
-    public static function server($server, array $config = [])
-    {
-        if (null === static::$service) {
-            static::$service = new static($server, $config);
-        }
-
-        return static::$service;
+        swoole_process::wait();
     }
 }

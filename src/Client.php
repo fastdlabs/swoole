@@ -17,7 +17,7 @@ use swoole_client;
  *
  * @package FastD\Swoole\Client
  */
-class Client
+abstract class Client
 {
     /**
      * @var swoole_client
