@@ -7,9 +7,11 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Exceptions;
 
-interface ServerInterface
+use RuntimeException;
+
+class SwooleException extends RuntimeException
 {
 
 }

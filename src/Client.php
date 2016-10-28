@@ -1,19 +1,15 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: janhuang
- * Date: 15/7/12
- * Time: 下午4:06
- * Github: https://www.github.com/janhuang
- * Coding: https://www.coding.net/janhuang
- * SegmentFault: http://segmentfault.com/u/janhuang
- * Blog: http://segmentfault.com/blog/janhuang
- * Gmail: bboyjanhuang@gmail.com
- * WebSite: http://www.janhuang.me
+ * @author    jan huang <bboyjanhuang@gmail.com>
+ * @copyright 2016
+ *
+ * @link      https://www.github.com/janhuang
+ * @link      http://www.fast-d.cn/
  */
 
 namespace FastD\Swoole;
 
+use FastD\Swoole\Exceptions\AddressIllegalException;
 use swoole_client;
 
 /**
@@ -29,40 +25,65 @@ class Client
     protected $client;
 
     /**
-     * @var bool
+     * @var string
      */
-    protected $async = false;
+    protected $sockType;
+
+    /**
+     * @var string
+     */
+    protected $host;
+
+    /**
+     * @var string
+     */
+    protected $port;
 
     /**
      * Client constructor.
      *
+     * @param $address
      * @param $mode
-     * @param $async
      */
-    public function __construct($mode = SWOOLE_SOCK_TCP, $async = null)
+    public function __construct($address, $mode = SWOOLE_SOCK_TCP)
     {
-        $this->client = new swoole_client($mode, $async);
+        $this->parseProtocol($address);
+
+        $this->client = new swoole_client($mode);
     }
 
     /**
-     * @return bool
-     */
-    public function isAsync()
-    {
-        return $this->async;
-    }
-
-    /**
-     * @param $host
-     * @param $port
-     * @param int $timeout
+     * @param $address
      * @return $this
      */
-    public function connect($host, $port, $timeout = 5)
+    protected function parseProtocol($address)
     {
-        $this->client->connect($host, $port, $timeout);
+        if (false === ($info = parse_url($address))) {
+            throw new AddressIllegalException($address);
+        }
+
+        $this->sockType = $info['scheme'];
+        $this->host = $info['host'];
+        $this->port = isset($info['port']) ? $info['port'] : 80;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSockType()
+    {
+        return $this->sockType;
+    }
+
+    /**
+     * @param int $timeout
+     * @return mixed
+     */
+    public function connect($timeout = 5)
+    {
+        return $this->client->connect($this->host, $this->port, $timeout);
     }
 
     /**
@@ -71,9 +92,7 @@ class Client
      */
     public function send($data)
     {
-        $this->client->send($data);
-
-        return $this->receive();
+        return $this->client->send($data);
     }
 
     /**
@@ -94,12 +113,12 @@ class Client
 
     /**
      * @param $name
-     * @param $callback
+     * @param $handler
      * @return mixed
      */
-    public function on($name, $callback)
+    public function on($name, $handler)
     {
-        $this->client->on($name, $callback);
+        $this->client->on($name, $handler);
 
         return $this;
     }

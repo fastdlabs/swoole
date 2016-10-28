@@ -16,11 +16,11 @@ include __DIR__ . '/../vendor/autoload.php';
 
 use FastD\Swoole\Client;
 
-$client = new Client();
+$client = new Client('tcp://127.0.0.1:9527');
 
-$client->connect('127.0.0.1', '9527');
+$client->connect(5);
 
-echo $client->send('hello world') . PHP_EOL;
+$client->send('hello world');
 
 echo $client->receive() . PHP_EOL;
 
