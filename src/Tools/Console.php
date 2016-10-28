@@ -108,13 +108,13 @@ trait Console
     public function start()
     {
         if ($this->isRunning()) {
-            Output::output(sprintf('%s:%s address already in use', $this->server->getHost(), $this->server->getPort()));
+            $this->output(sprintf('%s:%s address already in use', $this->server->getHost(), $this->server->getPort()));
         } else {
             try {
                 $this->bootstrap();
                 $this->getSwoole()->start();
             } catch (\Exception $e) {
-                Output::output($e->getMessage());
+                $this->output($e->getMessage());
             }
         }
     }
@@ -125,7 +125,7 @@ trait Console
     public function shutdown()
     {
         if (false === ($status = $this->isRunning())) {
-            Output::output(sprintf('Server is not running...'));
+            $this->output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -133,7 +133,7 @@ trait Console
 
         posix_kill($pid, SIGTERM);
 
-        Output::output(sprintf('Server [#%s] is shutdown...', $pid));
+        $this->output(sprintf('Server [#%s] is shutdown...', $pid));
 
         return 0;
     }
@@ -144,7 +144,7 @@ trait Console
     public function reload()
     {
         if (false === ($status = $this->isRunning())) {
-            Output::output(sprintf('Server is not running...'));
+            $this->output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -152,7 +152,7 @@ trait Console
 
         posix_kill($pid, SIGUSR1);
 
-        Output::output(sprintf('Server [#%s] is reloading...', $pid));
+        $this->output(sprintf('Server [#%s] is reloading...', $pid));
 
         return 0;
     }
@@ -163,7 +163,7 @@ trait Console
     public function status()
     {
         if (!($status = $this->isRunning())) {
-            Output::output(sprintf('Server is not running...'));
+            $this->output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -208,7 +208,7 @@ trait Console
         }
 
         foreach ($directories as $directory) {
-            Output::output(sprintf('Watching directory: ["%s"]', realpath($directory)));
+            $this->output(sprintf('Watching directory: ["%s"]', realpath($directory)));
         }
 
         $watcher = new Watcher();
@@ -220,5 +220,23 @@ trait Console
         $watcher->run();
 
         swoole_process::wait();
+    }
+
+    /**
+     * @param $msg
+     * @return void
+     */
+    public function output($msg)
+    {
+        echo $this->format($msg);
+    }
+
+    /**
+     * @param $msg
+     * @return string
+     */
+    public function format($msg)
+    {
+        return sprintf("[%s]\t" . $msg . PHP_EOL, date('Y-m-d H:i:s'));
     }
 }

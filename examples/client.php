@@ -12,16 +12,21 @@
  * WebSite: http://www.janhuang.me
  */
 
+use FastD\Swoole\Client;
+use FastD\Swoole\Client\Sync\SyncClient;
+
 include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Swoole\Client;
+$client = new SyncClient('tcp://127.0.0.1:9527');
 
-$client = new Client('tcp://127.0.0.1:9527');
+$client
+    ->connect(function (Client $client) {
+        $client->send('hello world');
+    })
+    ->receive(function (Client $client, $data) {
+        echo $data . PHP_EOL;
+        $client->close();
+    })
+;
 
-$client->connect(5);
 
-$client->send('hello world');
-
-echo $client->receive() . PHP_EOL;
-
-$client->close();

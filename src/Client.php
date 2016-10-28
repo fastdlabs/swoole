@@ -9,25 +9,22 @@
 
 namespace FastD\Swoole;
 
-use FastD\Swoole\Exceptions\AddressIllegalException;
+use FastD\Swoole\Tools\Scheme;
 use swoole_client;
 
 /**
  * Class Client
  *
- * @package FastD\Swoole\Client
+ * @package FastD\Swoole
  */
 abstract class Client
 {
+    use Scheme;
+
     /**
      * @var swoole_client
      */
     protected $client;
-
-    /**
-     * @var string
-     */
-    protected $sockType;
 
     /**
      * @var string
@@ -40,6 +37,11 @@ abstract class Client
     protected $port;
 
     /**
+     * @var int
+     */
+    protected $timeout = 5;
+
+    /**
      * Client constructor.
      *
      * @param $address
@@ -47,68 +49,12 @@ abstract class Client
      */
     public function __construct($address, $mode = SWOOLE_SOCK_TCP)
     {
-        $this->parseProtocol($address);
+        $info = $this->parse($address);
 
-        $this->client = new swoole_client($mode);
-    }
-
-    /**
-     * @param $address
-     * @return $this
-     */
-    protected function parseProtocol($address)
-    {
-        if (false === ($info = parse_url($address))) {
-            throw new AddressIllegalException($address);
-        }
-
-        $this->sockType = $info['scheme'];
         $this->host = $info['host'];
-        $this->port = isset($info['port']) ? $info['port'] : 80;
+        $this->port = $info['port'];
 
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSockType()
-    {
-        return $this->sockType;
-    }
-
-    /**
-     * @param int $timeout
-     * @return mixed
-     */
-    public function connect($timeout = 5)
-    {
-        return $this->client->connect($this->host, $this->port, $timeout);
-    }
-
-    /**
-     * @param $data
-     * @return mixed
-     */
-    public function send($data)
-    {
-        return $this->client->send($data);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function receive()
-    {
-        return $this->client->recv();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function close()
-    {
-        return $this->client->close();
+        $this->client = new swoole_client($info['sock']);
     }
 
     /**
@@ -132,5 +78,65 @@ abstract class Client
         $this->client->set($configure);
 
         return $this;
+    }
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    public function send($data)
+    {
+        return $this->client->send($data);
+    }
+
+    /**
+     * @param $host
+     * @param $port
+     * @param $data
+     * @return mixed
+     */
+    public function sendTo($host, $port, $data)
+    {
+        return $this->client->sendto($host, $port, $data);
+    }
+
+    /**
+     * @param $callback
+     * @param int $timeout
+     * @return $this
+     */
+    abstract public function connect($callback, $timeout = 5);
+
+    /**
+     * @param $callback
+     * @return $this
+     */
+    abstract public function receive($callback);
+
+    /**
+     * @param $callback
+     * @return $this
+     */
+    abstract public function error($callback);
+
+    /**
+     *
+     */
+    public function close()
+    {
+        $this->client->close();
+    }
+
+    /**
+     * @return mixed
+     */
+    abstract public function resolve();
+
+    /**
+     * @return void
+     */
+    public function __destruct()
+    {
+        $this->resolve();
     }
 }

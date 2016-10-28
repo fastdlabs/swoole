@@ -18,9 +18,9 @@ use swoole_server;
  */
 trait PresetCallback
 {
-    use Output;
-
     abstract public function rename($name);
+
+    abstract public function output($msg);
 
     /**
      * Base start handle. Storage process id.
@@ -40,11 +40,11 @@ trait PresetCallback
 
         $this->rename(static::SERVER_NAME . ' master');
 
-        Output::output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
+        $this->output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
         foreach ($this->ports as $port) {
-            Output::output(sprintf("➜ Listen %s://%s:%s", $this->getServerType($port->type), $port->host, $port->port));
+            $this->output(sprintf("➜ Listen %s://%s:%s", $this->getServerType($port->type), $port->host, $port->port));
         }
-        Output::output(sprintf('Server Master[#%s] is started', $server->master_pid));
+        $this->output(sprintf('Server Master[#%s] is started', $server->master_pid));
     }
 
     /**
@@ -59,7 +59,7 @@ trait PresetCallback
             unlink($file);
         }
 
-        Output::output(sprintf('Server Master[#%s] is shutdown ', $server->master_pid));
+        $this->output(sprintf('Server Master[#%s] is shutdown ', $server->master_pid));
     }
 
     /**
@@ -71,7 +71,7 @@ trait PresetCallback
     {
         $this->rename(static::SERVER_NAME . ' manager');
 
-        Output::output(sprintf('Server Manager[#%s] is started', $server->manager_pid));
+        $this->output(sprintf('Server Manager[#%s] is started', $server->manager_pid));
     }
 
     /**
@@ -81,7 +81,7 @@ trait PresetCallback
      */
     public function onManagerStop(swoole_server $server)
     {
-        Output::output(sprintf('Server Manager[#%s] is shutdown.', $server->manager_pid));
+        $this->output(sprintf('Server Manager[#%s] is shutdown.', $server->manager_pid));
     }
 
     /**
@@ -93,7 +93,7 @@ trait PresetCallback
     {
         $this->rename(static::SERVER_NAME . ' worker');
 
-        Output::output(sprintf('Server Worker[#%s] is started [#%s]', $server->worker_pid, $worker_id));
+        $this->output(sprintf('Server Worker[#%s] is started [#%s]', $server->worker_pid, $worker_id));
     }
 
     /**
@@ -103,7 +103,7 @@ trait PresetCallback
      */
     public function onWorkerStop(swoole_server $server, int $worker_id)
     {
-        Output::output(sprintf('Server Worker[#%s] is shutdown', $worker_id));
+        $this->output(sprintf('Server Worker[#%s] is shutdown', $worker_id));
     }
 
     /**
@@ -115,6 +115,6 @@ trait PresetCallback
      */
     public function onWorkerError(swoole_server $server, int $worker_id, int $worker_pid, int $exit_code)
     {
-        Output::output(sprintf('Server Worker[#%s] error. Exit code: [%s]', $worker_pid, $exit_code));
+        $this->output(sprintf('Server Worker[#%s] error. Exit code: [%s]', $worker_pid, $exit_code));
     }
 }

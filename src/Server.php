@@ -18,6 +18,7 @@ use FastD\Swoole\Exceptions\AddressIllegalException;
 use FastD\Swoole\Exceptions\CantSupportSchemeException;
 use FastD\Swoole\Tools\Console;
 use FastD\Swoole\Tools\PresetCallback;
+use FastD\Swoole\Tools\Scheme;
 use swoole_process;
 use swoole_server;
 
@@ -28,7 +29,7 @@ use swoole_server;
  */
 abstract class Server
 {
-    use PresetCallback, Console;
+    use PresetCallback, Console, Scheme;
 
     const SERVER_NAME = 'fds';
 
@@ -96,26 +97,9 @@ abstract class Server
     public function __construct($address = null, $mode = SWOOLE_PROCESS, array $config = [])
     {
         if (null !== $address) {
-            if (false === ($info = parse_url($address))) {
-                throw new AddressIllegalException($address);
-            }
+            $info = $this->parse($address);
 
-            switch (strtolower($info['scheme'])) {
-                case 'tcp':
-                case 'unix':
-                    $this->sockType = SWOOLE_SOCK_TCP;
-                    break;
-                case 'udp':
-                    $this->sockType = SWOOLE_SOCK_UDP;
-                    break;
-                case 'http':
-                case 'ws':
-                    $this->sockType = null;
-                    break;
-                default:
-                    throw new CantSupportSchemeException($info['scheme']);
-            }
-
+            $this->sockType = $info['sock'];
             $this->host = $info['host'];
             $this->port = $info['port'];
             $this->mode = $mode;

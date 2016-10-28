@@ -30,6 +30,7 @@ class DemoServer extends TcpServer
      */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
+        echo $data . PHP_EOL;
         return 'hello tcp';
     }
 }
