@@ -24,4 +24,5 @@ $client
         print_r($client);
     })
     ->close(function ($client) {})
-    ->resolve();
+    ->resolve()
+;
