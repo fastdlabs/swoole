@@ -254,6 +254,7 @@ abstract class Server
      * @param $address
      * @param $model
      * @param array $config
+     * @return void
      */
     public static function run($address = null, $model = SWOOLE_PROCESS, array $config = [])
     {

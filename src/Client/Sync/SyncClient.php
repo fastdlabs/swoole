@@ -59,8 +59,13 @@ class SyncClient extends Client
             throw new ServerCannotConnectionException($this->host, $this->port);
         }
 
-        $this->callbacks['connect']($this);
+        $this->callbacks['connect']($this->client);
 
-        $this->callbacks['receive']($this, $this->client->recv());
+        $this->callbacks['receive']($this->client, $this->client->recv());
+    }
+
+    public function close($callback = null)
+    {
+        $this->client->close();
     }
 }

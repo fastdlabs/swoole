@@ -120,23 +120,13 @@ abstract class Client
     abstract public function error($callback);
 
     /**
-     *
+     * @param $callback
+     * @return mixed
      */
-    public function close()
-    {
-        $this->client->close();
-    }
+    abstract public function close($callback);
 
     /**
      * @return mixed
      */
     abstract public function resolve();
-
-    /**
-     * @return void
-     */
-    public function __destruct()
-    {
-        $this->resolve();
-    }
 }

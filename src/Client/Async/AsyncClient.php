@@ -42,6 +42,8 @@ class AsyncClient extends Client
      */
     public function connect($callback, $timeout = 5)
     {
+        $this->timeout = $timeout;
+
         $this->client->on('connect', $callback);
 
         return $this;
@@ -69,11 +71,15 @@ class AsyncClient extends Client
         return $this;
     }
 
-    public function close()
+    /**
+     * @param $callback
+     * @return $this
+     */
+    public function close($callback)
     {
-        $this->client->on('close', function (swoole_client $client) {
-            $client->close();
-        });
+        $this->client->on('close', $callback);
+
+        return $this;
     }
 
     /**
