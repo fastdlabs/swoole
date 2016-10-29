@@ -48,57 +48,47 @@ composer require "fastd/swoole:1.0.x-dev" -vvv
 
 服务器通过 `run` 方法执行, `run` 方法中注入配置, 配置按照 `swoole` 原生扩展参数配置。
 
-配置扩展了几个常用参数.
+#### Tcp Server
 
 ```php
-return [
-    'pid' => 'pid 文件目录地址', // 选填, 默认当前目录下的 run 目录, run 目录会自动创建
-    'host' => '机器ip',
-    'port' => '机器端口',
-    'mode' => '服务模式,参考官网',
-    'sock' => 'sock类型,参考官网',
-];
-```
+use FastD\Swoole\Server\Tcp\TcpServer;
 
-```php
-use FastD\Swoole\Server;
-
-class DemoServer extends Server
+/**
+ * Class DemoServer
+ */
+class DemoServer extends TcpServer
 {
     /**
-     * @param \FastD\Swoole\Request $request
-     * @return string
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
      */
-    public function doWork(\swoole_server $server, $fd, $data, $from_id)
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
-        return 'hello world';
-    }
-
-    /**
-     * @param \FastD\Swoole\Request $request
-     * @return string
-     */
-    public function doPacket(\swoole_server $server, $data, array $client_info)
-    {
-        // UDP Receive
+        echo $data . PHP_EOL;
+        return 'hello tcp';
     }
 }
 
-DemoServer::run([]);
+DemoServer::run('tcp://127.0.0.1:9527');
 ```
+
+#### Http
 
 同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
 
 ```php
-use FastD\Swoole\Http\HttpServer;
+use FastD\Swoole\Server\Http\HttpServer;
 
 class Http extends HttpServer
 {
     /**
-     * @param \FastD\Swoole\Request $request
-     * @return \FastD\Swoole\Response
+     * @param \FastD\Http\SwooleServerRequest $request
+     * @return mixed
      */
-    public function doRequest(\FastD\Swoole\Http\HttpRequest $request)
+    public function doRequest(\FastD\Http\SwooleServerRequest $request)
     {
         $request->cookie->set('name', 'jan');
 
@@ -110,64 +100,100 @@ class Http extends HttpServer
     }
 }
 
-Http::run([]);
+Http::run('http://0.0.0.0:9527');
 ```
 
-服务 `Service` 管理, 修改服务 `Service` 管理, 可以通过注入服务, 对其进行 `{start|status|stop|reload}` 等操作管理。
+目前 Http 服务支持 Session 存储，而 Session 存储是基于浏览器 cookie，或者可以自定义实现存储方式。
+
+目前由 [FastD/Session](https://github.com/JanHuang/http) 提供 session 支持以及 swoole_http_request 对象解释。
+
+#### WebSocket Server
 
 ```php
-use FastD\Swoole\Server;
-use FastD\Swoole\Console\Service;
+use FastD\Swoole\Server\WebSocket\WebSocketServer;
 
-class Demo extends Server
+class WebSocket extends WebSocketServer
 {
     /**
-     * @param \FastD\Swoole\Request $request
-     * @return string
+     * @param swoole_websocket_server $server
+     * @param swoole_http_request $request
+     * @return mixed
      */
-    public function doWork(\swoole_server $server, $fd, $data, $from_id)
+    public function doOpen(swoole_websocket_server $server, swoole_http_request $request)
     {
-        return 'hello world';
+        echo "server: handshake success with fd{$request->fd}\n";
     }
 
     /**
-     * @param \FastD\Swoole\Request $request
-     * @return string
+     * @param swoole_http_request $request
+     * @param swoole_http_response $response
+     * @return mixed
      */
-    public function doPacket(\swoole_server $server, $data, array $client_info)
+    public function doHandShake(swoole_http_request $request, swoole_http_response $response)
     {
-        // UDP Receive
+
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param swoole_websocket_frame $frame
+     * @return mixed
+     */
+    public function doMessage(swoole_server $server, swoole_websocket_frame $frame)
+    {
+        echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
+        $server->push($frame->fd, "this is server");
     }
 }
 
-$service = Service::server(Demo::class, [
-
-]);
-
-$action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'status';
-
-switch ($action) {
-    case 'status':
-        $service->status();
-        break;
-    case 'start':
-        $service->start();
-        break;
-    case 'stop':
-        $service->shutdown();
-        break;
-    case 'reload':
-        $service->reload();
-        break;
-    case 'watch':
-        $service->watch(['./watch']);
-        break;
-}
+WebSocket::run('ws://0.0.0.0:9527');
 ```
 
-`Service` 通过 `server($server, array $config)` 注入服务, 实现管理。
+#### 服务管理
 
-Service 提供文件监听功能, 通过监听文件实现自动重启服务。
+```php
+
+use FastD\Swoole\Server\Tcp\TcpServer;
+
+/**
+ * Class DemoServer
+ */
+class DemoServer extends TcpServer
+{
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
+     */
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    {
+        return 'hello tcp';
+    }
+}
+
+$server = new DemoServer('tcp://127.0.0.1:9527');
+
+$argv = $_SERVER['argv'];
+
+$argv[1] = isset($argv[1]) ? $argv[1] : 'status';
+
+switch ($argv[1]) {
+    case 'start':
+        $server->start();
+        break;
+    case 'stop':
+        $server->shutdown();
+        break;
+    case 'reload':
+        $server->reload();
+        break;
+    case 'status':
+    default:
+        $server->status();
+}
+```
 
 上述 `watch` 方法中, watch 方法监听多个目录, 若监听目录中, 文件发生变化, 服务会自动重启, 推荐在开发环境下使用。
 

@@ -45,6 +45,4 @@ class WebSocket extends WebSocketServer
     }
 }
 
-$webSocket = new WebSocket('ws://0.0.0.0:9527');
-
-$webSocket->start();
+WebSocket::run('ws://0.0.0.0:9527');
