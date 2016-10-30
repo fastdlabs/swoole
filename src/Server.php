@@ -243,14 +243,6 @@ abstract class Server
     }
 
     /**
-     * @return swoole_server
-     */
-    public function getSwooleInstance()
-    {
-        return $this->swoole;
-    }
-
-    /**
      * @param $address
      * @param $model
      * @param array $config
