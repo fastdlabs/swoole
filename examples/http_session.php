@@ -11,7 +11,7 @@ use FastD\Swoole\Server\Http\HttpServer;
 
 include __DIR__ . '/../vendor/autoload.php';
 
-class Http extends HttpServer
+class Http extends  HttpServer
 {
     /**
      * @param \FastD\Http\SwooleServerRequest $request

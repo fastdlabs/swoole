@@ -39,7 +39,7 @@ abstract class HttpServer extends Server
 
     /**
      * @param array $content
-     * @return string
+     * @return Response
      */
     public function json(array $content)
     {
