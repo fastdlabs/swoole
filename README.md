@@ -75,7 +75,7 @@ class DemoServer extends TcpServer
 DemoServer::run('tcp://127.0.0.1:9527');
 ```
 
-#### Http
+#### Http Server
 
 同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
 
