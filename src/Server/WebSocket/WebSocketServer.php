@@ -16,6 +16,11 @@ use swoole_http_request;
 use swoole_http_response;
 use swoole_websocket_frame;
 
+/**
+ * Class WebSocketServer
+ *
+ * @package FastD\Swoole\Server\WebSocket
+ */
 abstract class WebSocketServer extends Server
 {
     /**
