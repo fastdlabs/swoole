@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server\WebSocket;
+namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Server;
 use swoole_server;
@@ -21,7 +21,7 @@ use swoole_websocket_frame;
  *
  * @package FastD\Swoole\Server\WebSocket
  */
-abstract class WebSocketServer extends Server
+abstract class WebSocket extends Server
 {
     /**
      * @param swoole_websocket_server $server

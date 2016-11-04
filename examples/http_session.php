@@ -7,11 +7,9 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Server\Http\HttpServer;
-
 include __DIR__ . '/../vendor/autoload.php';
 
-class Http extends  HttpServer
+class Http extends  \FastD\Swoole\Server\Http
 {
     /**
      * @param \FastD\Http\SwooleServerRequest $request

@@ -7,11 +7,9 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Server\WebSocket\WebSocketServer;
-
 include __DIR__ . '/../vendor/autoload.php';
 
-class WebSocket extends WebSocketServer
+class WebSocket extends \FastD\Swoole\Server\WebSocket 
 {
     /**
      * @param swoole_websocket_server $server

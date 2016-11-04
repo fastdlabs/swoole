@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server\Http;
+namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\Exceptions\HttpException;
@@ -27,7 +27,7 @@ use swoole_server;
  *
  * @package FastD\Swoole\Server
  */
-abstract class HttpServer extends Server
+abstract class Http extends Server
 {
     const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval';

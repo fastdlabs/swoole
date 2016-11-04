@@ -7,12 +7,17 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server\Udp;
+namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Server;
 use swoole_server;
 
-abstract class UdpServer extends Server
+/**
+ * Class Udp
+ *
+ * @package FastD\Swoole\Server
+ */
+abstract class Udp extends Server
 {
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
