@@ -51,20 +51,8 @@ composer require "fastd/swoole:1.0.x-dev" -vvv
 #### Tcp Server
 
 ```php
-use FastD\Swoole\Server\Tcp\TcpServer;
-
-/**
- * Class DemoServer
- */
-class DemoServer extends TcpServer
+class DemoServer extends \FastD\Swoole\Server\Tcp
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         echo $data . PHP_EOL;
@@ -80,14 +68,8 @@ DemoServer::run('tcp://127.0.0.1:9527');
 同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
 
 ```php
-use FastD\Swoole\Server\Http\HttpServer;
-
-class Http extends HttpServer
+class Http extends \FastD\Swoole\Server\Http
 {
-    /**
-     * @param \FastD\Http\SwooleServerRequest $request
-     * @return mixed
-     */
     public function doRequest(\FastD\Http\SwooleServerRequest $request)
     {
         $request->cookie->set('name', 'jan');
@@ -110,35 +92,13 @@ Http::run('http://0.0.0.0:9527');
 #### WebSocket Server
 
 ```php
-use FastD\Swoole\Server\WebSocket\WebSocketServer;
-
-class WebSocket extends WebSocketServer
+class WebSocket extends \FastD\Swoole\Server\WebSocket
 {
-    /**
-     * @param swoole_websocket_server $server
-     * @param swoole_http_request $request
-     * @return mixed
-     */
     public function doOpen(swoole_websocket_server $server, swoole_http_request $request)
     {
         echo "server: handshake success with fd{$request->fd}\n";
     }
 
-    /**
-     * @param swoole_http_request $request
-     * @param swoole_http_response $response
-     * @return mixed
-     */
-    public function doHandShake(swoole_http_request $request, swoole_http_response $response)
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param swoole_websocket_frame $frame
-     * @return mixed
-     */
     public function doMessage(swoole_server $server, swoole_websocket_frame $frame)
     {
         echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";

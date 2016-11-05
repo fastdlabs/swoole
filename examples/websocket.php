@@ -9,7 +9,7 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-class WebSocket extends \FastD\Swoole\Server\WebSocket 
+class WebSocket extends \FastD\Swoole\Server\WebSocket
 {
     /**
      * @param swoole_websocket_server $server
@@ -19,16 +19,6 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
     public function doOpen(swoole_websocket_server $server, swoole_http_request $request)
     {
         echo "server: handshake success with fd{$request->fd}\n";
-    }
-
-    /**
-     * @param swoole_http_request $request
-     * @param swoole_http_response $response
-     * @return mixed
-     */
-    public function doHandShake(swoole_http_request $request, swoole_http_response $response)
-    {
-
     }
 
     /**

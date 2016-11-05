@@ -7,14 +7,12 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Server\Tcp\TcpServer;
-
 include __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Class DemoServer
  */
-class DemoServer extends TcpServer
+class DemoServer extends \FastD\Swoole\Server\Tcp 
 {
     /**
      * @param swoole_server $server

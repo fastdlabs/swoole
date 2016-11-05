@@ -19,13 +19,6 @@ include __DIR__ . '/../vendor/autoload.php';
  */
 class DemoServer extends \FastD\Swoole\Server\Tcp
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         echo $data . PHP_EOL;
