@@ -9,8 +9,6 @@
 
 namespace FastD\Swoole\Watch;
 
-use FastD\Swoole\Console\Output;
-
 /**
  * Class Watcher
  *
@@ -33,12 +31,12 @@ class Watcher
     /**
      * @var array
      */
-    protected $watch_file_ext = ['php'];
+    protected $watchFileExt = ['php'];
 
     /**
      * @var array
      */
-    protected $watch_dir = [];
+    protected $watchDir = [];
 
     /**
      * @var \Closure
@@ -60,10 +58,10 @@ class Watcher
      */
     public function clearWatch()
     {
-        foreach ($this->watch_dir as $wd) {
+        foreach ($this->watchDir as $wd) {
             inotify_rm_watch($this->inotify, $wd);
         }
-        $this->watch_dir = [];
+        $this->watchDir = [];
     }
 
     /**
@@ -82,7 +80,7 @@ class Watcher
 
             $wd = inotify_add_watch($this->inotify, $directory, $this->events);
 
-            $this->watch_dir[$directory] = $wd;
+            $this->watchDir[$directory] = $wd;
         }
 
         $this->callback = $callback;
