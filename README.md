@@ -115,9 +115,6 @@ WebSocket::run('ws://0.0.0.0:9527');
 
 use FastD\Swoole\Server\Tcp\TcpServer;
 
-/**
- * Class DemoServer
- */
 class DemoServer extends TcpServer
 {
     /**
@@ -155,8 +152,6 @@ switch ($argv[1]) {
 }
 ```
 
-上述 `watch` 方法中, watch 方法监听多个目录, 若监听目录中, 文件发生变化, 服务会自动重启, 推荐在开发环境下使用。
 
-**watch 依赖 php inotify 扩展。**
 
 # License MIT

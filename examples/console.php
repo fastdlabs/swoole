@@ -27,7 +27,7 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
     }
 }
 
-$server = new DemoServer('tcp://127.0.0.1:9527');
+$server = new DemoServer('tcp://0.0.0.0:9527');
 
 $argv = $_SERVER['argv'];
 
