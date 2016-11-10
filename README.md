@@ -147,12 +147,29 @@ switch ($argv[1]) {
 
 #### File Listener
 
-因为 swoole 是常驻内存，程序通过首次启动就自动预载到内存当中，所以每次修改都需要重启服务，颇为麻烦。
+因为 swoole 是常驻内存，程序通过首次启动就自动预载到内存当中，所以每次修改都需要重启服务，颇为麻烦, 支持数组目录监听。
 
 所以这里提供监听文件变化来到自动重启服务(生产环境不建议使用)
 
 ```php
+class DemoServer extends \FastD\Swoole\Server\Tcp
+{
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
+     */
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    {
+        return 'hello tcp';
+    }
+}
 
+$server = new DemoServer('tcp://0.0.0.0:9527');
+
+$server->watch([__DIR__ . '/listen_files']);
 ```
 
 #### Sync Client
