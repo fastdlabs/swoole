@@ -414,7 +414,7 @@ abstract class Server
     public function start()
     {
         if ($this->isRunning()) {
-            $this->output(sprintf('%s:%s address already in use', $this->server->getHost(), $this->server->getPort()));
+            $this->output(sprintf('%s:%s address already in use', $this->getHost(), $this->getPort()));
         } else {
             try {
                 $this->bootstrap();
