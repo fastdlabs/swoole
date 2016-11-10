@@ -78,6 +78,7 @@ abstract class Client
                 $sock = null;
                 break;
             default:
+                $sock = 'unknown';
         }
 
         return array_merge($info, [

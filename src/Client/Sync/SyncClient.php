@@ -12,8 +12,16 @@ namespace FastD\Swoole\Client\Sync;
 use FastD\Swoole\Client;
 use FastD\Swoole\Exceptions\ServerCannotConnectionException;
 
+/**
+ * Class SyncClient
+ *
+ * @package FastD\Swoole\Client\Sync
+ */
 class SyncClient extends Client
 {
+    /**
+     * @var array
+     */
     protected $callbacks = [];
 
     /**
@@ -64,6 +72,10 @@ class SyncClient extends Client
         $this->callbacks['receive']($this->client, $this->client->recv());
     }
 
+    /**
+     * @param null $callback
+     * @return void
+     */
     public function close($callback = null)
     {
         $this->client->close();
