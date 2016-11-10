@@ -117,13 +117,6 @@ use FastD\Swoole\Server\Tcp\TcpServer;
 
 class DemoServer extends TcpServer
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello tcp';
@@ -152,6 +145,53 @@ switch ($argv[1]) {
 }
 ```
 
+#### File Listener
 
+因为 swoole 是常驻内存，程序通过首次启动就自动预载到内存当中，所以每次修改都需要重启服务，颇为麻烦。
+
+所以这里提供监听文件变化来到自动重启服务(生产环境不建议使用)
+
+```php
+
+```
+
+#### Sync Client
+
+Client 通过 resolve 执行，通过不同的方法设置不同的回调，同步、异步均使用通用的方法。
+
+```php
+$client = new \FastD\Swoole\Client\Sync\SyncClient('tcp://11.11.11.11:9527');
+
+$client
+    ->connect(function ($client) {
+        $client->send('hello world');
+    })
+    ->receive(function ($client, $data) {
+        echo $data . PHP_EOL;
+        $client->close();
+    })
+    ->resolve()
+;
+```
+
+#### Async Client
+
+```php
+$client = new \FastD\Swoole\Client\Async\AsyncClientgit ('tcp://11.11.11.11:9527');
+
+$client
+    ->connect(function ($client) {
+        $client->send('hello world');
+    })
+    ->receive(function ($client, $data) {
+        echo $data . PHP_EOL;
+    })
+    ->error(function ($client) {
+        print_r($client);
+    })
+    ->close(function ($client) {})
+    ->resolve()
+;
+```
 
 # License MIT

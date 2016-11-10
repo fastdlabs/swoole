@@ -16,6 +16,7 @@ namespace FastD\Swoole;
 
 use FastD\Swoole\Exceptions\AddressIllegalException;
 use FastD\Swoole\Exceptions\CantSupportSchemeException;
+use FastD\Swoole\Watch\Watcher;
 use swoole_process;
 use swoole_server;
 
@@ -85,11 +86,11 @@ abstract class Server
     /**
      * Server constructor.
      *
-     * @param $address
-     * @param $mode
+     * @param null $address
      * @param array $config
+     * @param $mode
      */
-    public function __construct($address = null, $mode = SWOOLE_PROCESS, array $config = [])
+    public function __construct($address = null, array $config = [], $mode = SWOOLE_PROCESS)
     {
         if (null !== $address) {
             $info = $this->parse($address);
@@ -238,14 +239,13 @@ abstract class Server
     }
 
     /**
-     * @param $address
-     * @param $model
+     * @param null $address
      * @param array $config
-     * @return void
+     * @param $mode
      */
-    public static function run($address = null, $model = SWOOLE_PROCESS, array $config = [])
+    public static function run($address = null, array $config = [], $mode = SWOOLE_PROCESS)
     {
-        $server = static::getInstance($address, $model, $config);
+        $server = static::getInstance($address, $config, $mode);
 
         $server->start();
     }

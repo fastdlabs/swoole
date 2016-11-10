@@ -94,15 +94,13 @@ class Watcher
 
             foreach ($events as $event) {
                 if (!empty($event['name'])) {
-                    Output::output(sprintf('["%s"] modify', $event['name']));
+                    echo sprintf("[%s]\t" . sprintf('["%s"] modify', $event['name']) . PHP_EOL, date('Y-m-d H:i:s')) ;
                 }
             }
 
             if (is_callable($callback)) {
                 $callback($this);
             }
-
-            Output::output('-------');
         });
 
         return $this;
