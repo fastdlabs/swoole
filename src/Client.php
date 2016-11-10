@@ -9,7 +9,7 @@
 
 namespace FastD\Swoole;
 
-use FastD\Swoole\Tools\Scheme;
+use FastD\Swoole\Exceptions\AddressIllegalException;
 use swoole_client;
 
 /**
@@ -19,8 +19,6 @@ use swoole_client;
  */
 abstract class Client
 {
-    use Scheme;
-
     /**
      * @var swoole_client
      */
@@ -55,6 +53,36 @@ abstract class Client
         $this->port = $info['port'];
 
         $this->client = new swoole_client($info['sock']);
+    }
+
+    /**
+     * @param $address
+     * @return array
+     */
+    public function parse($address)
+    {
+        if (false === ($info = parse_url($address))) {
+            throw new AddressIllegalException($address);
+        }
+
+        switch (strtolower($info['scheme'])) {
+            case 'tcp':
+            case 'unix':
+                $sock = SWOOLE_SOCK_TCP;
+                break;
+            case 'udp':
+                $sock = SWOOLE_SOCK_UDP;
+                break;
+            case 'http':
+            case 'ws':
+                $sock = null;
+                break;
+            default:
+        }
+
+        return array_merge($info, [
+            'sock' => $sock
+        ]);
     }
 
     /**

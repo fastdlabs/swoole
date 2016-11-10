@@ -14,8 +14,8 @@
 
 namespace FastD\Swoole;
 
-use FastD\Swoole\Tools\Console;
-use FastD\Swoole\Tools\Scheme;
+use FastD\Swoole\Exceptions\AddressIllegalException;
+use FastD\Swoole\Exceptions\CantSupportSchemeException;
 use swoole_process;
 use swoole_server;
 
@@ -26,8 +26,6 @@ use swoole_server;
  */
 abstract class Server
 {
-    use Console, Scheme;
-
     const SERVER_NAME = 'fds';
 
     /**
@@ -368,5 +366,231 @@ abstract class Server
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
         $this->output(sprintf('Server Worker[#%s] error. Exit code: [%s]', $worker_pid, $exit_code));
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isRunning()
+    {
+        $processName = $this->getServerName();
+
+        if ('Linux' !== PHP_OS) {
+            $processName = $_SERVER['SCRIPT_NAME'];
+        }
+        // | awk '{print $1, $2, $6, $8, $9, $11, $12}'
+        exec("ps axu | grep '{$processName}' | grep -v grep", $output);
+
+        if (empty($output)) {
+            return false;
+        }
+
+        $output = array_map(function ($v) {
+            $status = preg_split('/\s+/', $v);
+
+            unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
+
+            $status = array_values($status);
+
+            $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
+
+            return array_slice($status, 0, 6);
+        }, $output);
+
+        $keys = ['user', 'pid', 'rss', 'stat', 'start', 'command'];
+
+        foreach ($output as $key => $value) {
+            $output[$key] = array_combine($keys, $value);
+        }
+
+        unset($keys);
+
+        return $output;
+    }
+
+    /**
+     * @return void
+     */
+    public function start()
+    {
+        if ($this->isRunning()) {
+            $this->output(sprintf('%s:%s address already in use', $this->server->getHost(), $this->server->getPort()));
+        } else {
+            try {
+                $this->bootstrap();
+                $this->getSwoole()->start();
+            } catch (\Exception $e) {
+                $this->output($e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * @return int
+     */
+    public function shutdown()
+    {
+        if (false === ($status = $this->isRunning())) {
+            $this->output(sprintf('Server is not running...'));
+            return -1;
+        }
+
+        $pid = (int) @file_get_contents($this->getPid());
+
+        posix_kill($pid, SIGTERM);
+
+        $this->output(sprintf('Server [#%s] is shutdown...', $pid));
+
+        return 0;
+    }
+
+    /**
+     * @return int
+     */
+    public function reload()
+    {
+        if (false === ($status = $this->isRunning())) {
+            $this->output(sprintf('Server is not running...'));
+            return -1;
+        }
+
+        $pid = (int) @file_get_contents($this->getPid());
+
+        posix_kill($pid, SIGUSR1);
+
+        $this->output(sprintf('Server [#%s] is reloading...', $pid));
+
+        return 0;
+    }
+
+    /**
+     * @return int
+     */
+    public function status()
+    {
+        if (!($status = $this->isRunning())) {
+            $this->output(sprintf('Server is not running...'));
+            return -1;
+        }
+
+        $keys = array_map(function ($v) {
+            return strtoupper($v);
+        }, array_keys($status[0]));
+
+        $length = 20;
+
+        $format = function ($v) use ($length) {
+            $l = floor($length - strlen($v)) / 2;
+            return str_repeat(' ', $l) . $v . str_repeat(' ', (strlen($v) % 2 == 1 ? ($l) : $l + 1));
+        };
+
+        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
+
+        echo '|' . implode('|', array_map($format, $keys)) . '|' . PHP_EOL;
+
+        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
+        foreach ($status as $stats) {
+            echo '|' . implode('|', array_map($format, array_values($stats))) . '|' . PHP_EOL;
+        }
+
+        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
+
+        return 0;
+    }
+
+    /**
+     * @param array $directories
+     * @return void|int
+     */
+    public function watch(array $directories = ['.'])
+    {
+        $self = $this;
+
+        if (false === ($status = $this->isRunning())) {
+            $process = new swoole_process(function () use ($self) {
+                $self->start();
+            }, true);
+            $process->start();
+        }
+
+        foreach ($directories as $directory) {
+            $this->output(sprintf('Watching directory: ["%s"]', realpath($directory)));
+        }
+
+        $watcher = new Watcher();
+
+        $watcher->watch($directories, function () use ($self) {
+            $self->reload();
+        });
+
+        $watcher->run();
+
+        swoole_process::wait();
+    }
+
+    /**
+     * @param $msg
+     * @return void
+     */
+    public function output($msg)
+    {
+        echo $this->format($msg);
+    }
+
+    /**
+     * @param $msg
+     * @return string
+     */
+    public function format($msg)
+    {
+        return sprintf("[%s]\t" . $msg . PHP_EOL, date('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @param $name
+     */
+    public function rename($name)
+    {
+        // hidden Mac OS error。
+        set_error_handler(function () {});
+
+        if (function_exists('cli_set_process_title')) {
+            cli_set_process_title($name);
+        } else if (function_exists('swoole_set_process_name')) {
+            swoole_set_process_name($name);
+        }
+
+        restore_error_handler();
+    }
+
+    /**
+     * @param $address
+     * @return array
+     */
+    public function parse($address)
+    {
+        if (false === ($info = parse_url($address))) {
+            throw new AddressIllegalException($address);
+        }
+
+        switch (strtolower($info['scheme'])) {
+            case 'tcp':
+            case 'unix':
+                $sock = SWOOLE_SOCK_TCP;
+                break;
+            case 'udp':
+                $sock = SWOOLE_SOCK_UDP;
+                break;
+            case 'http':
+            case 'ws':
+                $sock = null;
+                break;
+            default:
+                throw new CantSupportSchemeException($info['scheme']);
+        }
+
+        return array_merge($info, [
+            'sock' => $sock
+        ]);
     }
 }
