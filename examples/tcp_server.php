@@ -26,7 +26,7 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
     }
 }
 
-DemoServer::run('tcp://127.0.0.1:9527');
+DemoServer::run('tcp://0.0.0.0:9527');
 
 /**
  * 以上写法和以下写法效果一致

@@ -90,16 +90,14 @@ abstract class Server
      * @param array $config
      * @param $mode
      */
-    public function __construct($address = null, array $config = [], $mode = SWOOLE_PROCESS)
+    public function __construct($address, array $config = [], $mode = SWOOLE_PROCESS)
     {
-        if (null !== $address) {
-            $info = $this->parse($address);
+        $info = $this->parse($address);
 
-            $this->sockType = $info['sock'];
-            $this->host = $info['host'];
-            $this->port = $info['port'];
-            $this->mode = $mode;
-        }
+        $this->sockType = $info['sock'];
+        $this->host = $info['host'];
+        $this->port = $info['port'];
+        $this->mode = $mode;
 
         $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
 
@@ -224,15 +222,15 @@ abstract class Server
     }
 
     /**
-     * @param $address
-     * @param $mode
+     * @param null $address
      * @param array $config
+     * @param $mode
      * @return Server
      */
-    public static function getInstance($address = null, $mode = SWOOLE_PROCESS, array $config = [])
+    public static function getInstance($address = null, array $config = [], $mode = SWOOLE_PROCESS)
     {
         if (null === static::$instance) {
-            static::$instance = new static($address, $mode, $config);
+            static::$instance = new static($address, $config, $mode);
         }
 
         return static::$instance;

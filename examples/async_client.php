@@ -11,7 +11,7 @@ use FastD\Swoole\Client\Async\AsyncClient;
 
 include __DIR__ . '/../vendor/autoload.php';
 
-$client = new AsyncClient('tcp://11.11.11.11:9527');
+$client = new AsyncClient('tcp://127.0.0.1:9527');
 
 $client
     ->connect(function ($client) {
