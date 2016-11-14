@@ -29,11 +29,17 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
 
 $server = new DemoServer('tcp://0.0.0.0:9527');
 
-$argv = $_SERVER['argv'];
+$input = new \FastD\Console\Input\Input();
 
-$argv[1] = isset($argv[1]) ? $argv[1] : 'status';
+$input->parse();
 
-switch ($argv[1]) {
+$action = $input->getFirstArgument();
+
+if ($input->hasOption(['d', 'daemon'])) {
+    $server->daemonize();
+}
+
+switch ($action) {
     case 'start':
         $server->start();
         break;

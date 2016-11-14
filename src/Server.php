@@ -14,6 +14,7 @@
 
 namespace FastD\Swoole;
 
+use FastD\Console\Output\Output;
 use FastD\Swoole\Exceptions\AddressIllegalException;
 use FastD\Swoole\Exceptions\CantSupportSchemeException;
 use FastD\Swoole\Watch\Watcher;
@@ -84,6 +85,11 @@ abstract class Server
     protected static $instance;
 
     /**
+     * @var Output
+     */
+    protected $output;
+
+    /**
      * Server constructor.
      *
      * @param null $address
@@ -100,6 +106,8 @@ abstract class Server
         $this->mode = $mode;
 
         $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
+
+        $this->output = new Output();
 
         $this->configure($config);
     }
@@ -163,6 +171,18 @@ abstract class Server
         }
 
         $this->config = $config;
+
+        return $this;
+    }
+
+    /**
+     * 守護進程
+     *
+     * @return $this
+     */
+    public function daemonize()
+    {
+        $this->config['daemonize'] = true;
 
         return $this;
     }
@@ -288,11 +308,11 @@ abstract class Server
 
         $this->rename(static::SERVER_NAME . ' master');
 
-        $this->output(sprintf("Server %s://%s:%s", $this->getServerType(), $this->getHost(), $this->getPort()));
+        $this->output(sprintf("Server <success>%s://%s:%s</success>", $this->getServerType(), $this->getHost(), $this->getPort()));
         foreach ($this->ports as $port) {
-            $this->output(sprintf("> Listen %s://%s:%s", $this->getServerType($port->type), $port->host, $port->port));
+            $this->output(sprintf("> Listen <success>%s://%s:%s</success>", $this->getServerType($port->type), $port->host, $port->port));
         }
-        $this->output(sprintf('Server Master[#%s] is started', $server->master_pid));
+        $this->output(sprintf('Server Master[#<info>%s</info>] is started', $server->master_pid));
     }
 
     /**
@@ -307,7 +327,7 @@ abstract class Server
             unlink($file);
         }
 
-        $this->output(sprintf('Server Master[#%s] is shutdown ', $server->master_pid));
+        $this->output(sprintf('Server Master[#<info>%s</info>] is shutdown ', $server->master_pid));
     }
 
     /**
@@ -319,7 +339,7 @@ abstract class Server
     {
         $this->rename(static::SERVER_NAME . ' manager');
 
-        $this->output(sprintf('Server Manager[#%s] is started', $server->manager_pid));
+        $this->output(sprintf('Server Manager[#<info>%s</info>] is started', $server->manager_pid));
     }
 
     /**
@@ -329,7 +349,7 @@ abstract class Server
      */
     public function onManagerStop(swoole_server $server)
     {
-        $this->output(sprintf('Server Manager[#%s] is shutdown.', $server->manager_pid));
+        $this->output(sprintf('Server Manager[#<info>%s</info>] is shutdown.', $server->manager_pid));
     }
 
     /**
@@ -341,7 +361,7 @@ abstract class Server
     {
         $this->rename(static::SERVER_NAME . ' worker');
 
-        $this->output(sprintf('Server Worker[#%s] is started [#%s]', $server->worker_pid, $worker_id));
+        $this->output(sprintf('Server Worker[#<info>%s</info>] is started [#<info>%s</info>]', $server->worker_pid, $worker_id));
     }
 
     /**
@@ -351,7 +371,7 @@ abstract class Server
      */
     public function onWorkerStop(swoole_server $server, $worker_id)
     {
-        $this->output(sprintf('Server Worker[#%s] is shutdown', $worker_id));
+        $this->output(sprintf('Server Worker[#<info>%s</info>] is shutdown', $worker_id));
     }
 
     /**
@@ -363,7 +383,7 @@ abstract class Server
      */
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
-        $this->output(sprintf('Server Worker[#%s] error. Exit code: [%s]', $worker_pid, $exit_code));
+        $this->output(sprintf('Server Worker[#<info>%s</info>] error. Exit code: [<error>%s</error>]', $worker_pid, $exit_code));
     }
 
     /**
@@ -412,7 +432,7 @@ abstract class Server
     public function start()
     {
         if ($this->isRunning()) {
-            $this->output(sprintf('%s:%s address already in use', $this->getHost(), $this->getPort()));
+            $this->output(sprintf('<error>%s:%s</error> address already in use', $this->getHost(), $this->getPort()));
         } else {
             try {
                 $this->bootstrap();
@@ -437,7 +457,7 @@ abstract class Server
 
         posix_kill($pid, SIGTERM);
 
-        $this->output(sprintf('Server [#%s] is shutdown...', $pid));
+        $this->output(sprintf('Server [#<info>%s</info>] is shutdown...', $pid));
 
         return 0;
     }
@@ -456,7 +476,7 @@ abstract class Server
 
         posix_kill($pid, SIGUSR1);
 
-        $this->output(sprintf('Server [#%s] is reloading...', $pid));
+        $this->output(sprintf('Server [#<info>%s</info>] is reloading...', $pid));
 
         return 0;
     }
@@ -475,23 +495,7 @@ abstract class Server
             return strtoupper($v);
         }, array_keys($status[0]));
 
-        $length = 20;
-
-        $format = function ($v) use ($length) {
-            $l = floor($length - strlen($v)) / 2;
-            return str_repeat(' ', $l) . $v . str_repeat(' ', (strlen($v) % 2 == 1 ? ($l) : $l + 1));
-        };
-
-        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
-
-        echo '|' . implode('|', array_map($format, $keys)) . '|' . PHP_EOL;
-
-        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
-        foreach ($status as $stats) {
-            echo '|' . implode('|', array_map($format, array_values($stats))) . '|' . PHP_EOL;
-        }
-
-        echo '|' . implode('|', array_fill(0, count($keys), str_repeat('-', $length))) . '|' . PHP_EOL;
+        $this->output->table($keys, $status);
 
         return 0;
     }
@@ -512,7 +516,7 @@ abstract class Server
         }
 
         foreach ($directories as $directory) {
-            $this->output(sprintf('Watching directory: ["%s"]', realpath($directory)));
+            $this->output(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
         }
 
         $watcher = new Watcher();
@@ -532,16 +536,9 @@ abstract class Server
      */
     public function output($msg)
     {
-        echo $this->format($msg);
-    }
+        $msg = sprintf("[%s]\t", date('Y-m-d H:i:s')) . $msg;
 
-    /**
-     * @param $msg
-     * @return string
-     */
-    public function format($msg)
-    {
-        return sprintf("[%s]\t" . $msg . PHP_EOL, date('Y-m-d H:i:s'));
+        $this->output->writeln($msg);
     }
 
     /**
