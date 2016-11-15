@@ -29,9 +29,7 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
 
 $server = new DemoServer('tcp://0.0.0.0:9527');
 
-$input = new \FastD\Console\Input\Input();
-
-$input->parse();
+$input = new \FastD\Console\Input\Input(null, new \FastD\Console\Input\InputDefinition());
 
 $action = $input->getFirstArgument();
 
