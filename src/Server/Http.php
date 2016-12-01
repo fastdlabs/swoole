@@ -30,7 +30,7 @@ use swoole_server;
 abstract class Http extends Server
 {
     const GZIP_LEVEL = 2;
-    const SERVER_INTERVAL_ERROR = 'Server Interval';
+    const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
     /**
      * @param array $content

@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Watch;
+namespace FastD\Swoole\Support;
 
 /**
  * Class Watcher

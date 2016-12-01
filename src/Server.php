@@ -14,17 +14,13 @@
 
 namespace FastD\Swoole;
 
-use FastD\Console\Output\Output;
-use FastD\Swoole\Exceptions\AddressIllegalException;
-use FastD\Swoole\Exceptions\CantSupportSchemeException;
-use FastD\Swoole\Watch\Watcher;
+use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
 
 /**
  * Class Server
- *
- * @package FastD\Swoole\Server
+ * @package FastD\Swoole
  */
 abstract class Server
 {
@@ -41,6 +37,11 @@ abstract class Server
      * @var array
      */
     protected $config = [];
+
+    /**
+     * @var string
+     */
+    protected $confFile;
 
     /**
      * @var string
@@ -73,21 +74,21 @@ abstract class Server
     protected $booted = false;
 
     /**
+     * @var bool
+     */
+    protected $debug = false;
+
+    /**
      * 多端口支持
      *
      * @var Server[]
      */
-    protected $ports = [];
+    protected $listens = [];
 
     /**
      * @var Server
      */
     protected static $instance;
-
-    /**
-     * @var Output
-     */
-    protected $output;
 
     /**
      * Server constructor.
@@ -96,20 +97,26 @@ abstract class Server
      * @param array $config
      * @param $mode
      */
-    public function __construct($address, array $config = [], $mode = SWOOLE_PROCESS)
+    public function __construct($address, $config = null, $mode = SWOOLE_PROCESS)
     {
-        $info = $this->parse($address);
+        $info = parse_address($address);
 
         $this->sockType = $info['sock'];
         $this->host = $info['host'];
         $this->port = $info['port'];
         $this->mode = $mode;
 
-        $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
-
-        $this->output = new Output();
-
         $this->configure($config);
+    }
+
+    /**
+     * @return $this
+     */
+    public function enableDebug()
+    {
+        $this->debug = true;
+
+        return $this;
     }
 
     /**
@@ -117,7 +124,7 @@ abstract class Server
      */
     public function isDebug()
     {
-        return isset($this->config['debug']) ? $this->config['debug'] : false;
+        return $this->debug;
     }
 
     /**
@@ -126,6 +133,58 @@ abstract class Server
     public function isBooted()
     {
         return $this->booted;
+    }
+
+    /**
+     * 守護進程
+     *
+     * @return $this
+     */
+    public function daemonize()
+    {
+        $this->config['daemonize'] = true;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPid()
+    {
+        return $this->pid;
+    }
+
+    /**
+     * @return string
+     */
+    public function getServerName()
+    {
+        return static::SERVER_NAME;
+    }
+
+    /**
+     * @return swoole_server
+     */
+    public function getSwoole()
+    {
+        return $this->swoole;
     }
 
     /**
@@ -163,11 +222,22 @@ abstract class Server
      * @param array $config
      * @return $this
      */
-    public function configure(array $config)
+    public function configure($config)
     {
+        if (is_string($config) && file_exists($config)) {
+            $this->confFile = $config;
+            $config = include $config;
+        }
+
         if (isset($config['pid'])) {
-            $this->pid = $config['pid'];
+            if ('/' === $config['pid']{0}) {
+                $this->pid = $config['pid'];
+            } else if ('.' === $config['pid']{0}) {
+                $this->pid = realpath('.') . substr($config['pid'], 1);
+            }
             unset($config['pid']);
+        } else {
+            $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
         }
 
         $this->config = $config;
@@ -176,69 +246,40 @@ abstract class Server
     }
 
     /**
-     * 守護進程
-     *
      * @return $this
      */
-    public function daemonize()
+    public function handleCallback()
     {
-        $this->config['daemonize'] = true;
+        $handles = get_class_methods($this);
+
+        foreach ($handles as $value) {
+            if ('on' == substr($value, 0, 2)) {
+                $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
+            }
+        }
 
         return $this;
     }
 
     /**
-     * @return string
+     * @param $name
+     * @param $callback
+     * @return $this
      */
-    public function getHost()
+    public function on($name, $callback)
     {
-        return $this->host;
+        $this->swoole->on($name, $callback);
+
+        return $this;
     }
 
     /**
-     * @return string
+     * @param Server $server
+     * @return $this
      */
-    public function getPort()
+    public function listen(Server $server)
     {
-        return $this->port;
-    }
-
-    /**
-     * @param $sock
-     * @return string
-     */
-    public function getServerType($sock = null)
-    {
-        if (null === $sock) {
-            $sock = $this->sockType;
-        }
-
-        switch (get_class($this->swoole)) {
-            case 'swoole_http_server':
-                return 'http';
-            case 'swoole_websocket_server':
-                return 'ws';
-            case 'swoole_server':
-                return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
-            default:
-                return 'unknown';
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function getPid()
-    {
-        return $this->pid;
-    }
-
-    /**
-     * @return string
-     */
-    public function getServerName()
-    {
-        return static::SERVER_NAME;
+        return $this;
     }
 
     /**
@@ -266,124 +307,6 @@ abstract class Server
         $server = static::getInstance($address, $config, $mode);
 
         $server->start();
-    }
-
-    /**
-     * @return $this
-     */
-    public function handleCallback()
-    {
-        $handles = get_class_methods($this);
-
-        foreach ($handles as $value) {
-            if ('on' == substr($value, 0, 2)) {
-                $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
-            }
-        }
-    }
-
-    /**
-     * @return swoole_server
-     */
-    public function getSwoole()
-    {
-        return $this->swoole;
-    }
-
-    /**
-     * Base start handle. Storage process id.
-     *
-     * @param swoole_server $server
-     * @return void
-     */
-    public function onStart(swoole_server $server)
-    {
-        if (null !== ($file = $this->getPid())) {
-            if (!is_dir($dir = dirname($file))) {
-                mkdir($dir, 0755, true);
-            }
-
-            file_put_contents($file, $server->master_pid . PHP_EOL);
-        }
-
-        $this->rename(static::SERVER_NAME . ' master');
-
-        $this->output(sprintf("Server <success>%s://%s:%s</success>", $this->getServerType(), $this->getHost(), $this->getPort()));
-        foreach ($this->ports as $port) {
-            $this->output(sprintf("> Listen <success>%s://%s:%s</success>", $this->getServerType($port->type), $port->host, $port->port));
-        }
-        $this->output(sprintf('Server Master[#<info>%s</info>] is started', $server->master_pid));
-    }
-
-    /**
-     * Shutdown server process.
-     *
-     * @param swoole_server $server
-     * @return void
-     */
-    public function onShutdown(swoole_server $server)
-    {
-        if (null !== ($file = $this->getPid()) && !empty(trim(file_get_contents($file)))) {
-            unlink($file);
-        }
-
-        $this->output(sprintf('Server Master[#<info>%s</info>] is shutdown ', $server->master_pid));
-    }
-
-    /**
-     * @param swoole_server $server
-     *
-     * @return void
-     */
-    public function onManagerStart(swoole_server $server)
-    {
-        $this->rename(static::SERVER_NAME . ' manager');
-
-        $this->output(sprintf('Server Manager[#<info>%s</info>] is started', $server->manager_pid));
-    }
-
-    /**
-     * @param swoole_server $server
-     *
-     * @return void
-     */
-    public function onManagerStop(swoole_server $server)
-    {
-        $this->output(sprintf('Server Manager[#<info>%s</info>] is shutdown.', $server->manager_pid));
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $worker_id
-     * @return void
-     */
-    public function onWorkerStart(swoole_server $server, $worker_id)
-    {
-        $this->rename(static::SERVER_NAME . ' worker');
-
-        $this->output(sprintf('Server Worker[#<info>%s</info>] is started [#<info>%s</info>]', $server->worker_pid, $worker_id));
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $worker_id
-     * @return void
-     */
-    public function onWorkerStop(swoole_server $server, $worker_id)
-    {
-        $this->output(sprintf('Server Worker[#<info>%s</info>] is shutdown', $worker_id));
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $worker_id
-     * @param int $worker_pid
-     * @param int $exit_code
-     * @return void
-     */
-    public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
-    {
-        $this->output(sprintf('Server Worker[#<info>%s</info>] error. Exit code: [<error>%s</error>]', $worker_pid, $exit_code));
     }
 
     /**
@@ -432,13 +355,13 @@ abstract class Server
     public function start()
     {
         if ($this->isRunning()) {
-            $this->output(sprintf('<error>%s:%s</error> address already in use', $this->getHost(), $this->getPort()));
+            output(sprintf('<red>%s:%s</red> address already in use', $this->getHost(), $this->getPort()));
         } else {
             try {
                 $this->bootstrap();
                 $this->getSwoole()->start();
             } catch (\Exception $e) {
-                $this->output($e->getMessage());
+                output($e->getMessage());
             }
         }
     }
@@ -449,7 +372,7 @@ abstract class Server
     public function shutdown()
     {
         if (false === ($status = $this->isRunning())) {
-            $this->output(sprintf('Server is not running...'));
+            output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -457,7 +380,7 @@ abstract class Server
 
         posix_kill($pid, SIGTERM);
 
-        $this->output(sprintf('Server [#<info>%s</info>] is shutdown...', $pid));
+        output(sprintf('Server [#<info>%s</info>] is shutdown...', $pid));
 
         return 0;
     }
@@ -468,7 +391,7 @@ abstract class Server
     public function reload()
     {
         if (false === ($status = $this->isRunning())) {
-            $this->output(sprintf('Server is not running...'));
+            output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -476,7 +399,7 @@ abstract class Server
 
         posix_kill($pid, SIGUSR1);
 
-        $this->output(sprintf('Server [#<info>%s</info>] is reloading...', $pid));
+        output(sprintf('Server [#<info>%s</info>] is reloading...', $pid));
 
         return 0;
     }
@@ -487,7 +410,7 @@ abstract class Server
     public function status()
     {
         if (!($status = $this->isRunning())) {
-            $this->output(sprintf('Server is not running...'));
+            output(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -495,7 +418,7 @@ abstract class Server
             return strtoupper($v);
         }, array_keys($status[0]));
 
-        $this->output->table($keys, $status);
+        output_table($keys, $status);
 
         return 0;
     }
@@ -516,7 +439,7 @@ abstract class Server
         }
 
         foreach ($directories as $directory) {
-            $this->output(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
+            output(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
         }
 
         $watcher = new Watcher();
@@ -531,61 +454,98 @@ abstract class Server
     }
 
     /**
-     * @param $msg
+     * Base start handle. Storage process id.
+     *
+     * @param swoole_server $server
      * @return void
      */
-    public function output($msg)
+    public function onStart(swoole_server $server)
     {
-        $msg = sprintf("[%s]\t", date('Y-m-d H:i:s')) . $msg;
+        if (null !== ($file = $this->getPid())) {
+            if (!is_dir($dir = dirname($file))) {
+                mkdir($dir, 0755, true);
+            }
 
-        $this->output->writeln($msg);
+            file_put_contents($file, $server->master_pid . PHP_EOL);
+        }
+
+        process_rename(static::SERVER_NAME . ' master' . (empty($this->confFile) ? '' : ('(' . $this->confFile . ')')));
+
+        output(sprintf("Server <green>%s://%s:%s</green>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
+        foreach ($this->listens as $port) {
+            output(sprintf("> Listen <green>%s://%s:%s</green>", server_type($port, $port->type), $port->host, $port->port));
+        }
+        output(sprintf('Server Master[<blue>#%s</blue>] is started', $server->master_pid));
     }
 
     /**
-     * @param $name
+     * Shutdown server process.
+     *
+     * @param swoole_server $server
+     * @return void
      */
-    public function rename($name)
+    public function onShutdown(swoole_server $server)
     {
-        // hidden Mac OS error。
-        set_error_handler(function () {});
-
-        if (function_exists('cli_set_process_title')) {
-            cli_set_process_title($name);
-        } else if (function_exists('swoole_set_process_name')) {
-            swoole_set_process_name($name);
+        if (null !== ($file = $this->getPid()) && !empty(trim(file_get_contents($file)))) {
+            unlink($file);
         }
 
-        restore_error_handler();
+        output(sprintf('Server Master[<blue>#%s</blue>] is shutdown ', $server->master_pid));
     }
 
     /**
-     * @param $address
-     * @return array
+     * @param swoole_server $server
+     *
+     * @return void
      */
-    public function parse($address)
+    public function onManagerStart(swoole_server $server)
     {
-        if (false === ($info = parse_url($address))) {
-            throw new AddressIllegalException($address);
-        }
+        process_rename(static::SERVER_NAME . ' manager');
 
-        switch (strtolower($info['scheme'])) {
-            case 'tcp':
-            case 'unix':
-                $sock = SWOOLE_SOCK_TCP;
-                break;
-            case 'udp':
-                $sock = SWOOLE_SOCK_UDP;
-                break;
-            case 'http':
-            case 'ws':
-                $sock = null;
-                break;
-            default:
-                throw new CantSupportSchemeException($info['scheme']);
-        }
+        output(sprintf('Server Manager[<blue>#%s</blue>] is started', $server->manager_pid));
+    }
 
-        return array_merge($info, [
-            'sock' => $sock
-        ]);
+    /**
+     * @param swoole_server $server
+     *
+     * @return void
+     */
+    public function onManagerStop(swoole_server $server)
+    {
+        output(sprintf('Server Manager[<blue>#%s</blue>] is shutdown.', $server->manager_pid));
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param int $worker_id
+     * @return void
+     */
+    public function onWorkerStart(swoole_server $server, $worker_id)
+    {
+        process_rename(static::SERVER_NAME . ' worker');
+
+        output(sprintf('Server Worker[<blue>#%s</blue>] is started [<blue>#%s</blue>]', $server->worker_pid, $worker_id));
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param int $worker_id
+     * @return void
+     */
+    public function onWorkerStop(swoole_server $server, $worker_id)
+    {
+        output(sprintf('Server Worker[<blue>#%s</blue>] is shutdown', $worker_id));
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param int $worker_id
+     * @param int $worker_pid
+     * @param int $exit_code
+     * @return void
+     */
+    public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
+    {
+        output(sprintf('Server Worker[<red>#%s</red>] error. Exit code: [<error>%s</error>]', $worker_pid, $exit_code));
     }
 }

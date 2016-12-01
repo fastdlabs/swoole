@@ -24,7 +24,10 @@
     "autoload": {
         "psr-4": {
             "FastD\\Swoole\\": "src"
-        }
+        },
+        "files": [
+            "src/Support/helpers.php"
+        ]
     },
     "suggests": {
         "ext-swoole": "Allow php swoole extension.",
