@@ -6,9 +6,9 @@
 
 ## ＃环境要求
 
+* Linux (不考虑windows)
 * PHP >= 5.6
-
-* Swoole >= 1.8 (因为 2.0 版本对 PHP7 暂时不够友好,所以暂时不会支持 2.0)
+* Swoole >= 1.8 
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
