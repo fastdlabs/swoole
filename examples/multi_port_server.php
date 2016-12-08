@@ -20,7 +20,7 @@ class Server extends \FastD\Swoole\Server\Tcp
      */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
-        return 'hello world';
+        return 'hello server1';
     }
 }
 
@@ -35,7 +35,7 @@ class Server2 extends \FastD\Swoole\Server\Tcp
      */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
-        return 'hello server';
+        return 'hello server2';
     }
 }
 

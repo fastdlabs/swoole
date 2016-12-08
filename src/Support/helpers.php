@@ -26,6 +26,7 @@ function handle (Server $server) {
         if ('on' == substr($value, 0, 2)) {
             if ($isListenerPort) {
                 if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
+                    echo $value . PHP_EOL;
                     $server->on(lcfirst(substr($value, 2)), [$server, $value]);
                 }
             } else {

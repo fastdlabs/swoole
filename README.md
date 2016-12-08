@@ -109,10 +109,49 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
 WebSocket::run('ws://0.0.0.0:9527');
 ```
 
+#### 多端口支持
+
+```php
+class Server extends \FastD\Swoole\Server\Tcp
+{
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
+     */
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    {
+        return 'hello server1';
+    }
+}
+
+class Server2 extends \FastD\Swoole\Server\Tcp
+{
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $data
+     * @param $from_id
+     * @return mixed
+     */
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    {
+        return 'hello server2';
+    }
+}
+
+$server = new Server('tcp://127.0.0.1:9726');
+
+$server->listen(new Server2('tcp://127.0.0.1:9528'));
+
+$server->start();
+```
+
 #### 服务管理
 
 ```php
-
 use FastD\Swoole\Server\Tcp\TcpServer;
 
 class DemoServer extends TcpServer
