@@ -27,10 +27,10 @@ function handle (Server $server) {
             if ($isListenerPort) {
                 if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
                     echo $value . PHP_EOL;
-                    $server->on(lcfirst(substr($value, 2)), [$server, $value]);
+                    $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
                 }
             } else {
-                $server->on(lcfirst(substr($value, 2)), [$server, $value]);
+                $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
             }
         }
     }

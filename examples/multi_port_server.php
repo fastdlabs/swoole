@@ -39,9 +39,9 @@ class Server2 extends \FastD\Swoole\Server\Tcp
     }
 }
 
-$server = new Server('tcp://127.0.0.1:9726');
+$server = new Server('tcp://127.0.0.1:9527');
 
-$server->listen(new Server2('udp://127.0.0.1:9528'));
+$server->listen(new Server2('tcp://127.0.0.1:9528'));
 
 $server->start();
 

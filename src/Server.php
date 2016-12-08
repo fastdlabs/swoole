@@ -253,18 +253,6 @@ abstract class Server
     }
 
     /**
-     * @param $name
-     * @param $callback
-     * @return $this
-     */
-    public function on($name, $callback)
-    {
-        $this->getSwoole()->on($name, $callback);
-
-        return $this;
-    }
-
-    /**
      * @param Server $server
      * @return $this
      */
@@ -352,11 +340,12 @@ abstract class Server
         } else {
             try {
                 $this->bootstrap();
+                $server = $this->getSwoole();
                 foreach ($this->listens as $listen) {
-                    $swoole = $this->getSwoole()->listen($listen->getHost(), $listen->getPort(), $listen->getSockType());
+                    $swoole = $server->listen($listen->getHost(), $listen->getPort(), $listen->getSockType());
                     $listen->bootstrap($swoole);
                 }
-                $this->getSwoole()->start();
+                $server->start();
             } catch (\Exception $e) {
                 output($e->getMessage());
             }
