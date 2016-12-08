@@ -20,7 +20,7 @@ pecl install swoole
 
 ### ＃可选扩展
 
-PHP >= 7.0 的安装 2.0 版本.
+**如果 PHP >= 7.0 的安装 2.0 版本.**
 
 源码地址: [inotify](http://pecl.php.net/package/inotify)
 

@@ -9,7 +9,32 @@
 
 use FastD\Swoole\Exceptions\AddressIllegalException;
 use FastD\Swoole\Exceptions\CantSupportSchemeException;
+use FastD\Swoole\Server;
 use FastD\Swoole\Support\Output;
+
+/**
+ * @param Server $server
+ * @return Server $server
+ */
+function handle (Server $server) {
+    $handles = get_class_methods($server);
+    $isListenerPort = false;
+    if ('swoole_server_port' == get_class($server->getSwoole())) {
+        $isListenerPort = true;
+    }
+    foreach ($handles as $value) {
+        if ('on' == substr($value, 0, 2)) {
+            if ($isListenerPort) {
+                if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
+                    $server->on(lcfirst(substr($value, 2)), [$server, $value]);
+                }
+            } else {
+                $server->on(lcfirst(substr($value, 2)), [$server, $value]);
+            }
+        }
+    }
+    return $server;
+}
 
 /**
  * @param $name
@@ -39,6 +64,7 @@ function server_type ($swoole, $sock = null) {
         case 'swoole_websocket_server':
             return 'ws';
         case 'swoole_server':
+        case 'swoole_server_port':
             return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
         default:
             return 'unknown';
@@ -84,6 +110,10 @@ function output ($message) {
     Output::output($message);
 }
 
+/**
+ * @param array $keys
+ * @param array $columns
+ */
 function output_table (array $keys, array $columns) {
     Output::table($keys, $columns);
 }

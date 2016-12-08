@@ -17,6 +17,7 @@ namespace FastD\Swoole;
 use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
+use swoole_server_port;
 
 /**
  * Class Server
@@ -164,6 +165,14 @@ abstract class Server
     }
 
     /**
+     * @return int
+     */
+    public function getSockType()
+    {
+        return $this->sockType;
+    }
+
+    /**
      * @return string
      */
     public function getPid()
@@ -190,17 +199,18 @@ abstract class Server
     /**
      * Bootstrap server.
      *
+     * @param swoole_server_port $swoole
      * @return $this
      */
-    public function bootstrap()
+    public function bootstrap(swoole_server_port $swoole = null)
     {
         if (!$this->isBooted()) {
 
-            $this->swoole = $this->initSwoole();
+            $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
 
             $this->swoole->set($this->config);
 
-            $this->handleCallback();
+            handle($this);
 
             $this->booted = true;
         }
@@ -227,6 +237,8 @@ abstract class Server
         if (is_string($config) && file_exists($config)) {
             $this->confFile = $config;
             $config = include $config;
+        } else if (!is_array($config)) {
+            $config = [];
         }
 
         if (isset($config['pid'])) {
@@ -241,22 +253,6 @@ abstract class Server
         }
 
         $this->config = $config;
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function handleCallback()
-    {
-        $handles = get_class_methods($this);
-
-        foreach ($handles as $value) {
-            if ('on' == substr($value, 0, 2)) {
-                $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
-            }
-        }
 
         return $this;
     }
@@ -279,6 +275,8 @@ abstract class Server
      */
     public function listen(Server $server)
     {
+        $this->listens[] = $server;
+
         return $this;
     }
 
@@ -359,6 +357,10 @@ abstract class Server
         } else {
             try {
                 $this->bootstrap();
+                foreach ($this->listens as $listen) {
+                    $swoole = $this->getSwoole()->listen($listen->getHost(), $listen->getPort(), $listen->getSockType());
+                    $listen->bootstrap($swoole);
+                }
                 $this->getSwoole()->start();
             } catch (\Exception $e) {
                 output($e->getMessage());
@@ -376,7 +378,7 @@ abstract class Server
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->getPid());
+        $pid = (int)@file_get_contents($this->getPid());
 
         posix_kill($pid, SIGTERM);
 
@@ -395,7 +397,7 @@ abstract class Server
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->getPid());
+        $pid = (int)@file_get_contents($this->getPid());
 
         posix_kill($pid, SIGUSR1);
 
@@ -472,8 +474,8 @@ abstract class Server
         process_rename(static::SERVER_NAME . ' master' . (empty($this->confFile) ? '' : ('(' . $this->confFile . ')')));
 
         output(sprintf("Server <green>%s://%s:%s</green>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
-        foreach ($this->listens as $port) {
-            output(sprintf("> Listen <green>%s://%s:%s</green>", server_type($port, $port->type), $port->host, $port->port));
+        foreach ($this->listens as $listen) {
+            output(sprintf("> Listen <green>%s://%s:%s</green>", server_type($listen->getSwoole()), $listen->getHost(), $listen->getPort()));
         }
         output(sprintf('Server Master[<blue>#%s</blue>] is started', $server->master_pid));
     }

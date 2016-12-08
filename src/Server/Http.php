@@ -32,6 +32,16 @@ abstract class Http extends Server
     const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
+    public function enableHttp2($key, $pem)
+    {
+
+    }
+
+    public function ssl($key, $pem)
+    {
+
+    }
+
     /**
      * @param array $content
      * @return Response
@@ -71,8 +81,6 @@ abstract class Http extends Server
                 throw new CannotResponseException();
             }
 
-            $swooleResponse->status($response->getStatusCode());
-
             if (!empty($sessionId = $swooleRequestServer->session->getSessionId())) {
                 $swooleResponse->header(Session::SESSION_KEY, $sessionId);
             }
@@ -93,6 +101,7 @@ abstract class Http extends Server
                 );
             }
             $swooleResponse->gzip(static::GZIP_LEVEL);
+            $swooleResponse->status($response->getStatusCode());
             $swooleResponse->end($response->getContent());
             unset($response, $swooleRequestServer);
         } catch (HttpException $e) {
