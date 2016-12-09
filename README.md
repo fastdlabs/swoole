@@ -250,4 +250,54 @@ $client
 ;
 ```
 
+#### Process
+
+```php
+use FastD\Swoole\Process;
+
+$process = new Process(function () {
+    timer_tick(1000, function ($id) {
+        static $index = 0;
+        $index++;
+        echo $index . PHP_EOL;
+        if ($index === 10) {
+            timer_clear($id);
+        }
+    });
+});
+
+$process->name('process');
+
+$process->start();
+
+$process->wait(function ($ret) {
+    echo 'PID: ' . $ret['pid'];
+});
+```
+
+#### Multi Process
+
+```php
+use FastD\Swoole\Process;
+
+$process = new Process(function () {
+    timer_tick(1000, function ($id) {
+        static $index = 0;
+        $index++;
+        echo $index . PHP_EOL;
+        if ($index === 10) {
+            timer_clear($id);
+        }
+    });
+});
+
+$process->name('process');
+
+$process->fork(5);
+
+$process->wait(function ($ret) {
+    echo 'PID: ' . $ret['pid'] . PHP_EOL;
+});
+```
+
 # License MIT

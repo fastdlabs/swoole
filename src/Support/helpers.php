@@ -118,3 +118,74 @@ function output ($message) {
 function output_table (array $keys, array $columns) {
     Output::table($keys, $columns);
 }
+
+/**
+ * Kill somebody
+ *
+ * @param $pid
+ * @param int $signo
+ * @return int
+ */
+function process_kill ($pid, $signo = SIGTERM) {
+    return swoole_process::kill($pid, $signo);
+}
+
+/**
+ * @param bool $blocking
+ * @return array
+ */
+function process_wait ($blocking = true) {
+    return swoole_process::wait($blocking);
+}
+
+/**
+ * @param bool $nochdir
+ * @param bool $noclose
+ * @return mixed
+ */
+function process_daemon ($nochdir = true, $noclose = true) {
+    return swoole_process::daemon($nochdir, $noclose);
+}
+
+/**
+ * @param $signo
+ * @param callable $callback
+ * @return mixed
+ */
+function process_signal ($signo, callable $callback) {
+    return swoole_process::signal($signo, $callback);
+}
+
+/**
+ * @param $interval
+ * @param $type
+ * @return bool
+ */
+function process_alarm ($interval, $type = ITIMER_REAL) {
+    return swoole_process::alarm($interval, $type);
+}
+
+/**
+ * @param array $cpus
+ * @return mixed
+ */
+function process_affinity (array $cpus) {
+    return swoole_process::setaffinity($cpus);
+}
+
+/**
+ * @param $interval
+ * @param callable $callback
+ * @return mixed
+ */
+function timer_tick ($interval, callable $callback) {
+    return swoole_timer_tick($interval, $callback);
+}
+
+/**
+ * @param $timerId
+ * @return mixed
+ */
+function timer_clear ($timerId) {
+    return swoole_timer_clear($timerId);
+}
