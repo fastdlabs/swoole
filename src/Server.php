@@ -220,7 +220,7 @@ abstract class Server
      */
     public function initSwoole()
     {
-        return new swoole_server($this->host, $this->port, $this->mode, $this->sockType);
+        return new \Swoole\Server($this->host, $this->port, $this->mode, $this->sockType);
     }
 
     /**

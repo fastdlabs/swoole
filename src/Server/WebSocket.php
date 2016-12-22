@@ -62,6 +62,6 @@ abstract class WebSocket extends Server
      */
     public function initSwoole()
     {
-        return new swoole_websocket_server($this->getHost(), $this->getPort());
+        return new \Swoole\Websocket\Server($this->getHost(), $this->getPort());
     }
 }
