@@ -195,13 +195,13 @@ function timer_clear ($timerId) {
  */
 function get_local_ip() {
     $serverIps = swoole_get_local_ip();
-    $patternArray = array(
+    $patternArray = [
         '10\.',
         '172\.1[6-9]\.',
         '172\.2[0-9]\.',
         '172\.31\.',
         '192\.168\.'
-    );
+    ];
 
     foreach ($serverIps as $serverIp) {
         if (preg_match('#^' . implode('|', $patternArray) . '#', $serverIp)) {
