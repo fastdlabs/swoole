@@ -189,3 +189,25 @@ function timer_tick ($interval, callable $callback) {
 function timer_clear ($timerId) {
     return swoole_timer_clear($timerId);
 }
+
+/**
+ * @return string
+ */
+function get_local_ip() {
+    $serverIps = swoole_get_local_ip();
+    $patternArray = array(
+        '10\.',
+        '172\.1[6-9]\.',
+        '172\.2[0-9]\.',
+        '172\.31\.',
+        '192\.168\.'
+    );
+
+    foreach ($serverIps as $serverIp) {
+        if (preg_match('#^' . implode('|', $patternArray) . '#', $serverIp)) {
+            return $serverIp;
+        }
+    }
+
+    return 'unknown';
+}
