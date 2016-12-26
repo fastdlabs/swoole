@@ -66,6 +66,7 @@ function server_type ($swoole, $sock = null) {
             return 'ws';
         case 'swoole_server':
         case 'swoole_server_port':
+        case 'Swoole\Server':
             return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
         default:
             return 'unknown';
