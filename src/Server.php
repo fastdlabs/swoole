@@ -82,6 +82,11 @@ abstract class Server
     protected $listens = [];
 
     /**
+     * @var array
+     */
+    protected $processes = [];
+
+    /**
      * @var Server
      */
     protected static $instance;
@@ -205,7 +210,7 @@ abstract class Server
 
             $this->swoole->set($this->config);
 
-            handle($this);
+            handle_server_callback($this);
 
             $this->booted = true;
         }
@@ -259,6 +264,17 @@ abstract class Server
     public function listen(Server $server)
     {
         $this->listens[] = $server;
+
+        return $this;
+    }
+
+    /**
+     * @param Process $process
+     * @return $this
+     */
+    public function process(Process $process)
+    {
+        $this->processes[] = $process;
 
         return $this;
     }

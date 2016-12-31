@@ -16,7 +16,7 @@ use FastD\Swoole\Support\Output;
  * @param Server $server
  * @return Server $server
  */
-function handle(Server $server)
+function handle_server_callback(Server $server)
 {
     $handles = get_class_methods($server);
     $isListenerPort = false;
