@@ -9,11 +9,18 @@
 
 namespace FastD\Swoole\Exceptions;
 
-use FastD\Http\Exceptions\HttpException;
+use FastD\Http\Exception\HttpException;
 use FastD\Http\Response;
 
+/**
+ * Class CannotResponseException
+ * @package FastD\Swoole\Exceptions
+ */
 class CannotResponseException extends HttpException
 {
+    /**
+     * CannotResponseException constructor.
+     */
     public function __construct()
     {
         parent::__construct('Cannot response. You must be return Response Object on doRequest method.');

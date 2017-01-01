@@ -16,17 +16,18 @@ use FastD\Swoole\Support\Output;
  * @param Server $server
  * @return Server $server
  */
-function handle (Server $server) {
+function handle_server_callback(Server $server)
+{
     $handles = get_class_methods($server);
     $isListenerPort = false;
-    if ('swoole_server_port' == get_class($server->getSwoole())) {
+    $serverClass = get_class($server->getSwoole());
+    if ('Swoole\Server\Port' == $serverClass || 'swoole_server_port' == $serverClass) {
         $isListenerPort = true;
     }
     foreach ($handles as $value) {
         if ('on' == substr($value, 0, 2)) {
             if ($isListenerPort) {
                 if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
-                    echo $value . PHP_EOL;
                     $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
                 }
             } else {
@@ -40,9 +41,11 @@ function handle (Server $server) {
 /**
  * @param $name
  */
-function process_rename ($name) {
+function process_rename($name)
+{
     // hidden Mac OS error。
-    set_error_handler(function () {});
+    set_error_handler(function () {
+    });
 
     if (function_exists('cli_set_process_title')) {
         cli_set_process_title($name);
@@ -58,14 +61,19 @@ function process_rename ($name) {
  * @param $sock
  * @return string
  */
-function server_type ($swoole, $sock = null) {
+function server_type($swoole, $sock = null)
+{
     switch (get_class($swoole)) {
         case 'swoole_http_server':
+        case 'Swoole\Http\Server':
             return 'http';
         case 'swoole_websocket_server':
+        case 'Swoole\WebSocket\Server':
             return 'ws';
         case 'swoole_server':
         case 'swoole_server_port':
+        case 'Swoole\Server':
+        case 'Swoole\Server\Port':
             return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
         default:
             return 'unknown';
@@ -76,7 +84,8 @@ function server_type ($swoole, $sock = null) {
  * @param $address
  * @return mixed
  */
-function parse_address ($address) {
+function parse_address($address)
+{
     if (false === ($info = parse_url($address))) {
         throw new AddressIllegalException($address);
     }
@@ -106,7 +115,8 @@ function parse_address ($address) {
  * @param $message
  * @return void
  */
-function output ($message) {
+function output($message)
+{
     $message = sprintf("[%s]\t", date('Y-m-d H:i:s')) . $message;
     Output::output($message);
 }
@@ -115,7 +125,8 @@ function output ($message) {
  * @param array $keys
  * @param array $columns
  */
-function output_table (array $keys, array $columns) {
+function output_table(array $keys, array $columns)
+{
     Output::table($keys, $columns);
 }
 
@@ -126,7 +137,8 @@ function output_table (array $keys, array $columns) {
  * @param int $signo
  * @return int
  */
-function process_kill ($pid, $signo = SIGTERM) {
+function process_kill($pid, $signo = SIGTERM)
+{
     return swoole_process::kill($pid, $signo);
 }
 
@@ -134,7 +146,8 @@ function process_kill ($pid, $signo = SIGTERM) {
  * @param bool $blocking
  * @return array
  */
-function process_wait ($blocking = true) {
+function process_wait($blocking = true)
+{
     return swoole_process::wait($blocking);
 }
 
@@ -143,7 +156,8 @@ function process_wait ($blocking = true) {
  * @param bool $noclose
  * @return mixed
  */
-function process_daemon ($nochdir = true, $noclose = true) {
+function process_daemon($nochdir = true, $noclose = true)
+{
     return swoole_process::daemon($nochdir, $noclose);
 }
 
@@ -152,7 +166,8 @@ function process_daemon ($nochdir = true, $noclose = true) {
  * @param callable $callback
  * @return mixed
  */
-function process_signal ($signo, callable $callback) {
+function process_signal($signo, callable $callback)
+{
     return swoole_process::signal($signo, $callback);
 }
 
@@ -161,7 +176,8 @@ function process_signal ($signo, callable $callback) {
  * @param $type
  * @return bool
  */
-function process_alarm ($interval, $type = ITIMER_REAL) {
+function process_alarm($interval, $type = ITIMER_REAL)
+{
     return swoole_process::alarm($interval, $type);
 }
 
@@ -169,7 +185,8 @@ function process_alarm ($interval, $type = ITIMER_REAL) {
  * @param array $cpus
  * @return mixed
  */
-function process_affinity (array $cpus) {
+function process_affinity(array $cpus)
+{
     return swoole_process::setaffinity($cpus);
 }
 
@@ -178,7 +195,8 @@ function process_affinity (array $cpus) {
  * @param callable $callback
  * @return mixed
  */
-function timer_tick ($interval, callable $callback) {
+function timer_tick($interval, callable $callback)
+{
     return swoole_timer_tick($interval, $callback);
 }
 
@@ -186,6 +204,30 @@ function timer_tick ($interval, callable $callback) {
  * @param $timerId
  * @return mixed
  */
-function timer_clear ($timerId) {
+function timer_clear($timerId)
+{
     return swoole_timer_clear($timerId);
+}
+
+/**
+ * @return string
+ */
+function get_local_ip()
+{
+    $serverIps = swoole_get_local_ip();
+    $patternArray = [
+        '10\.',
+        '172\.1[6-9]\.',
+        '172\.2[0-9]\.',
+        '172\.31\.',
+        '192\.168\.'
+    ];
+
+    foreach ($serverIps as $serverIp) {
+        if (preg_match('#^' . implode('|', $patternArray) . '#', $serverIp)) {
+            return $serverIp;
+        }
+    }
+
+    return 'unknown';
 }

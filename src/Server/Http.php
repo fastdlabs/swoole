@@ -75,6 +75,7 @@ abstract class Http extends Server
     public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse)
     {
         try {
+            print_r($swooleRequet);
             $swooleRequestServer = SwooleServerRequest::createFromSwoole($swooleRequet, $swooleResponse);
 
             if (!(($response = $this->doRequest($swooleRequestServer)) instanceof Response)) {

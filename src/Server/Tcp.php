@@ -35,10 +35,11 @@ abstract class Tcp extends Server
             $server->send($fd, $content);
             $server->close($fd);
         } catch (\Exception $e) {
-            $server->send($fd, sprintf("Error: %s\nFile: %s \n Code: %s",
+            $server->send($fd, sprintf("Error: %s\nFile: %s \nCode: %s\nLine: %s\r\n\r\n",
                     $e->getMessage(),
                     $e->getFile(),
-                    $e->getCode()
+                    $e->getCode(),
+                    $e->getLine()
                 )
             );
             $server->close($fd);

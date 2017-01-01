@@ -190,4 +190,20 @@ class Process
         }
         return 0;
     }
+
+    /**
+     * @return swoole_process[]
+     */
+    public function getChildProcesses()
+    {
+        return $this->processes;
+    }
+
+    /**
+     * @return swoole_process
+     */
+    public function getProcess()
+    {
+        return $this->process;
+    }
 }
