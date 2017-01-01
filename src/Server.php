@@ -9,6 +9,7 @@
 
 namespace FastD\Swoole;
 
+use FastD\Swoole\Factories\SwooleFactoryInterface;
 use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
@@ -18,7 +19,7 @@ use swoole_server_port;
  * Class Server
  * @package FastD\Swoole
  */
-abstract class Server
+abstract class Server implements SwooleFactoryInterface
 {
     const SERVER_NAME = 'fds';
 
@@ -82,7 +83,7 @@ abstract class Server
     protected $listens = [];
 
     /**
-     * @var array
+     * @var Process[]
      */
     protected $processes = [];
 
@@ -137,13 +138,15 @@ abstract class Server
     }
 
     /**
-     * 守護進程
+     * 守護進程, debug模式下无法开启
      *
      * @return $this
      */
     public function daemonize()
     {
-        $this->config['daemonize'] = true;
+        if (!$this->isDebug()) {
+            $this->config['daemonize'] = true;
+        }
 
         return $this;
     }
@@ -178,14 +181,6 @@ abstract class Server
     public function getPid()
     {
         return $this->pid;
-    }
-
-    /**
-     * @return string
-     */
-    public function getServerName()
-    {
-        return static::SERVER_NAME;
     }
 
     /**
@@ -311,7 +306,7 @@ abstract class Server
      */
     protected function isRunning()
     {
-        $processName = $this->getServerName();
+        $processName = static::SERVER_NAME;
 
         if ('Linux' !== PHP_OS) {
             $processName = $_SERVER['SCRIPT_NAME'];
@@ -360,6 +355,9 @@ abstract class Server
                 foreach ($this->listens as $listen) {
                     $swoole = $server->listen($listen->getHost(), $listen->getPort(), $listen->getSockType());
                     $listen->bootstrap($swoole);
+                }
+                foreach ($this->processes as $process) {
+                    $server->addProcess($process->getProcess());
                 }
                 $server->start();
             } catch (\Exception $e) {

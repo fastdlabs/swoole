@@ -11,6 +11,8 @@ class HelpersTest extends PHPUnit_Framework_TestCase
 {
     public function testParseUri()
     {
-        parse_url();
+        $info = parse_address('http://examples.com:9527');
+
+        print_r($info);
     }
 }
