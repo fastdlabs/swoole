@@ -233,7 +233,7 @@ $client
 #### Async Client
 
 ```php
-$client = new \FastD\Swoole\Client\Async\AsyncClientgit ('tcp://11.11.11.11:9527');
+$client = new \FastD\Swoole\Client\Async\AsyncClient('tcp://11.11.11.11:9527');
 
 $client
     ->connect(function ($client) {
