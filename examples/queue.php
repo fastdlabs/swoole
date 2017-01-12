@@ -9,7 +9,7 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-$queue = new \FastD\Swoole\Queue(function ($worker) {
+$queue = new \FastD\Swoole\Queue('queue', function ($worker) {
     while (true) {
         $recv = $worker->pop();
         echo "From Master: $recv\n";

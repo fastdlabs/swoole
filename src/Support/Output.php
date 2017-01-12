@@ -10,6 +10,8 @@
 namespace FastD\Swoole\Support;
 
 
+use Symfony\Component\Console\Output\ConsoleOutput;
+
 class Output
 {
     public static $output;
@@ -20,7 +22,7 @@ class Output
     public static function getInstance()
     {
         if (null === static::$output) {
-            static::$output = new \FastD\Console\Output\Output();
+            static::$output = new ConsoleOutput();
         }
 
         return static::$output;

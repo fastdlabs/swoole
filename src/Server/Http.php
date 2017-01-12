@@ -10,12 +10,9 @@
 namespace FastD\Swoole\Server;
 
 use Exception;
-use FastD\Http\Exceptions\HttpException;
 use FastD\Http\JsonResponse;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
-use FastD\Session\Session;
-use FastD\Swoole\Exceptions\CannotResponseException;
 use FastD\Swoole\Server;
 use swoole_http_request;
 use swoole_http_response;
@@ -75,35 +72,22 @@ abstract class Http extends Server
     public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse)
     {
         try {
-            print_r($swooleRequet);
-            $swooleRequestServer = SwooleServerRequest::createFromSwoole($swooleRequet, $swooleResponse);
+            $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
 
             if (!(($response = $this->doRequest($swooleRequestServer)) instanceof Response)) {
-                throw new CannotResponseException();
-            }
-
-            if (!empty($sessionId = $swooleRequestServer->session->getSessionId())) {
-                $swooleResponse->header(Session::SESSION_KEY, $sessionId);
+                throw new \RuntimeException('Not found');
             }
 
             foreach ($response->getHeaders() as $key => $header) {
                 $swooleResponse->header($key, $response->getHeaderLine($key));
             }
 
-            foreach ($swooleRequestServer->getCookieParams() as $cookieParam) {
-                $swooleResponse->cookie(
-                    $cookieParam->getName(),
-                    $cookieParam->getValue(),
-                    $cookieParam->getExpire(),
-                    $cookieParam->getPath(),
-                    $cookieParam->getDomain(),
-                    $cookieParam->isSecure(),
-                    $cookieParam->isHttpOnly()
-                );
+            foreach ($swooleRequestServer->getCookieParams() as $key => $cookieParam) {
+                $swooleResponse->cookie($key, $cookieParam);
             }
             $swooleResponse->gzip(static::GZIP_LEVEL);
             $swooleResponse->status($response->getStatusCode());
-            $swooleResponse->end($response->getContent());
+            $swooleResponse->end((string) $response->getBody());
             unset($response, $swooleRequestServer);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());

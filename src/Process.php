@@ -57,12 +57,15 @@ class Process
 
     /**
      * Process constructor.
+     * @param $name
      * @param callable $callback
      * @param bool $stdout
      * @param bool $pipe
      */
-    public function __construct(callable $callback, $stdout = false, $pipe = true)
+    public function __construct($name, callable $callback, $stdout = false, $pipe = true)
     {
+        $this->name = $name;
+
         $this->stdout = $stdout;
 
         $this->pipe = $pipe;
@@ -70,17 +73,6 @@ class Process
         $this->callback = $callback;
 
         $this->process = new swoole_process($callback, $stdout, $pipe);
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function name($name)
-    {
-        $this->name = $name;
-
-        return $this;
     }
 
     /**

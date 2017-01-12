@@ -21,7 +21,7 @@ use swoole_server_port;
  */
 abstract class Server implements SwooleFactoryInterface
 {
-    const SERVER_NAME = 'fds';
+    protected $name = 'fds';
 
     /**
      * @var swoole_server
@@ -95,12 +95,15 @@ abstract class Server implements SwooleFactoryInterface
     /**
      * Server constructor.
      *
+     * @param $name
      * @param null $address
      * @param array $config
      * @param $mode
      */
-    public function __construct($address, $config = null, $mode = SWOOLE_PROCESS)
+    public function __construct($name, $address, $config = null, $mode = SWOOLE_PROCESS)
     {
+        $this->name = $name;
+
         $info = parse_address($address);
 
         $this->sockType = $info['sock'];
@@ -184,6 +187,14 @@ abstract class Server implements SwooleFactoryInterface
     }
 
     /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
      * @return swoole_server
      */
     public function getSwoole()
@@ -244,7 +255,7 @@ abstract class Server implements SwooleFactoryInterface
             }
             unset($config['pid']);
         } else {
-            $this->pid = realpath('.') . '/run/' . static::SERVER_NAME . '.pid';
+            $this->pid = realpath('.') . '/run/' . $this->getName() . '.pid';
         }
 
         $this->config = $config;
@@ -280,10 +291,10 @@ abstract class Server implements SwooleFactoryInterface
      * @param $mode
      * @return Server
      */
-    public static function getInstance($address = null, array $config = [], $mode = SWOOLE_PROCESS)
+    public static function getInstance($name, $address = null, array $config = [], $mode = SWOOLE_PROCESS)
     {
         if (null === static::$instance) {
-            static::$instance = new static($address, $config, $mode);
+            static::$instance = new static($name, $address, $config, $mode);
         }
 
         return static::$instance;
@@ -294,9 +305,9 @@ abstract class Server implements SwooleFactoryInterface
      * @param array $config
      * @param $mode
      */
-    public static function run($address = null, array $config = [], $mode = SWOOLE_PROCESS)
+    public static function run($name, $address = null, array $config = [], $mode = SWOOLE_PROCESS)
     {
-        $server = static::getInstance($address, $config, $mode);
+        $server = static::getInstance($name, $address, $config, $mode);
 
         $server->start();
     }
@@ -306,7 +317,7 @@ abstract class Server implements SwooleFactoryInterface
      */
     protected function isRunning()
     {
-        $processName = static::SERVER_NAME;
+        $processName = $this->getName();
 
         if ('Linux' !== PHP_OS) {
             $processName = $_SERVER['SCRIPT_NAME'];
@@ -469,13 +480,13 @@ abstract class Server implements SwooleFactoryInterface
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
-        process_rename(static::SERVER_NAME . ' master' . (empty($this->confFile) ? '' : ('(' . $this->confFile . ')')));
+        process_rename($this->getName() . ' master' . (empty($this->confFile) ? '' : ('(' . $this->confFile . ')')));
 
-        output(sprintf("Server <green>%s://%s:%s</green>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
+        output(sprintf("Server <info>%s://%s:%s</info>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
         foreach ($this->listens as $listen) {
-            output(sprintf("> Listen <green>%s://%s:%s</green>", server_type($listen->getSwoole()), $listen->getHost(), $listen->getPort()));
+            output(sprintf("> Listen <info>%s://%s:%s</info>", server_type($listen->getSwoole()), $listen->getHost(), $listen->getPort()));
         }
-        output(sprintf('Server Master[<blue>#%s</blue>] is started', $server->master_pid));
+        output(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
     }
 
     /**
@@ -490,7 +501,7 @@ abstract class Server implements SwooleFactoryInterface
             unlink($file);
         }
 
-        output(sprintf('Server Master[<blue>#%s</blue>] is shutdown ', $server->master_pid));
+        output(sprintf('Server Master[<info>#%s</info>] is shutdown ', $server->master_pid));
     }
 
     /**
@@ -500,9 +511,9 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onManagerStart(swoole_server $server)
     {
-        process_rename(static::SERVER_NAME . ' manager');
+        process_rename($this->getName() . ' manager');
 
-        output(sprintf('Server Manager[<blue>#%s</blue>] is started', $server->manager_pid));
+        output(sprintf('Server Manager[<info>#%s</info>] is started', $server->manager_pid));
     }
 
     /**
@@ -512,7 +523,7 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onManagerStop(swoole_server $server)
     {
-        output(sprintf('Server Manager[<blue>#%s</blue>] is shutdown.', $server->manager_pid));
+        output(sprintf('Server Manager[<info>#%s</info>] is shutdown.', $server->manager_pid));
     }
 
     /**
@@ -522,9 +533,9 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onWorkerStart(swoole_server $server, $worker_id)
     {
-        process_rename(static::SERVER_NAME . ' worker');
+        process_rename($this->getName() . ' worker');
 
-        output(sprintf('Server Worker[<blue>#%s</blue>] is started [<blue>#%s</blue>]', $server->worker_pid, $worker_id));
+        output(sprintf('Server Worker[<info>#%s</info>] is started [<info>#%s</info>]', $server->worker_pid, $worker_id));
     }
 
     /**
@@ -534,7 +545,7 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onWorkerStop(swoole_server $server, $worker_id)
     {
-        output(sprintf('Server Worker[<blue>#%s</blue>] is shutdown', $worker_id));
+        output(sprintf('Server Worker[<info>#%s</info>] is shutdown', $worker_id));
     }
 
     /**
@@ -546,6 +557,6 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
-        output(sprintf('Server Worker[<red>#%s</red>] error. Exit code: [<error>%s</error>]', $worker_pid, $exit_code));
+        output(sprintf('Server Worker[<info>#%s</info>] error. Exit code: [<error>%s</error>]', $worker_pid, $exit_code));
     }
 }
