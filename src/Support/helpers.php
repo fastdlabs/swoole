@@ -28,10 +28,10 @@ function handle_server_callback(Server $server)
         if ('on' == substr($value, 0, 2)) {
             if ($isListenerPort) {
                 if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
-                    $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
+                    $server->on(lcfirst(substr($value, 2)), [$server, $value]);
                 }
             } else {
-                $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
+                $server->on(lcfirst(substr($value, 2)), [$server, $value]);
             }
         }
     }
@@ -100,10 +100,8 @@ function parse_address($address)
             break;
         case 'http':
         case 'ws':
-            $sock = null;
-            break;
         default:
-            throw new CantSupportSchemeException($info['scheme']);
+            $sock = null;
     }
 
     $info['sock'] = $sock;

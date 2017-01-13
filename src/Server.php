@@ -9,7 +9,8 @@
 
 namespace FastD\Swoole;
 
-use FastD\Swoole\Factories\SwooleFactoryInterface;
+use Exception;
+use Symfony\Component\Console\Output\ConsoleOutput as Output;
 use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
@@ -19,9 +20,14 @@ use swoole_server_port;
  * Class Server
  * @package FastD\Swoole
  */
-abstract class Server implements SwooleFactoryInterface
+abstract class Server
 {
-    protected $name = 'fds';
+    protected $name;
+
+    /**
+     * @var Output
+     */
+    protected $output;
 
     /**
      * @var swoole_server
@@ -51,16 +57,6 @@ abstract class Server implements SwooleFactoryInterface
     protected $port = '9527';
 
     /**
-     * @var int
-     */
-    protected $mode = SWOOLE_PROCESS;
-
-    /**
-     * @var int
-     */
-    protected $sockType = SWOOLE_SOCK_TCP;
-
-    /**
      * @var string
      */
     protected $pid;
@@ -69,11 +65,6 @@ abstract class Server implements SwooleFactoryInterface
      * @var bool
      */
     protected $booted = false;
-
-    /**
-     * @var bool
-     */
-    protected $debug = false;
 
     /**
      * 多端口支持
@@ -88,49 +79,34 @@ abstract class Server implements SwooleFactoryInterface
     protected $processes = [];
 
     /**
-     * @var Server
-     */
-    protected static $instance;
-
-    /**
      * Server constructor.
      *
      * @param $name
      * @param null $address
-     * @param array $config
-     * @param $mode
      */
-    public function __construct($name, $address, $config = null, $mode = SWOOLE_PROCESS)
+    public function __construct($name, $address = null)
     {
         $this->name = $name;
 
+        if (null === $address) {
+            $address = 'tcp://' . $this->host . ':' . $this->port;
+        }
+
         $info = parse_address($address);
 
-        $this->sockType = $info['sock'];
+        $this->type = $info['sock'];
         $this->host = $info['host'];
         $this->port = $info['port'];
-        $this->mode = $mode;
 
-        $this->configure($config);
+        $this->output = new Output();
     }
 
     /**
-     * @return $this
+     * Please return swoole configuration array.
+     *
+     * @return array
      */
-    public function enableDebug()
-    {
-        $this->debug = true;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDebug()
-    {
-        return $this->debug;
-    }
+    abstract public function configure();
 
     /**
      * @return bool
@@ -145,11 +121,9 @@ abstract class Server implements SwooleFactoryInterface
      *
      * @return $this
      */
-    public function daemonize()
+    public function daemon()
     {
-        if (!$this->isDebug()) {
-            $this->config['daemonize'] = true;
-        }
+        $this->config['daemonize'] = true;
 
         return $this;
     }
@@ -171,19 +145,22 @@ abstract class Server implements SwooleFactoryInterface
     }
 
     /**
-     * @return int
-     */
-    public function getSockType()
-    {
-        return $this->sockType;
-    }
-
-    /**
      * @return string
      */
     public function getPid()
     {
         return $this->pid;
+    }
+
+    /**
+     * @param $pidFile
+     * @return $this
+     */
+    public function setPid($pidFile)
+    {
+        $this->pid = $pidFile;
+
+        return $this;
     }
 
     /**
@@ -203,23 +180,40 @@ abstract class Server implements SwooleFactoryInterface
     }
 
     /**
-     * Bootstrap server.
+     * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param swoole_server_port $swoole
+     * @param swoole_server $swoole
      * @return $this
      */
-    public function bootstrap(swoole_server_port $swoole = null)
+    public function bootstrap(swoole_server $swoole = null)
     {
         if (!$this->isBooted()) {
-
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
 
+            $this->config = array_merge($this->config, (array) $this->configure());
+
             $this->swoole->set($this->config);
+
+            if (null === $this->pid) {
+                $this->pid = '/var/run/' . str_replace(' ', '-', $this->getName()) . '.pid';
+            }
 
             handle_server_callback($this);
 
             $this->booted = true;
         }
+
+        return $this;
+    }
+
+    /**
+     * @param $name
+     * @param $callback
+     * @return $this
+     */
+    public function on($name, $callback)
+    {
+        $this->swoole->on($name, $callback);
 
         return $this;
     }
@@ -231,36 +225,7 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function initSwoole()
     {
-        return new swoole_server($this->host, $this->port, $this->mode, $this->sockType);
-    }
-
-    /**
-     * @param array $config
-     * @return $this
-     */
-    public function configure($config)
-    {
-        if (is_string($config) && file_exists($config)) {
-            $this->confFile = $config;
-            $config = include $config;
-        } else if (!is_array($config)) {
-            $config = [];
-        }
-
-        if (isset($config['pid'])) {
-            if ('/' === $config['pid']{0}) {
-                $this->pid = $config['pid'];
-            } else if ('.' === $config['pid']{0}) {
-                $this->pid = realpath('.') . substr($config['pid'], 1);
-            }
-            unset($config['pid']);
-        } else {
-            $this->pid = realpath('.') . '/run/' . $this->getName() . '.pid';
-        }
-
-        $this->config = $config;
-
-        return $this;
+        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
     }
 
     /**
@@ -286,30 +251,13 @@ abstract class Server implements SwooleFactoryInterface
     }
 
     /**
-     * @param null $address
-     * @param array $config
-     * @param $mode
-     * @return Server
+     * @param $name
+     * @param $address
+     * @return static
      */
-    public static function getInstance($name, $address = null, array $config = [], $mode = SWOOLE_PROCESS)
+    public static function createServer($name, $address)
     {
-        if (null === static::$instance) {
-            static::$instance = new static($name, $address, $config, $mode);
-        }
-
-        return static::$instance;
-    }
-
-    /**
-     * @param null $address
-     * @param array $config
-     * @param $mode
-     */
-    public static function run($name, $address = null, array $config = [], $mode = SWOOLE_PROCESS)
-    {
-        $server = static::getInstance($name, $address, $config, $mode);
-
-        $server->start();
+        return new static($name, $address);
     }
 
     /**
@@ -358,21 +306,23 @@ abstract class Server implements SwooleFactoryInterface
     public function start()
     {
         if ($this->isRunning()) {
-            output(sprintf('<red>%s:%s</red> address already in use', $this->getHost(), $this->getPort()));
+            $this->output->writeln(sprintf('<info>%s:%s</info> address already in use', $this->getHost(), $this->getPort()));
         } else {
             try {
                 $this->bootstrap();
                 $server = $this->getSwoole();
+                // 多端口监听
                 foreach ($this->listens as $listen) {
-                    $swoole = $server->listen($listen->getHost(), $listen->getPort(), $listen->getSockType());
+                    $swoole = $server->listen($listen->getHost(), $listen->getPort(), $server->type);
                     $listen->bootstrap($swoole);
                 }
+                // 进程控制
                 foreach ($this->processes as $process) {
                     $server->addProcess($process->getProcess());
                 }
                 $server->start();
-            } catch (\Exception $e) {
-                output($e->getMessage());
+            } catch (Exception $e) {
+                $this->output->writeln("<error>{$e->getMessage()}</error>");
             }
         }
     }
@@ -383,15 +333,15 @@ abstract class Server implements SwooleFactoryInterface
     public function shutdown()
     {
         if (false === ($status = $this->isRunning())) {
-            output(sprintf('Server is not running...'));
+            $this->output->writeln('Server is not running...');
             return -1;
         }
 
         $pid = (int)@file_get_contents($this->getPid());
 
-        posix_kill($pid, SIGTERM);
+        process_kill($pid, SIGTERM);
 
-        output(sprintf('Server [#<info>%s</info>] is shutdown...', $pid));
+        $this->output->writeln(sprintf('Server [#<info>%s</info>] is shutdown...', $pid));
 
         return 0;
     }
@@ -402,7 +352,7 @@ abstract class Server implements SwooleFactoryInterface
     public function reload()
     {
         if (false === ($status = $this->isRunning())) {
-            output(sprintf('Server is not running...'));
+            $this->output->writeln(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -410,7 +360,7 @@ abstract class Server implements SwooleFactoryInterface
 
         posix_kill($pid, SIGUSR1);
 
-        output(sprintf('Server [#<info>%s</info>] is reloading...', $pid));
+        $this->output->writeln(sprintf('Server [#<info>%s</info>] is reloading...', $pid));
 
         return 0;
     }
@@ -421,7 +371,7 @@ abstract class Server implements SwooleFactoryInterface
     public function status()
     {
         if (!($status = $this->isRunning())) {
-            output(sprintf('Server is not running...'));
+            $this->output->writeln(sprintf('Server is not running...'));
             return -1;
         }
 
@@ -450,7 +400,7 @@ abstract class Server implements SwooleFactoryInterface
         }
 
         foreach ($directories as $directory) {
-            output(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
+            $this->output->writeln(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
         }
 
         $watcher = new Watcher();
@@ -476,17 +426,16 @@ abstract class Server implements SwooleFactoryInterface
             if (!is_dir($dir = dirname($file))) {
                 mkdir($dir, 0755, true);
             }
-
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
         process_rename($this->getName() . ' master' . (empty($this->confFile) ? '' : ('(' . $this->confFile . ')')));
 
-        output(sprintf("Server <info>%s://%s:%s</info>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
+        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
         foreach ($this->listens as $listen) {
-            output(sprintf("> Listen <info>%s://%s:%s</info>", server_type($listen->getSwoole()), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf("> Listen <info>%s://%s:%s</info>", server_type($listen->getSwoole()), $listen->getHost(), $listen->getPort()));
         }
-        output(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
+        $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
     }
 
     /**
@@ -501,7 +450,7 @@ abstract class Server implements SwooleFactoryInterface
             unlink($file);
         }
 
-        output(sprintf('Server Master[<info>#%s</info>] is shutdown ', $server->master_pid));
+        $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is shutdown ', $server->master_pid));
     }
 
     /**
@@ -513,7 +462,7 @@ abstract class Server implements SwooleFactoryInterface
     {
         process_rename($this->getName() . ' manager');
 
-        output(sprintf('Server Manager[<info>#%s</info>] is started', $server->manager_pid));
+        $this->output->writeln(sprintf('Server Manager[<info>#%s</info>] is started', $server->manager_pid));
     }
 
     /**
@@ -523,7 +472,7 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onManagerStop(swoole_server $server)
     {
-        output(sprintf('Server Manager[<info>#%s</info>] is shutdown.', $server->manager_pid));
+        $this->output->writeln(sprintf('Server Manager[<info>#%s</info>] is shutdown.', $server->manager_pid));
     }
 
     /**
@@ -535,7 +484,7 @@ abstract class Server implements SwooleFactoryInterface
     {
         process_rename($this->getName() . ' worker');
 
-        output(sprintf('Server Worker[<info>#%s</info>] is started [<info>#%s</info>]', $server->worker_pid, $worker_id));
+        $this->output->writeln(sprintf('Server Worker[<info>#%s</info>] is started [<info>#%s</info>]', $server->worker_pid, $worker_id));
     }
 
     /**
@@ -545,7 +494,7 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onWorkerStop(swoole_server $server, $worker_id)
     {
-        output(sprintf('Server Worker[<info>#%s</info>] is shutdown', $worker_id));
+        $this->output->writeln(sprintf('Server Worker[<info>#%s</info>] is shutdown', $worker_id));
     }
 
     /**
@@ -557,6 +506,6 @@ abstract class Server implements SwooleFactoryInterface
      */
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
-        output(sprintf('Server Worker[<info>#%s</info>] error. Exit code: [<error>%s</error>]', $worker_pid, $exit_code));
+        $this->output->writeln(sprintf('Server Worker[<info>#%s</info>] error. Exit code: [<question>%s</question>]', $worker_pid, $exit_code));
     }
 }

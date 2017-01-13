@@ -13,6 +13,11 @@ class HelpersTest extends PHPUnit_Framework_TestCase
     {
         $info = parse_address('http://examples.com:9527');
 
-        print_r($info);
+        $this->assertEquals($info, [
+            'scheme' => 'http',
+            'host' => 'examples.com',
+            'port' => '9527',
+            'sock' => null
+        ]);
     }
 }

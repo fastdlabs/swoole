@@ -14,4 +14,5 @@ use Symfony\Component\Console\Application as Symfony;
 
 class Swoole extends Symfony
 {
+
 }

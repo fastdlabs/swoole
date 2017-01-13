@@ -18,9 +18,19 @@ class DemoServer extends \FastD\Swoole\Server\Udp
         echo $data . PHP_EOL;
         return 'hello tcp';
     }
+
+    /**
+     * Please return swoole configuration array.
+     *
+     * @return array
+     */
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
-DemoServer::run('udp swoole', 'tcp://127.0.0.1:9527');
+DemoServer::createServer('udp swoole', 'tcp://127.0.0.1:9527')->start();
 
 /**
  * 以上写法和以下写法效果一致

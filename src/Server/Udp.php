@@ -25,6 +25,7 @@ abstract class Udp extends Server
      * @param swoole_server $server
      * @param string $data
      * @param array $client_info
+     * @return void
      */
     public function onPacket(swoole_server $server, $data, array $client_info)
     {

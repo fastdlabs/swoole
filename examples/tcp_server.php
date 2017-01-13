@@ -24,13 +24,16 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
         echo $data . PHP_EOL;
         return 'hello tcp';
     }
+
+    /**
+     * Please return swoole configuration array.
+     *
+     * @return array
+     */
+    public function configure()
+    {
+        $this->setPid('/tmp/swoole.pid');
+    }
 }
 
-DemoServer::run('tcp swoole', 'tcp://0.0.0.0:9527');
-
-/**
- * 以上写法和以下写法效果一致
- *
- * $test = new DemoServer();
- * $test->start();
- */
+DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527')->start();

@@ -58,7 +58,7 @@ abstract class WebSocket extends Server
     abstract public function doMessage(swoole_server $server, swoole_websocket_frame $frame);
 
     /**
-     * @return swoole_server
+     * @return swoole_websocket_server
      */
     public function initSwoole()
     {

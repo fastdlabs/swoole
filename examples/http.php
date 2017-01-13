@@ -9,8 +9,6 @@ class Http extends \FastD\Swoole\Server\Http
      */
     public function doRequest(\FastD\Http\SwooleServerRequest $request)
     {
-        $request->cookie->set('name', 'jan');
-
         return new \FastD\Http\JsonResponse([
             'msg' => 'hello world',
         ], 400, [
@@ -19,4 +17,4 @@ class Http extends \FastD\Swoole\Server\Http
     }
 }
 
-Http::run('http://0.0.0.0:9527');
+Http::run('http', 'http://0.0.0.0:9527');

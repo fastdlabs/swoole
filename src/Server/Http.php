@@ -10,6 +10,7 @@
 namespace FastD\Swoole\Server;
 
 use Exception;
+use FastD\Http\HttpException;
 use FastD\Http\JsonResponse;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
@@ -74,9 +75,7 @@ abstract class Http extends Server
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
 
-            if (!(($response = $this->doRequest($swooleRequestServer)) instanceof Response)) {
-                throw new \RuntimeException('Not found');
-            }
+            $response = $this->doRequest($swooleRequestServer);
 
             foreach ($response->getHeaders() as $key => $header) {
                 $swooleResponse->header($key, $response->getHeaderLine($key));
@@ -85,10 +84,10 @@ abstract class Http extends Server
             foreach ($swooleRequestServer->getCookieParams() as $key => $cookieParam) {
                 $swooleResponse->cookie($key, $cookieParam);
             }
-            $swooleResponse->gzip(static::GZIP_LEVEL);
+
             $swooleResponse->status($response->getStatusCode());
             $swooleResponse->end((string) $response->getBody());
-            unset($response, $swooleRequestServer);
+            unset($response, $swooleRequestServer, $swooleResponse);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
