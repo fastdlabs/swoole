@@ -1,6 +1,6 @@
 <?php
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/../../vendor/autoload.php';
 
 /**
  * Class DemoServer
@@ -30,7 +30,7 @@ class DemoServer extends \FastD\Swoole\Server\Udp
     }
 }
 
-DemoServer::createServer('udp swoole', 'tcp://127.0.0.1:9527')->start();
+return DemoServer::createServer('udp swoole', 'tcp://127.0.0.1:9527');
 
 /**
  * 以上写法和以下写法效果一致

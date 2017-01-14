@@ -30,3 +30,5 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
         $this->pid('/tmp/swoole.pid');
     }
 }
+
+return DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527');
