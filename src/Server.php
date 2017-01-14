@@ -196,6 +196,54 @@ abstract class Server
     }
 
     /**
+     * @return $this
+     */
+    protected function handleCallback()
+    {
+        $handles = get_class_methods($this);
+        $isListenerPort = false;
+        $serverClass = get_class($this->getSwoole());
+        if ('Swoole\Server\Port' == $serverClass
+            || 'swoole_server_port' == $serverClass) {
+            $isListenerPort = true;
+        }
+        foreach ($handles as $value) {
+            if ('on' == substr($value, 0, 2)) {
+                if ($isListenerPort) {
+                    if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
+                        $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
+                    }
+                } else {
+                    $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getServerType()
+    {
+        switch (get_class($this->swoole)) {
+            case 'swoole_http_server':
+            case 'Swoole\Http\Server':
+                return 'http';
+            case 'swoole_websocket_server':
+            case 'Swoole\WebSocket\Server':
+                return 'ws';
+            case 'swoole_server':
+            case 'swoole_server_port':
+            case 'Swoole\Server':
+            case 'Swoole\Server\Port':
+                return ($this->swoole->type === SWOOLE_SOCK_UDP || $this->swoole->type === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
+            default:
+                return 'unknown';
+        }
+    }
+
+    /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
      * @param swoole_server $swoole
@@ -211,25 +259,13 @@ abstract class Server
             $this->swoole->set($this->config);
 
             if (null === $this->pid) {
-                $this->pid = '/var/run/' . str_replace(' ', '-', $this->getName()) . '.pid';
+                $this->pid = '/tmp/' . str_replace(' ', '-', $this->getName()) . '.pid';
             }
 
-            handle_server_callback($this);
+            $this->handleCallback();
 
             $this->booted = true;
         }
-
-        return $this;
-    }
-
-    /**
-     * @param $name
-     * @param $callback
-     * @return $this
-     */
-    public function on($name, $callback)
-    {
-        $this->swoole->on($name, $callback);
 
         return $this;
     }
@@ -286,17 +322,16 @@ abstract class Server
         } else {
             try {
                 $this->bootstrap();
-                $server = $this->getSwoole();
                 // 多端口监听
                 foreach ($this->listens as $listen) {
-                    $swoole = $server->listen($listen->getHost(), $listen->getPort(), $server->type);
+                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $this->swoole->type);
                     $listen->bootstrap($swoole);
                 }
                 // 进程控制
                 foreach ($this->processes as $process) {
-                    $server->addProcess($process->getProcess());
+                    $this->swoole->addProcess($process->getProcess());
                 }
-                $server->start();
+                $this->swoole->start();
             } catch (Exception $e) {
                 $this->output->writeln("<error>{$e->getMessage()}</error>");
             }
@@ -403,12 +438,14 @@ abstract class Server
             file_put_contents($file, $server->master_pid . PHP_EOL);
         }
 
-        process_rename($this->getName() . ' master' . (empty($this->confFile) ? '' : ('(' . $this->confFile . ')')));
+        process_rename($this->getName() . ' master' . (empty($this->configFile) ? '' : ('(' . $this->configFile . ')')));
 
-        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", server_type($this->getSwoole()), $this->getHost(), $this->getPort()));
+        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getServerType(), $this->getHost(), $this->getPort()));
+
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf("> Listen <info>%s://%s:%s</info>", server_type($listen->getSwoole()), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf("> Listen <info>%s://%s:%s</info>", $this->getServerType(), $listen->getHost(), $listen->getPort()));
         }
+
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
     }
 

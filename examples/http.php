@@ -1,18 +1,19 @@
 <?php
+use FastD\Http\JsonResponse;
+use FastD\Http\ServerRequest;
+
 include __DIR__ . '/../vendor/autoload.php';
 
 class Http extends \FastD\Swoole\Server\Http
 {
     /**
-     * @param \FastD\Http\SwooleServerRequest $request
-     * @return mixed
+     * @param ServerRequest $serverRequest
+     * @return JsonResponse
      */
-    public function doRequest(\FastD\Http\SwooleServerRequest $request)
+    public function doRequest(ServerRequest $serverRequest)
     {
-        return new \FastD\Http\JsonResponse([
+        return new JsonResponse([
             'msg' => 'hello world',
-        ], 400, [
-            'NAME' => "Jan"
         ]);
     }
 
@@ -27,4 +28,4 @@ class Http extends \FastD\Swoole\Server\Http
     }
 }
 
-Http::createServer('fuck', 'http://0.0.0.0:9527')->start();
+Http::createServer('http', 'http://0.0.0.0:9527')->start();

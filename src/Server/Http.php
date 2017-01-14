@@ -12,6 +12,7 @@ namespace FastD\Swoole\Server;
 use Exception;
 use FastD\Http\HttpException;
 use FastD\Http\Response;
+use FastD\Http\ServerRequest;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
 use swoole_http_request;
@@ -71,16 +72,16 @@ abstract class Http extends Server
             unset($response, $swooleRequestServer, $swooleResponse);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
-            $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
+            $swooleResponse->end($e->getMessage());
         } catch (Exception $e) {
             $swooleResponse->status(500);
-            $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
+            $swooleResponse->end($e->getMessage());
         }
     }
 
     /**
-     * @param SwooleServerRequest $request
+     * @param ServerRequest $serverRequest
      * @return Response
      */
-    abstract public function doRequest(SwooleServerRequest $request);
+    abstract public function doRequest(ServerRequest $serverRequest);
 }

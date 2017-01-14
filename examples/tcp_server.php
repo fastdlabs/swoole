@@ -32,7 +32,7 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
      */
     public function configure()
     {
-        $this->setPid('/tmp/swoole.pid');
+        $this->pid('/tmp/swoole.pid');
     }
 }
 

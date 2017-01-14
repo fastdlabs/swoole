@@ -13,56 +13,6 @@ use FastD\Swoole\Server;
 use FastD\Swoole\Support\Output;
 
 /**
- * @param Server $server
- * @return Server $server
- */
-function handle_server_callback(Server $server)
-{
-    $handles = get_class_methods($server);
-    $isListenerPort = false;
-    $serverClass = get_class($server->getSwoole());
-    if ('Swoole\Server\Port' == $serverClass || 'swoole_server_port' == $serverClass) {
-        $isListenerPort = true;
-    }
-    foreach ($handles as $value) {
-        if ('on' == substr($value, 0, 2)) {
-            if ($isListenerPort) {
-                if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
-                    $server->on(lcfirst(substr($value, 2)), [$server, $value]);
-                }
-            } else {
-                $server->on(lcfirst(substr($value, 2)), [$server, $value]);
-            }
-        }
-    }
-    return $server;
-}
-
-/**
- * @param $swoole
- * @param $sock
- * @return string
- */
-function server_type($swoole, $sock = null)
-{
-    switch (get_class($swoole)) {
-        case 'swoole_http_server':
-        case 'Swoole\Http\Server':
-            return 'http';
-        case 'swoole_websocket_server':
-        case 'Swoole\WebSocket\Server':
-            return 'ws';
-        case 'swoole_server':
-        case 'swoole_server_port':
-        case 'Swoole\Server':
-        case 'Swoole\Server\Port':
-            return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
-        default:
-            return 'unknown';
-    }
-}
-
-/**
  * @param $address
  * @return mixed
  */
@@ -213,7 +163,9 @@ function get_local_ip()
  */
 function check_process($name)
 {
-    $command = "ps axu | grep '{$name}' | grep -v grep";
+    $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
+
+    $command = "ps axu | grep '{$name}' | grep -v grep | grep -v {$scriptName}";
 
     exec($command, $output);
 
