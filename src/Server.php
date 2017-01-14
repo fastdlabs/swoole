@@ -437,11 +437,11 @@ abstract class Server
      */
     public function watch(array $directories = ['.'])
     {
-        $self = $this;
+        $that = $this;
 
         if (false === ($status = check_process($this->name))) {
-            $process = new swoole_process(function () use ($self) {
-                $self->start();
+            $process = new Process('server watch process', function () use ($that) {
+                $that->start();
             }, true);
             $process->start();
         }
@@ -450,15 +450,15 @@ abstract class Server
             $this->output->writeln(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
         }
 
-        $watcher = new Watcher();
+        $watcher = new Watcher($this->output);
 
-        $watcher->watch($directories, function () use ($self) {
-            $self->reload();
+        $watcher->watch($directories, function () use ($that) {
+            $that->reload();
         });
 
         $watcher->run();
 
-        swoole_process::wait();
+        process_wait();
     }
 
     /**

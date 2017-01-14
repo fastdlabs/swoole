@@ -40,15 +40,15 @@ composer require "fastd/swoole:1.0.x-dev" -vvv
 
 [中文文档](docs/readme.md)
 
-## ＃使用
+## 使用
 
 服务继承 `FastD\Swoole\Server`, 实现 `doWork` 方法, 服务器在接收信息 `onReceive` 回调中会调用 `doWork` 方法, `doWork` 方法接受一个封装好的请求对象。
 
 具体逻辑在 `doWork` 方法中实现, `doWork` 方法中返回响应客户端的数据, 格式为: **字符串**
 
-服务器通过 `run` 方法执行, `run` 方法中注入配置, 配置按照 `swoole` 原生扩展参数配置。
+Swoole 配置通过实现 `configure` 方法进行配置，具体配置参数请参考: [Swoole 配置选项](http://wiki.swoole.com/wiki/page/274.html)
 
-#### Tcp Server
+#### TCP Server
 
 ```php
 class DemoServer extends \FastD\Swoole\Server\Tcp
@@ -58,31 +58,57 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
         echo $data . PHP_EOL;
         return 'hello tcp';
     }
+    
+    public function configure()
+    {
+        $this->pid('/tmp/swoole.pid');
+    }
 }
 
-DemoServer::run('tcp://127.0.0.1:9527');
+DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527')->start();
 ```
 
-#### Http Server
+#### UDP Server
+
+```php
+class DemoServer extends \FastD\Swoole\Server\Udp
+{
+    public function doPacket(swoole_server $server, $data, $client_info)
+    {
+        echo $data . PHP_EOL;
+        return 'hello tcp';
+    }
+
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
+}
+
+DemoServer::createServer('udp swoole', 'udp://127.0.0.1:9527')->start;
+```
+
+#### HTTP Server
 
 同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
 
 ```php
 class Http extends \FastD\Swoole\Server\Http
 {
-    public function doRequest(\FastD\Http\SwooleServerRequest $request)
+    public function doRequest(ServerRequest $serverRequest)
     {
-        $request->cookie->set('name', 'jan');
-
-        return new \FastD\Http\JsonResponse([
+        return new JsonResponse([
             'msg' => 'hello world',
-        ], 400, [
-            'NAME' => "Jan"
         ]);
+    }
+
+    public function configure()
+    {
+
     }
 }
 
-Http::run('http://0.0.0.0:9527');
+Http::createServer('http', 'http://0.0.0.0:9527')->start();
 ```
 
 目前 Http 服务支持 Session 存储，而 Session 存储是基于浏览器 cookie，或者可以自定义实现存储方式。
@@ -104,9 +130,14 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
         echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
         $server->push($frame->fd, "this is server");
     }
+
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
-WebSocket::run('ws://0.0.0.0:9527');
+WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
 ```
 
 #### 多端口支持
@@ -114,37 +145,33 @@ WebSocket::run('ws://0.0.0.0:9527');
 ```php
 class Server extends \FastD\Swoole\Server\Tcp
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello server1';
+    }
+
+    public function configure()
+    {
+        // TODO: Implement configure() method.
     }
 }
 
 class Server2 extends \FastD\Swoole\Server\Tcp
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello server2';
     }
+
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
-$server = new Server('tcp://127.0.0.1:9726');
+$server = new Server('tcp server', 'tcp://127.0.0.1:9527');
 
-$server->listen(new Server2('tcp://127.0.0.1:9528'));
+$server->listen(new Server2('tcp server2', 'tcp://127.0.0.1:9528'));
 
 $server->start();
 ```
@@ -152,17 +179,21 @@ $server->start();
 #### 服务管理
 
 ```php
-use FastD\Swoole\Server\Tcp\TcpServer;
-
-class DemoServer extends TcpServer
+class DemoServer extends \FastD\Swoole\Server\Tcp
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
+        echo $data . PHP_EOL;
         return 'hello tcp';
+    }
+    
+    public function configure()
+    {
+        $this->pid('/tmp/swoole.pid');
     }
 }
 
-$server = new DemoServer('tcp://127.0.0.1:9527');
+$server = DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527');
 
 $argv = $_SERVER['argv'];
 
@@ -191,23 +222,22 @@ switch ($argv[1]) {
 所以这里提供监听文件变化来到自动重启服务(建议开发环境中使用)
 
 ```php
+
 class DemoServer extends \FastD\Swoole\Server\Tcp
 {
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
-     * @return mixed
-     */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello tcp';
     }
+
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
-$server = new DemoServer('tcp://0.0.0.0:9527');
-
+$server = new DemoServer('watch server', 'tcp://0.0.0.0:9527');
+// $server = DemoServer::createServer('watch server', 'tcp://0.0.0.0:9527');
 $server->watch([__DIR__ . '/listen_files']);
 ```
 
@@ -253,9 +283,7 @@ $client
 #### Process
 
 ```php
-use FastD\Swoole\Process;
-
-$process = new Process(function () {
+$process = new Process('single', function () {
     timer_tick(1000, function ($id) {
         static $index = 0;
         $index++;
@@ -265,8 +293,6 @@ $process = new Process(function () {
         }
     });
 });
-
-$process->name('process');
 
 $process->start();
 
@@ -278,9 +304,7 @@ $process->wait(function ($ret) {
 #### Multi Process
 
 ```php
-use FastD\Swoole\Process;
-
-$process = new Process(function () {
+$process = new Process('multi', function () {
     timer_tick(1000, function ($id) {
         static $index = 0;
         $index++;
@@ -291,12 +315,33 @@ $process = new Process(function () {
     });
 });
 
-$process->name('process');
-
 $process->fork(5);
 
 $process->wait(function ($ret) {
     echo 'PID: ' . $ret['pid'] . PHP_EOL;
+});
+```
+
+#### Queue
+
+```php
+$queue = new \FastD\Swoole\Queue('queue', function ($worker) {
+    while (true) {
+        $recv = $worker->pop();
+        echo "From Master: $recv\n";
+    }
+});
+
+$queue->start();
+
+while (true) {
+    $queue->push('hello');
+    sleep(1);
+}
+
+
+$queue->wait(function ($ret) {
+    echo 'PID: ' . $ret['pid'];
 });
 ```
 

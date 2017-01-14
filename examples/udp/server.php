@@ -30,7 +30,7 @@ class DemoServer extends \FastD\Swoole\Server\Udp
     }
 }
 
-return DemoServer::createServer('udp swoole', 'tcp://127.0.0.1:9527');
+return DemoServer::createServer('udp swoole', 'udp://127.0.0.1:9527');
 
 /**
  * 以上写法和以下写法效果一致

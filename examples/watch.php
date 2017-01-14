@@ -22,28 +22,18 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
     {
         return 'hello tcp';
     }
+
+    /**
+     * Please return swoole configuration array.
+     *
+     * @return array
+     */
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
-$server = new DemoServer('tcp://0.0.0.0:9527');
+$server = new DemoServer('watch server', 'tcp://0.0.0.0:9527');
 
-$argv = $_SERVER['argv'];
-
-$argv[1] = isset($argv[1]) ? $argv[1] : 'status';
-
-switch ($argv[1]) {
-    case 'start':
-        $server->start();
-        break;
-    case 'stop':
-        $server->shutdown();
-        break;
-    case 'reload':
-        $server->reload();
-        break;
-    case 'watch':
-        $server->watch([__DIR__ . '/listen_files']);
-        break;
-    case 'status':
-    default:
-        $server->status();
-}
+$server->watch([__DIR__ . '/listen_files']);
