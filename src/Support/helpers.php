@@ -41,6 +41,9 @@ function parse_address($address)
     return $info;
 }
 
+/**
+ * @param $name
+ */
 function process_rename ($name)
 {
     set_error_handler(function () {
