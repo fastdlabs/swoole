@@ -2,7 +2,7 @@
 use FastD\Http\JsonResponse;
 use FastD\Http\ServerRequest;
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/../../vendor/autoload.php';
 
 class Http extends \FastD\Swoole\Server\Http
 {
@@ -28,4 +28,4 @@ class Http extends \FastD\Swoole\Server\Http
     }
 }
 
-Http::createServer('http', 'http://0.0.0.0:9527')->start();
+return Http::createServer('http', 'http://0.0.0.0:9527');
