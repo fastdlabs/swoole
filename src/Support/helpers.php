@@ -39,24 +39,6 @@ function handle_server_callback(Server $server)
 }
 
 /**
- * @param $name
- */
-function process_rename($name)
-{
-    // hidden Mac OS error。
-    set_error_handler(function () {
-    });
-
-    if (function_exists('cli_set_process_title')) {
-        cli_set_process_title($name);
-    } else if (function_exists('swoole_set_process_name')) {
-        swoole_set_process_name($name);
-    }
-
-    restore_error_handler();
-}
-
-/**
  * @param $swoole
  * @param $sock
  * @return string
@@ -109,23 +91,18 @@ function parse_address($address)
     return $info;
 }
 
-/**
- * @param $message
- * @return void
- */
-function output($message)
+function process_rename ($name)
 {
-    $message = sprintf("[%s]\t", date('Y-m-d H:i:s')) . $message;
-    Output::output($message);
-}
+    set_error_handler(function () {
+    });
 
-/**
- * @param array $keys
- * @param array $columns
- */
-function output_table(array $keys, array $columns)
-{
-    Output::table($keys, $columns);
+    if (function_exists('cli_set_process_title')) {
+        cli_set_process_title($name);
+    } else if (function_exists('swoole_set_process_name')) {
+        swoole_set_process_name($name);
+    }
+
+    restore_error_handler();
 }
 
 /**
@@ -228,4 +205,43 @@ function get_local_ip()
     }
 
     return 'unknown';
+}
+
+/**
+ * @param $name
+ * @return array|bool
+ */
+function check_process($name)
+{
+    $command = "ps axu | grep '{$name}' | grep -v grep";
+
+    exec($command, $output);
+
+    if (empty($output)) {
+        return false;
+    }
+
+    return true;
+
+    $output = array_map(function ($v) {
+        $status = preg_split('/\s+/', $v);
+
+        unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
+
+        $status = array_values($status);
+
+        $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
+
+        return array_slice($status, 0, 6);
+    }, $output);
+
+    $keys = ['user', 'pid', 'rss', 'stat', 'start', 'command'];
+
+    foreach ($output as $key => $value) {
+        $output[$key] = array_combine($keys, $value);
+    }
+
+    unset($keys);
+
+    return $output;
 }

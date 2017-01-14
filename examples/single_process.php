@@ -9,9 +9,9 @@
 
 use FastD\Swoole\Process;
 
-include __DIR__ . '/../../vendor/autoload.php';
+include __DIR__ . '/../vendor/autoload.php';
 
-$process = new Process(function () {
+$process = new Process('process', function () {
     timer_tick(1000, function ($id) {
         static $index = 0;
         $index++;
@@ -22,10 +22,8 @@ $process = new Process(function () {
     });
 });
 
-$process->name('process');
-
-$process->fork(5);
+$process->start();
 
 $process->wait(function ($ret) {
-    echo 'PID: ' . $ret['pid'] . PHP_EOL;
+    echo 'PID: ' . $ret['pid'];
 });

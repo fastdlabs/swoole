@@ -11,7 +11,6 @@ namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\HttpException;
-use FastD\Http\JsonResponse;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
@@ -30,7 +29,7 @@ abstract class Http extends Server
     const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
-    public function enableHttp2($key, $pem)
+    public function Http2($key, $pem)
     {
 
     }
@@ -41,29 +40,11 @@ abstract class Http extends Server
     }
 
     /**
-     * @param array $content
-     * @return Response
-     */
-    public function json(array $content)
-    {
-        return new JsonResponse($content);
-    }
-
-    /**
-     * @param $content
-     * @return Response
-     */
-    public function html($content)
-    {
-        return new Response($content);
-    }
-
-    /**
      * @return \swoole_server
      */
     public function initSwoole()
     {
-        return new swoole_http_server($this->getHost(), $this->getPort(), $this->mode);
+        return new swoole_http_server($this->getHost(), $this->getPort());
     }
 
     /**

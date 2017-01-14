@@ -15,6 +15,16 @@ class Http extends \FastD\Swoole\Server\Http
             'NAME' => "Jan"
         ]);
     }
+
+    /**
+     * Please return swoole configuration array.
+     *
+     * @return array
+     */
+    public function configure()
+    {
+
+    }
 }
 
-Http::run('http', 'http://0.0.0.0:9527');
+Http::createServer('fuck', 'http://0.0.0.0:9527')->start();

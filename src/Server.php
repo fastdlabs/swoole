@@ -22,6 +22,11 @@ use swoole_server_port;
  */
 abstract class Server
 {
+    const VERSION = '1.0.0 (dev)';
+
+    /**
+     * @var $name
+     */
     protected $name;
 
     /**
@@ -44,7 +49,7 @@ abstract class Server
     /**
      * @var string
      */
-    protected $confFile;
+    protected $configFile;
 
     /**
      * @var string
@@ -86,7 +91,7 @@ abstract class Server
      */
     public function __construct($name, $address = null)
     {
-        $this->name = $name;
+        $this->name($name);
 
         if (null === $address) {
             $address = 'tcp://' . $this->host . ':' . $this->port;
@@ -114,6 +119,28 @@ abstract class Server
     public function isBooted()
     {
         return $this->booted;
+    }
+
+    /**
+     * @param $name
+     * @return $this;
+     */
+    public function name($name)
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @param $pidFile
+     * @return $this
+     */
+    public function pid($pidFile)
+    {
+        $this->pid = $pidFile;
+
+        return $this;
     }
 
     /**
@@ -150,17 +177,6 @@ abstract class Server
     public function getPid()
     {
         return $this->pid;
-    }
-
-    /**
-     * @param $pidFile
-     * @return $this
-     */
-    public function setPid($pidFile)
-    {
-        $this->pid = $pidFile;
-
-        return $this;
     }
 
     /**
@@ -261,52 +277,12 @@ abstract class Server
     }
 
     /**
-     * @return bool
-     */
-    protected function isRunning()
-    {
-        $processName = $this->getName();
-
-        if ('Linux' !== PHP_OS) {
-            $processName = $_SERVER['SCRIPT_NAME'];
-        }
-        // | awk '{print $1, $2, $6, $8, $9, $11, $12}'
-        exec("ps axu | grep '{$processName}' | grep -v grep", $output);
-
-        if (empty($output)) {
-            return false;
-        }
-
-        $output = array_map(function ($v) {
-            $status = preg_split('/\s+/', $v);
-
-            unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
-
-            $status = array_values($status);
-
-            $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
-
-            return array_slice($status, 0, 6);
-        }, $output);
-
-        $keys = ['user', 'pid', 'rss', 'stat', 'start', 'command'];
-
-        foreach ($output as $key => $value) {
-            $output[$key] = array_combine($keys, $value);
-        }
-
-        unset($keys);
-
-        return $output;
-    }
-
-    /**
      * @return void
      */
     public function start()
     {
-        if ($this->isRunning()) {
-            $this->output->writeln(sprintf('<info>%s:%s</info> address already in use', $this->getHost(), $this->getPort()));
+        if (check_process($this->name)) {
+            $this->output->writeln(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port));
         } else {
             try {
                 $this->bootstrap();
@@ -351,7 +327,7 @@ abstract class Server
      */
     public function reload()
     {
-        if (false === ($status = $this->isRunning())) {
+        if (false === check_process($this->name)) {
             $this->output->writeln(sprintf('Server is not running...'));
             return -1;
         }
@@ -370,7 +346,7 @@ abstract class Server
      */
     public function status()
     {
-        if (!($status = $this->isRunning())) {
+        if (!($status = check_process($this->name))) {
             $this->output->writeln(sprintf('Server is not running...'));
             return -1;
         }
@@ -378,8 +354,6 @@ abstract class Server
         $keys = array_map(function ($v) {
             return strtoupper($v);
         }, array_keys($status[0]));
-
-        output_table($keys, $status);
 
         return 0;
     }
@@ -392,7 +366,7 @@ abstract class Server
     {
         $self = $this;
 
-        if (false === ($status = $this->isRunning())) {
+        if (false === ($status = check_process($this->name))) {
             $process = new swoole_process(function () use ($self) {
                 $self->start();
             }, true);
