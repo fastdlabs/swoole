@@ -251,10 +251,10 @@ abstract class Server
     /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param swoole_server $swoole
+     * @param swoole_server|swoole_server_port $swoole
      * @return $this
      */
-    public function bootstrap(swoole_server $swoole = null)
+    public function bootstrap($swoole = null)
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
@@ -485,7 +485,7 @@ abstract class Server
         $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getServerType(), $this->getHost(), $this->getPort()));
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf("> Listen <info>%s://%s:%s</info>", $this->getServerType(), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $this->getServerType(), $listen->getHost(), $listen->getPort()));
         }
 
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
