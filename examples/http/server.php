@@ -16,16 +16,6 @@ class Http extends \FastD\Swoole\Server\Http
             'msg' => 'hello world',
         ]);
     }
-
-    /**
-     * Please return swoole configuration array.
-     *
-     * @return array
-     */
-    public function configure()
-    {
-
-    }
 }
 
 return Http::createServer('http', 'http://0.0.0.0:9527');

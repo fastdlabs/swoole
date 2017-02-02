@@ -15,7 +15,7 @@
         "ext-swoole": ">=1.8",
         "fastd/packet": "~1.3.0",
         "fastd/http": "~3.0.0",
-        "symfony/console": "^3.0"
+        "symfony/console": "~3.2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.0"

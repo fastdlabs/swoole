@@ -38,7 +38,7 @@ composer require "fastd/swoole:1.0.x-dev" -vvv
 
 ## ＃文档
 
-[中文文档](docs/readme.md)
+[中文文档](docs/zh_CN/readme.md)
 
 ## 使用
 
@@ -58,11 +58,6 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
         echo $data . PHP_EOL;
         return 'hello tcp';
     }
-    
-    public function configure()
-    {
-        $this->pid('/tmp/swoole.pid');
-    }
 }
 
 DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527')->start();
@@ -77,11 +72,6 @@ class DemoServer extends \FastD\Swoole\Server\Udp
     {
         echo $data . PHP_EOL;
         return 'hello tcp';
-    }
-
-    public function configure()
-    {
-        // TODO: Implement configure() method.
     }
 }
 
@@ -100,11 +90,6 @@ class Http extends \FastD\Swoole\Server\Http
         return new JsonResponse([
             'msg' => 'hello world',
         ]);
-    }
-
-    public function configure()
-    {
-
     }
 }
 
@@ -130,11 +115,6 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
         echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
         $server->push($frame->fd, "this is server");
     }
-
-    public function configure()
-    {
-        // TODO: Implement configure() method.
-    }
 }
 
 WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
@@ -149,11 +129,6 @@ class Server extends \FastD\Swoole\Server\Tcp
     {
         return 'hello server1';
     }
-
-    public function configure()
-    {
-        // TODO: Implement configure() method.
-    }
 }
 
 class Server2 extends \FastD\Swoole\Server\Tcp
@@ -161,11 +136,6 @@ class Server2 extends \FastD\Swoole\Server\Tcp
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello server2';
-    }
-
-    public function configure()
-    {
-        // TODO: Implement configure() method.
     }
 }
 
@@ -185,11 +155,6 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
     {
         echo $data . PHP_EOL;
         return 'hello tcp';
-    }
-    
-    public function configure()
-    {
-        $this->pid('/tmp/swoole.pid');
     }
 }
 
@@ -228,11 +193,6 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello tcp';
-    }
-
-    public function configure()
-    {
-        // TODO: Implement configure() method.
     }
 }
 

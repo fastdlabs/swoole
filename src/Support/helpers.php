@@ -161,42 +161,16 @@ function get_local_ip()
 }
 
 /**
- * @param $name
+ * @param $keyword
  * @return array|bool
  */
-function check_process($name)
+function process_is_running($keyword)
 {
     $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
 
-    $command = "ps axu | grep '{$name}' | grep -v grep | grep -v {$scriptName}";
+    $command = "ps axu | grep '{$keyword}' | grep -v grep | grep -v {$scriptName}";
 
     exec($command, $output);
 
-    if (empty($output)) {
-        return false;
-    }
-
-    return true;
-
-    $output = array_map(function ($v) {
-        $status = preg_split('/\s+/', $v);
-
-        unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
-
-        $status = array_values($status);
-
-        $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
-
-        return array_slice($status, 0, 6);
-    }, $output);
-
-    $keys = ['user', 'pid', 'rss', 'stat', 'start', 'command'];
-
-    foreach ($output as $key => $value) {
-        $output[$key] = array_combine($keys, $value);
-    }
-
-    unset($keys);
-
-    return $output;
+    return empty($output) ? false : true;
 }

@@ -19,16 +19,8 @@ class DemoServer extends \FastD\Swoole\Server\Tcp
         echo $data . PHP_EOL;
         return 'hello tcp';
     }
-
-    /**
-     * Please return swoole configuration array.
-     *
-     * @return array
-     */
-    public function configure()
-    {
-        $this->pid('/tmp/swoole.pid');
-    }
 }
 
-return DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527');
+return DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527', [
+    'pid_file' => '/tmp/swoole.pid',
+]);

@@ -50,11 +50,6 @@ abstract class Server
     /**
      * @var string
      */
-    protected $configFile;
-
-    /**
-     * @var string
-     */
     protected $host = '127.0.0.1';
 
     /**
@@ -86,16 +81,16 @@ abstract class Server
 
     /**
      * Server constructor.
-     *
      * @param $name
      * @param null $address
+     * @param array $config
      */
-    public function __construct($name, $address = null)
+    public function __construct($name, $address = null, array $config = [])
     {
-        $this->name($name);
+        $this->name = $name;
 
         if (null === $address) {
-            $address = 'tcp://' . $this->host . ':' . $this->port;
+            $address = 'tcp://' . get_local_ip() . ':' . $this->port;
         }
 
         $info = parse_address($address);
@@ -106,15 +101,23 @@ abstract class Server
 
         $this->output = new Output();
 
-        $this->config = array_merge($this->config, (array) $this->configure());
+        $this->configure($config);
     }
 
     /**
-     * Please return swoole configuration array.
-     *
-     * @return array
+     * @param array $config
+     * @return $this
      */
-    abstract public function configure();
+    public function configure(array $config)
+    {
+        $this->config = array_merge($this->config, (array) $config);
+
+        if (isset($this->config['pid_file'])) {
+            $this->pid = $this->config['pid_file'];
+        }
+
+        return $this;
+    }
 
     /**
      * @return bool
@@ -125,31 +128,7 @@ abstract class Server
     }
 
     /**
-     * @param $name
-     * @return $this;
-     */
-    public function name($name)
-    {
-        $this->name = $name;
-
-        $this->pid = '/tmp/' . str_replace(' ', '-', $this->name) . '.pid';
-
-        return $this;
-    }
-
-    /**
-     * @param $pidFile
-     * @return $this
-     */
-    public function pid($pidFile)
-    {
-        $this->pid = $pidFile;
-
-        return $this;
-    }
-
-    /**
-     * 守護進程, debug模式下无法开启
+     * 守護進程
      *
      * @return $this
      */
@@ -239,8 +218,8 @@ abstract class Server
             case 'Swoole\WebSocket\Server':
                 return 'ws';
             case 'swoole_server':
-            case 'swoole_server_port':
             case 'Swoole\Server':
+            case 'swoole_server_port':
             case 'Swoole\Server\Port':
                 return ($this->swoole->type === SWOOLE_SOCK_UDP || $this->swoole->type === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
             default:
@@ -251,7 +230,7 @@ abstract class Server
     /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param swoole_server|swoole_server_port $swoole
+     * @param $swoole swoole server or swoole server port
      * @return $this
      */
     public function bootstrap($swoole = null)
@@ -260,6 +239,10 @@ abstract class Server
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
 
             $this->swoole->set($this->config);
+
+            if (!isset($this->config['pid_file']) && empty($this->pid)) {
+                $this->pid = getcwd() . '/var/run/' . strtolower(str_replace(' ', '-', $this->name)) . '.pid';
+            }
 
             $this->handleCallback();
 
@@ -304,11 +287,12 @@ abstract class Server
     /**
      * @param $name
      * @param $address
+     * @param $config
      * @return static
      */
-    public static function createServer($name, $address)
+    public static function createServer($name, $address, array $config = [])
     {
-        return new static($name, $address);
+        return new static($name, $address, $config);
     }
 
     /**
@@ -316,7 +300,7 @@ abstract class Server
      */
     public function start()
     {
-        if (check_process($this->name)) {
+        if (process_is_running($this->name)) {
             $this->output->writeln(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port));
         } else {
             try {
@@ -344,12 +328,12 @@ abstract class Server
      */
     public function shutdown()
     {
-        if (false === ($status = check_process($this->name))) {
+        if (false === process_is_running($this->name)) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
             return -1;
         }
 
-        $pid = (int)@file_get_contents($this->pid);
+        $pid = (int) @file_get_contents($this->pid);
 
         posix_kill($pid, SIGTERM);
 
@@ -363,7 +347,7 @@ abstract class Server
      */
     public function reload()
     {
-        if (false === check_process($this->name)) {
+        if (false === process_is_running($this->name)) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
             return -1;
         }
@@ -392,7 +376,7 @@ abstract class Server
      */
     public function status()
     {
-        if (!($status = check_process($this->name))) {
+        if (!($status = process_is_running($this->name))) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
             return -1;
         }
@@ -417,7 +401,7 @@ abstract class Server
         $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
         $this->output->writeln(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION));
         $this->output->writeln(sprintf('Application version <info>%s</info>', Server::VERSION));
-        $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid, (int)@file_get_contents($this->pid)));
+        $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid, (int) @file_get_contents($this->pid)));
         $table = new Table($this->output);
         $table
             ->setHeaders($headers)
@@ -439,7 +423,7 @@ abstract class Server
     {
         $that = $this;
 
-        if (false === ($status = check_process($this->name))) {
+        if (false === ($status = process_is_running($this->name))) {
             $process = new Process('server watch process', function () use ($that) {
                 $that->start();
             }, true);
@@ -499,8 +483,8 @@ abstract class Server
      */
     public function onShutdown(swoole_server $server)
     {
-        if (null !== ($file = $this->getPid()) && !empty(trim(file_get_contents($file)))) {
-            unlink($file);
+        if (file_exists($this->pid)) {
+            unlink($this->pid);
         }
 
         $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>#%s</info>] is shutdown ', $this->name, $server->master_pid));
