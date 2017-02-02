@@ -4,11 +4,13 @@
 
 参数解析: 
 
+```php
 Server::createServer($name, $address, array $config = [])
 
 $name 为服务器启动的进程名字
 $address 为服务器监听的地址，如: tcp://127.0.0.1:9527, udp://127.0.0.1:9527, ws://127.0.0.1:9527, http://127.0.0.1:9527
 $config 服务器配置，保持和 [官网](http://wiki.swoole.com/wiki/page/274.html) 一致，新增 pid_file 选项, 当 pid_file 不存在的时候，默认会存放在当前执行命令的目录下。
+```
 
 ### TCP Server
 
@@ -98,4 +100,4 @@ class WebSocket extends WebSocket
 WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
 ```
 
-下一节: [服务器](2-2-client.md)
+下一节: [客户端](2-2-client.md)
