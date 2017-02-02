@@ -30,16 +30,6 @@ abstract class Http extends Server
     const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
-    public function Http2($key, $pem)
-    {
-
-    }
-
-    public function ssl($key, $pem)
-    {
-
-    }
-
     /**
      * @return \swoole_server
      */

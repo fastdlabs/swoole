@@ -453,7 +453,7 @@ abstract class Server
      */
     public function onStart(swoole_server $server)
     {
-        if (null !== $this->pid) {
+        if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
             if (!is_dir($dir = dirname($this->pid))) {
                 mkdir($dir, 0755, true);
             }
@@ -483,8 +483,10 @@ abstract class Server
      */
     public function onShutdown(swoole_server $server)
     {
-        if (file_exists($this->pid)) {
-            unlink($this->pid);
+        if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
+            if (file_exists($this->pid)) {
+                unlink($this->pid);
+            }
         }
 
         $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>#%s</info>] is shutdown ', $this->name, $server->master_pid));

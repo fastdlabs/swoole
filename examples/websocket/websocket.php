@@ -31,16 +31,6 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
         echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
         $server->push($frame->fd, "this is server");
     }
-
-    /**
-     * Please return swoole configuration array.
-     *
-     * @return array
-     */
-    public function configure()
-    {
-        // TODO: Implement configure() method.
-    }
 }
 
 WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
