@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/../../vendor/autoload.php';
 
 class WebSocket extends \FastD\Swoole\Server\WebSocket
 {
@@ -33,4 +33,4 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
     }
 }
 
-WebSocket::run('ws://0.0.0.0:9527');
+WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();

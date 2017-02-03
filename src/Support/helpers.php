@@ -13,74 +13,6 @@ use FastD\Swoole\Server;
 use FastD\Swoole\Support\Output;
 
 /**
- * @param Server $server
- * @return Server $server
- */
-function handle_server_callback(Server $server)
-{
-    $handles = get_class_methods($server);
-    $isListenerPort = false;
-    $serverClass = get_class($server->getSwoole());
-    if ('Swoole\Server\Port' == $serverClass || 'swoole_server_port' == $serverClass) {
-        $isListenerPort = true;
-    }
-    foreach ($handles as $value) {
-        if ('on' == substr($value, 0, 2)) {
-            if ($isListenerPort) {
-                if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
-                    $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
-                }
-            } else {
-                $server->getSwoole()->on(lcfirst(substr($value, 2)), [$server, $value]);
-            }
-        }
-    }
-    return $server;
-}
-
-/**
- * @param $name
- */
-function process_rename($name)
-{
-    // hidden Mac OS error。
-    set_error_handler(function () {
-    });
-
-    if (function_exists('cli_set_process_title')) {
-        cli_set_process_title($name);
-    } else if (function_exists('swoole_set_process_name')) {
-        swoole_set_process_name($name);
-    }
-
-    restore_error_handler();
-}
-
-/**
- * @param $swoole
- * @param $sock
- * @return string
- */
-function server_type($swoole, $sock = null)
-{
-    switch (get_class($swoole)) {
-        case 'swoole_http_server':
-        case 'Swoole\Http\Server':
-            return 'http';
-        case 'swoole_websocket_server':
-        case 'Swoole\WebSocket\Server':
-            return 'ws';
-        case 'swoole_server':
-        case 'swoole_server_port':
-        case 'Swoole\Server':
-        case 'Swoole\Server\Port':
-            return ($sock === SWOOLE_SOCK_UDP || $sock === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
-        default:
-            return 'unknown';
-    }
-}
-
-/**
  * @param $address
  * @return mixed
  */
@@ -100,10 +32,8 @@ function parse_address($address)
             break;
         case 'http':
         case 'ws':
-            $sock = null;
-            break;
         default:
-            throw new CantSupportSchemeException($info['scheme']);
+            $sock = null;
     }
 
     $info['sock'] = $sock;
@@ -112,22 +42,20 @@ function parse_address($address)
 }
 
 /**
- * @param $message
- * @return void
+ * @param $name
  */
-function output($message)
+function process_rename ($name)
 {
-    $message = sprintf("[%s]\t", date('Y-m-d H:i:s')) . $message;
-    Output::output($message);
-}
+    set_error_handler(function () {
+    });
 
-/**
- * @param array $keys
- * @param array $columns
- */
-function output_table(array $keys, array $columns)
-{
-    Output::table($keys, $columns);
+    if (function_exists('cli_set_process_title')) {
+        cli_set_process_title($name);
+    } else if (function_exists('swoole_set_process_name')) {
+        swoole_set_process_name($name);
+    }
+
+    restore_error_handler();
 }
 
 /**
@@ -230,4 +158,19 @@ function get_local_ip()
     }
 
     return 'unknown';
+}
+
+/**
+ * @param $keyword
+ * @return array|bool
+ */
+function process_is_running($keyword)
+{
+    $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
+
+    $command = "ps axu | grep '{$keyword}' | grep -v grep | grep -v {$scriptName}";
+
+    exec($command, $output);
+
+    return empty($output) ? false : true;
 }

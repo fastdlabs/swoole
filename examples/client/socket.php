@@ -9,7 +9,7 @@
 
 use FastD\Swoole\Client\Socket;
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/../../vendor/autoload.php';
 
 $socket = new Socket('tcp://127.0.0.1:9527');
 

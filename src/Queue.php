@@ -18,19 +18,21 @@ class Queue extends Process
 {
     /**
      * Queue constructor.
+     * @param $name
      * @param callable $callback
      * @param bool $stdout
      * @param bool $pipe
      */
-    public function __construct(callable $callback, $stdout = false, $pipe = true)
+    public function __construct($name, callable $callback, $stdout = false, $pipe = true)
     {
-        parent::__construct($callback, $stdout, $pipe);
-
-        $this->name('queue');
+        parent::__construct($name, $callback, $stdout, $pipe);
 
         $this->process->useQueue();
     }
 
+    /**
+     *
+     */
     public function clean()
     {
         $this->process->freeQueue();

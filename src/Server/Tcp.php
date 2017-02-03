@@ -26,7 +26,7 @@ abstract class Tcp extends Server
      * @param $fd
      * @param $from_id
      * @param $data
-     * @return mixed
+     * @return void
      */
     public function onReceive(swoole_server $server, $fd, $from_id, $data)
     {

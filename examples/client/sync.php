@@ -2,7 +2,7 @@
 
 use FastD\Swoole\Client\Sync\SyncClient;
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/../../vendor/autoload.php';
 
 $client = new SyncClient('tcp://127.0.0.1:9527');
 

@@ -8,6 +8,8 @@
  */
 
 namespace FastD\Swoole\Support;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class Watcher
@@ -44,10 +46,20 @@ class Watcher
     protected $callback;
 
     /**
+     * @var ConsoleOutput|OutputInterface
+     */
+    protected $output;
+
+    /**
      * Watcher constructor.
      */
-    public function __construct()
+    public function __construct(OutputInterface $output = null)
     {
+        if (null === $output) {
+            $output = new ConsoleOutput();
+        }
+        $this->output = $output;
+
         $this->inotify = inotify_init();
     }
 
@@ -94,7 +106,7 @@ class Watcher
 
             foreach ($events as $event) {
                 if (!empty($event['name'])) {
-                    echo sprintf("[%s]\t" . sprintf('["%s"] modify', $event['name']) . PHP_EOL, date('Y-m-d H:i:s')) ;
+                    $this->output->writeln(sprintf("[%s]\t" . sprintf('<info>[%s]</info> modify', $event['name']), date('Y-m-d H:i:s'))) ;
                 }
             }
 

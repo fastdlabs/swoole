@@ -22,6 +22,16 @@ class Server extends \FastD\Swoole\Server\Tcp
     {
         return 'hello server1';
     }
+
+    /**
+     * Please return swoole configuration array.
+     *
+     * @return array
+     */
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
 class Server2 extends \FastD\Swoole\Server\Tcp
@@ -37,11 +47,21 @@ class Server2 extends \FastD\Swoole\Server\Tcp
     {
         return 'hello server2';
     }
+
+    /**
+     * Please return swoole configuration array.
+     *
+     * @return array
+     */
+    public function configure()
+    {
+        // TODO: Implement configure() method.
+    }
 }
 
-$server = new Server('tcp://127.0.0.1:9527');
+$server = new Server('tcp server', 'tcp://127.0.0.1:9527');
 
-$server->listen(new Server2('tcp://127.0.0.1:9528'));
+$server->listen(new Server2('tcp server2', 'tcp://127.0.0.1:9528'));
 
 $server->start();
 

@@ -57,12 +57,15 @@ class Process
 
     /**
      * Process constructor.
+     * @param $name
      * @param callable $callback
      * @param bool $stdout
      * @param bool $pipe
      */
-    public function __construct(callable $callback, $stdout = false, $pipe = true)
+    public function __construct($name, callable $callback, $stdout = false, $pipe = true)
     {
+        $this->name($name);
+
         $this->stdout = $stdout;
 
         $this->pipe = $pipe;
@@ -74,7 +77,7 @@ class Process
 
     /**
      * @param $name
-     * @return mixed
+     * @return $this
      */
     public function name($name)
     {
@@ -86,7 +89,7 @@ class Process
     /**
      * @return mixed
      */
-    public function daemonize()
+    public function daemon()
     {
         $this->daemonize = true;
 
@@ -175,7 +178,7 @@ class Process
         $this->start();
         // new sub process
         for ($i = 0; $i < $length; $i++) {
-            $process = new static($this->callback, $this->stdout, $this->pipe);
+            $process = new static($this->name, $this->callback, $this->stdout, $this->pipe);
             if (!empty($this->name)) {
                 $process->name($this->name);
             }

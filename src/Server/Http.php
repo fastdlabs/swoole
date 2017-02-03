@@ -10,13 +10,11 @@
 namespace FastD\Swoole\Server;
 
 use Exception;
-use FastD\Http\Exceptions\HttpException;
-use FastD\Http\JsonResponse;
+use FastD\Http\HttpException;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
-use FastD\Session\Session;
-use FastD\Swoole\Exceptions\CannotResponseException;
 use FastD\Swoole\Server;
+use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
 use swoole_http_response;
 use swoole_http_server;
@@ -32,40 +30,12 @@ abstract class Http extends Server
     const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
-    public function enableHttp2($key, $pem)
-    {
-
-    }
-
-    public function ssl($key, $pem)
-    {
-
-    }
-
-    /**
-     * @param array $content
-     * @return Response
-     */
-    public function json(array $content)
-    {
-        return new JsonResponse($content);
-    }
-
-    /**
-     * @param $content
-     * @return Response
-     */
-    public function html($content)
-    {
-        return new Response($content);
-    }
-
     /**
      * @return \swoole_server
      */
     public function initSwoole()
     {
-        return new swoole_http_server($this->getHost(), $this->getPort(), $this->mode);
+        return new swoole_http_server($this->getHost(), $this->getPort());
     }
 
     /**
@@ -75,48 +45,33 @@ abstract class Http extends Server
     public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse)
     {
         try {
-            print_r($swooleRequet);
-            $swooleRequestServer = SwooleServerRequest::createFromSwoole($swooleRequet, $swooleResponse);
+            $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
 
-            if (!(($response = $this->doRequest($swooleRequestServer)) instanceof Response)) {
-                throw new CannotResponseException();
-            }
-
-            if (!empty($sessionId = $swooleRequestServer->session->getSessionId())) {
-                $swooleResponse->header(Session::SESSION_KEY, $sessionId);
-            }
+            $response = $this->doRequest($swooleRequestServer);
 
             foreach ($response->getHeaders() as $key => $header) {
                 $swooleResponse->header($key, $response->getHeaderLine($key));
             }
 
-            foreach ($swooleRequestServer->getCookieParams() as $cookieParam) {
-                $swooleResponse->cookie(
-                    $cookieParam->getName(),
-                    $cookieParam->getValue(),
-                    $cookieParam->getExpire(),
-                    $cookieParam->getPath(),
-                    $cookieParam->getDomain(),
-                    $cookieParam->isSecure(),
-                    $cookieParam->isHttpOnly()
-                );
+            foreach ($swooleRequestServer->getCookieParams() as $key => $cookieParam) {
+                $swooleResponse->cookie($key, $cookieParam);
             }
-            $swooleResponse->gzip(static::GZIP_LEVEL);
+
             $swooleResponse->status($response->getStatusCode());
-            $swooleResponse->end($response->getContent());
-            unset($response, $swooleRequestServer);
+            $swooleResponse->end((string) $response->getBody());
+            unset($response, $swooleRequestServer, $swooleResponse);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
-            $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
+            $swooleResponse->end($e->getMessage());
         } catch (Exception $e) {
             $swooleResponse->status(500);
-            $swooleResponse->end($this->isDebug() ? $e->getMessage() : static::SERVER_INTERVAL_ERROR);
+            $swooleResponse->end($e->getMessage());
         }
     }
 
     /**
-     * @param SwooleServerRequest $request
+     * @param ServerRequestInterface $serverRequest
      * @return Response
      */
-    abstract public function doRequest(SwooleServerRequest $request);
+    abstract public function doRequest(ServerRequestInterface $serverRequest);
 }
