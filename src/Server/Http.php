@@ -12,9 +12,9 @@ namespace FastD\Swoole\Server;
 use Exception;
 use FastD\Http\HttpException;
 use FastD\Http\Response;
-use FastD\Http\ServerRequest;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
+use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
 use swoole_http_response;
 use swoole_http_server;
@@ -70,8 +70,8 @@ abstract class Http extends Server
     }
 
     /**
-     * @param ServerRequest $serverRequest
+     * @param ServerRequestInterface $serverRequest
      * @return Response
      */
-    abstract public function doRequest(ServerRequest $serverRequest);
+    abstract public function doRequest(ServerRequestInterface $serverRequest);
 }
