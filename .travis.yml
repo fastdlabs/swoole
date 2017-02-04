@@ -7,5 +7,5 @@ before_install: pecl install swoole
 
 install: composer install -vvv
 
-script: phpunit
+script: vendor/bin/phpunit
 
