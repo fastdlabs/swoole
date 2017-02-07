@@ -22,16 +22,6 @@ class Server extends \FastD\Swoole\Server\Tcp
     {
         return 'hello server1';
     }
-
-    /**
-     * Please return swoole configuration array.
-     *
-     * @return array
-     */
-    public function configure()
-    {
-        // TODO: Implement configure() method.
-    }
 }
 
 class Server2 extends \FastD\Swoole\Server\Tcp
@@ -46,16 +36,6 @@ class Server2 extends \FastD\Swoole\Server\Tcp
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         return 'hello server2';
-    }
-
-    /**
-     * Please return swoole configuration array.
-     *
-     * @return array
-     */
-    public function configure()
-    {
-        // TODO: Implement configure() method.
     }
 }
 
