@@ -1,7 +1,9 @@
 # FastD Swoole
 
 [![Build Status](https://travis-ci.org/JanHuang/swoole.svg?branch=master)](https://travis-ci.org/JanHuang/swoole)
-[![Latest Stable Version](https://poser.pugx.org/fastd/swoole/v/stable)](https://packagist.org/packages/fastd/swoole) 
+[![PHP Require Version](https://img.shields.io/badge/php-%3E%3D5.6-8892BF.svg)](https://secure.php.net/)
+[![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D1.8-8892BF.svg)](http://www.swoole.com/)
+[![Latest Stable Version](https://poser.pugx.org/fastd/swoole/v/stable)](https://packagist.org/packages/fastd/swoole)
 [![Total Downloads](https://poser.pugx.org/fastd/swoole/downloads)](https://packagist.org/packages/fastd/swoole) 
 [![Latest Unstable Version](https://poser.pugx.org/fastd/swoole/v/unstable)](https://packagist.org/packages/fastd/swoole) 
 [![License](https://poser.pugx.org/fastd/swoole/license)](https://packagist.org/packages/fastd/swoole)

@@ -62,17 +62,17 @@ class Process
      * @param bool $stdout
      * @param bool $pipe
      */
-    public function __construct($name, callable $callback, $stdout = false, $pipe = true)
+    public function __construct($name = null, callable $callback = null, $stdout = false, $pipe = true)
     {
-        $this->name($name);
+        $this->name = $name;
 
         $this->stdout = $stdout;
 
         $this->pipe = $pipe;
 
-        $this->callback = $callback;
+        $this->callback = null === $callback ? [$this, 'handle'] : $callback;
 
-        $this->process = new swoole_process($callback, $stdout, $pipe);
+        $this->process = new swoole_process($this->callback, $stdout, $pipe);
     }
 
     /**
@@ -209,4 +209,12 @@ class Process
     {
         return $this->process;
     }
+
+    /**
+     * Process handle
+     *
+     * @param $swoole_process
+     * @return callable
+     */
+    public function handle(swoole_process $swoole_process){}
 }
