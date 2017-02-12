@@ -15,10 +15,10 @@ $config 服务器配置，保持和 [官网](http://wiki.swoole.com/wiki/page/27
 ### TCP Server
 
 ```php
-use \FastD\Swoole\Server\Tcp;
+use \FastD\Swoole\Server\TCP;
 
 
-class DemoServer extends Tcp
+class DemoServer extends TCP
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
@@ -36,10 +36,10 @@ $server->start();
 ### UDP Server 
 
 ```php
-use \FastD\Swoole\Server\Udp;
+use \FastD\Swoole\Server\UDP;
 
 
-class DemoServer extends Udp
+class DemoServer extends UDP
 {
     public function doPacket(swoole_server $server, $data, $client_info)
     {
@@ -59,10 +59,10 @@ $server->start();
 如果需要调整返回内容或者自定义，则只需要重写父类的 `onRequest` 方法即可。
 
 ```php
-use \FastD\Swoole\Server\Http;
+use \FastD\Swoole\Server\HTTP;
 
 
-class Http extends Http
+class Http extends HTTP
 {
     public function doRequest(ServerRequest $serverRequest)
     {
