@@ -7,11 +7,10 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Async;
+namespace FastD\Swoole;
 
-use FastD\Swoole\Client;
 
-class AsyncMySQL extends Client
+class Coroutine
 {
 
 }

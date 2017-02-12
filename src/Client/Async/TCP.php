@@ -17,7 +17,7 @@ use swoole_client;
  *
  * @package FastD\Swoole\Async
  */
-class AsyncClient extends Client
+class TCP extends Client
 {
     /**
      * AsyncClient constructor.

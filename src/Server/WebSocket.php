@@ -62,6 +62,29 @@ abstract class WebSocket extends Server
      */
     public function initSwoole()
     {
-        return new \Swoole\Websocket\Server($this->getHost(), $this->getPort());
+        return new swoole_websocket_server($this->host, $this->port);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @param $workerId
+     * @return mixed
+     */
+    public function doTask(swoole_server $server, $data, $taskId, $workerId)
+    {
+
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @return mixed
+     */
+    public function doFinish(swoole_server $server, $data, $taskId)
+    {
+        // TODO: Implement doFinish() method.
     }
 }

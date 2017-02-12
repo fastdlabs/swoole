@@ -10,8 +10,8 @@
 namespace FastD\Swoole;
 
 
+use FastD\Swoole\Client\Sync\TCP;
 use FastD\Swoole\Server\Http;
-use FastD\Swoole\Server\Tcp;
 use FastD\Swoole\Server\Udp;
 use FastD\Swoole\Server\WebSocket;
 use Symfony\Component\Console\Application;
@@ -24,11 +24,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Swoole extends Application
 {
-    const DEFAULT_COMMAND = 'server';
+    const DEFAULT_COMMAND = 'client';
 
     public function __construct()
     {
-        parent::__construct('swoole', Server::VERSION);
+        parent::__construct(Server::SWOOLE, Server::VERSION);
 
         $this->add(new ServerCommand());
     }
@@ -57,65 +57,53 @@ class ServerCommand extends Command
     {
         $this
             ->setName(Swoole::DEFAULT_COMMAND)
-            ->setHelp('This command allows you to create swoole server...')
-            ->setDescription('Create new swoole server')
+            ->setHelp('This command allows you to create swoole client...')
+            ->setDescription('Create new swoole client')
         ;
 
         $this
-            ->addArgument('name', InputArgument::OPTIONAL, 'Swoole server process name', 'swoole server')
-            ->addArgument('action', InputArgument::OPTIONAL, 'Swoole status', 'status')
-            ->addOption('host', '', InputOption::VALUE_OPTIONAL, 'Swoole server host address', '127.0.0.1')
-            ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Swoole server port', '9527')
-            ->addOption('daemon', 'd', InputOption::VALUE_OPTIONAL, 'Swoole server running mode', false)
+            ->addArgument('host', InputArgument::REQUIRED, 'Swoole server host address')
+            ->addArgument('port', InputArgument::REQUIRED, 'Swoole server port')
             ->addOption('type', 't', InputOption::VALUE_OPTIONAL, 'Swoole server type', 'tcp')
-            ->addOption('mode', 'm', InputOption::VALUE_OPTIONAL, 'Swoole server run mode', SWOOLE_PROCESS)
-            ->addOption('pid', 'pid', InputOption::VALUE_OPTIONAL, 'Swoole server pid no')
         ;
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $address = '';
-        $server  = '';
         switch ($input->getOption('type')) {
             case 'http':
                 $address .= 'http://';
-                $server = Http::class;
+                $client = Http::class;
                 break;
             case 'tcp':
                 $address .= 'tcp://';
-                $server = Tcp::class;
+                $client = TCP::class;
                 break;
             case 'udp':
-                $server = Udp::class;
+                $client = Udp::class;
                 $address .= 'udp://';
                 break;
             case 'ws':
-                $server = WebSocket::class;
+                $client = WebSocket::class;
                 $address .= 'ws://';
                 break;
             default:
                 throw new \LogicException('Not support server type ' . $input->getOption('type'));
         }
 
-        $address .= $input->getOption('host') . ':' . $input->getOption('port');
+        $address .= $input->getArgument('host') . ':' . $input->getArgument('port');
 
-        $server = $server::createServer($input->getArgument('name'), $address);
+        $client = new $client($address);
 
-        switch ($input->getArgument('action')) {
-            case 'start':
-                $server->start();
-                break;
-            case 'stop':
-                break;
-            case 'status':
-                break;
-            case 'reload':
-                break;
-            case 'restart':
-                break;
-            default:
-                throw new \LogicException(sprintf('Not support action ' . $input->getArgument('action')));
-        }
+        $client
+            ->connect(function ($client) {
+                $client->send('hello world');
+            })
+            ->receive(function ($client, $data) {
+                echo $data . PHP_EOL;
+            })
+            ->resolve()
+        ;
     }
 }

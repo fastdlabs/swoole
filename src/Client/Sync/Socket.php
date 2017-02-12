@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Client;
+namespace FastD\Swoole\Client\Sync;
 
 
 class Socket

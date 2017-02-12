@@ -17,7 +17,7 @@ use swoole_http_client;
  *
  * @package FastD\Swoole\Async
  */
-class AsyncHttp extends Client
+class Http extends Client
 {
     /**
      * AsyncHttp constructor.

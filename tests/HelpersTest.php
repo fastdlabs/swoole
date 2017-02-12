@@ -20,4 +20,22 @@ class HelpersTest extends PHPUnit_Framework_TestCase
             'sock' => null
         ]);
     }
+
+    public function testParseUsername()
+    {
+        $info = parse_url('mysql://127.0.0.1:9527');
+
+        $this->assertEquals($info, [
+            'scheme' => 'mysql',
+            'host' => '127.0.0.1',
+            'port' => '9527',
+        ]);
+
+        $info = parse_url('127.0.0.1:9527');
+
+        $this->assertEquals($info, [
+            'host' => '127.0.0.1',
+            'port' => '9527',
+        ]);
+    }
 }

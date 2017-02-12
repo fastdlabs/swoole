@@ -23,7 +23,8 @@ use swoole_server_port;
  */
 abstract class Server
 {
-    const VERSION = '1.0.0 (dev)';
+    const SWOOLE = 'fast-d swoole';
+    const VERSION = '1.1.0 (dev)';
 
     /**
      * @var $name
@@ -45,7 +46,10 @@ abstract class Server
      *
      * @var array
      */
-    protected $config = [];
+    protected $config = [
+        'task_worker_num' => 8,
+        'task_tmpdir' => '/tmp'
+    ];
 
     /**
      * @var string
@@ -547,4 +551,44 @@ abstract class Server
     {
         $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>#%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code));
     }
+
+    /**
+     * @param swoole_server $server
+     * @param $taskId
+     * @param $workerId
+     * @param $data
+     * @return mixed
+     */
+    public function onTask(swoole_server $server, $taskId, $workerId, $data)
+    {
+        return $this->doTask($server, $data, $taskId, $workerId);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @param $workerId
+     * @return mixed
+     */
+    abstract public function doTask(swoole_server $server, $data, $taskId, $workerId);
+
+    /**
+     * @param swoole_server $server
+     * @param $taskId
+     * @param $data
+     * @return mixed
+     */
+    public function onFinish(swoole_server $server, $taskId, $data)
+    {
+        return $this->doFinish($server, $data, $taskId);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @return mixed
+     */
+    abstract public function doFinish(swoole_server $server, $data, $taskId);
 }

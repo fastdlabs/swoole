@@ -25,7 +25,7 @@ use swoole_server;
  *
  * @package FastD\Swoole\Server
  */
-abstract class Http extends Server
+abstract class HTTP extends Server
 {
     const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
@@ -74,4 +74,27 @@ abstract class Http extends Server
      * @return Response
      */
     abstract public function doRequest(ServerRequestInterface $serverRequest);
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @param $workerId
+     * @return mixed
+     */
+    public function doTask(swoole_server $server, $data, $taskId, $workerId)
+    {
+
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @return mixed
+     */
+    public function doFinish(swoole_server $server, $data, $taskId)
+    {
+        // TODO: Implement doFinish() method.
+    }
 }

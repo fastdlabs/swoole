@@ -17,7 +17,7 @@ use swoole_server;
  *
  * @package FastD\Swoole\Server
  */
-abstract class Udp extends Server
+abstract class UDP extends Server
 {
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
@@ -49,4 +49,27 @@ abstract class Udp extends Server
      * @return mixed
      */
     abstract public function doPacket(swoole_server $server, $data, $client_info);
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @param $workerId
+     * @return mixed
+     */
+    public function doTask(swoole_server $server, $data, $taskId, $workerId)
+    {
+
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @return mixed
+     */
+    public function doFinish(swoole_server $server, $data, $taskId)
+    {
+        // TODO: Implement doFinish() method.
+    }
 }

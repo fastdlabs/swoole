@@ -17,7 +17,7 @@ use FastD\Swoole\Exceptions\ServerCannotConnectionException;
  *
  * @package FastD\Swoole\Client\Sync
  */
-class SyncClient extends Client
+class TCP extends Client
 {
     /**
      * @var array
