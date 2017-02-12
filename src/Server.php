@@ -505,7 +505,7 @@ abstract class Server
     {
         process_rename($this->getName() . ' manager');
 
-        $this->output->writeln(sprintf('Server Manager[<info>#%s</info>] is started', $server->manager_pid));
+        $this->output->write(sprintf('Server Manager[<info>#%s</info>] is started', $server->manager_pid) . PHP_EOL);
     }
 
     /**
@@ -527,7 +527,7 @@ abstract class Server
     {
         process_rename($this->getName() . ' worker');
 
-        $this->output->writeln(sprintf('Server Worker[<info>#%s</info>] is started [<info>#%s</info>]', $server->worker_pid, $worker_id));
+        $this->output->write(sprintf('Server Worker[<info>#%s</info>] is started [<info>#%s</info>]', $server->worker_pid, $worker_id) . PHP_EOL);
     }
 
     /**
