@@ -7,17 +7,19 @@
  * @link      http://www.fast-d.cn/
  */
 
+use FastD\Swoole\Server\TCP;
+
 include __DIR__ . '/../../vendor/autoload.php';
 
 /**
  * Class DemoServer
  */
-class DemoServer extends \FastD\Swoole\Server\Tcp
+class DemoServer extends TCP
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         echo $data . PHP_EOL;
-        return 'hello tcp';
+        return $data;
     }
 }
 
