@@ -100,4 +100,37 @@ class WebSocket extends WebSocket
 WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
 ```
 
+### Task Server
+
+> 1.1.0 版本新增
+
+```php
+use FastD\Swoole\Server\TCP;
+
+class DemoServer extends TCP
+{
+    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    {
+        echo $data . PHP_EOL;
+        $server->task($data);
+        return $data;
+    }
+
+    public function doTask(swoole_server $server, $data, $taskId, $workerId)
+    {
+        echo $data . ' on task' . PHP_EOL;
+        return $data;
+    }
+
+    public function doFinish(swoole_server $server, $data, $taskId)
+    {
+        echo $data . 'Finish' . PHP_EOL;
+    }
+}
+
+DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527', [
+    'pid_file' => '/tmp/swoole.pid',
+])->start();
+```
+
 下一节: [客户端](2-2-client.md)

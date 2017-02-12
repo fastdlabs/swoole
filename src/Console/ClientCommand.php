@@ -79,8 +79,6 @@ class ClientCommand extends Command
             ->receive(function ($client, $data) use ($input, $output) {
                 $output->writeln('<info>Receive: </info>' . $data);
                 $this->execute($input, $output);
-            })->error(function () {
-
             })
             ->resolve()
         ;

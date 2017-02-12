@@ -4,6 +4,27 @@
 
 客户端最后通过 `resolve` 进行调用。
 
+### 客户端命令行
+
+> 1.1.0 新增
+
+当用户输入 (quit/exit) 的时候，客户端自动退出当前循环。
+
+默认数据为: `Hello World`
+
+```php
+$ php swoole [host] [port]
+```
+
+效果: 
+
+```
+➜  swoole (1.1) ✗ php swoole 11.11.11.22 9527
+Please enter the send data.(default: Hello World, Enter (exit/quit) can be exit console.):
+Receive: Hello World
+Please enter the send data.(default: Hello World, Enter (exit/quit) can be exit console.): exit
+```
+
 ### 同步客户端
 
 同步客户端是最传统的一种方式，也是最容易上手的，整个过程都是阻塞的。
