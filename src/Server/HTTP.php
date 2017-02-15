@@ -27,11 +27,10 @@ use swoole_server;
  */
 abstract class HTTP extends Server
 {
-    const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
     /**
-     * @return \swoole_server
+     * @return \swoole_http_server
      */
     public function initSwoole()
     {

@@ -23,7 +23,7 @@ use swoole_server_port;
  */
 abstract class Server
 {
-    const SWOOLE = 'fast-d swoole';
+    const NAME = 'fastd-';
     const VERSION = '1.1.0 (dev)';
 
     /**
