@@ -81,10 +81,7 @@ abstract class HTTP extends Server
      * @param $workerId
      * @return mixed
      */
-    public function doTask(swoole_server $server, $data, $taskId, $workerId)
-    {
-
-    }
+    public function doTask(swoole_server $server, $data, $taskId, $workerId){}
 
     /**
      * @param swoole_server $server
@@ -92,8 +89,5 @@ abstract class HTTP extends Server
      * @param $taskId
      * @return mixed
      */
-    public function doFinish(swoole_server $server, $data, $taskId)
-    {
-        // TODO: Implement doFinish() method.
-    }
+    public function doFinish(swoole_server $server, $data, $taskId){}
 }
