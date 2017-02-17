@@ -240,8 +240,8 @@ abstract class Server
 
             $this->swoole->set($this->config);
 
-            if (!isset($this->config['pid_file']) && empty($this->pid)) {
-                $this->pid = getcwd() . '/var/run/' . strtolower(str_replace(' ', '-', $this->name)) . '.pid';
+            if (empty($this->pid)) {
+                $this->pid = '/tmp/' . $this->name . '.pid';
             }
 
             $this->handleCallback();
