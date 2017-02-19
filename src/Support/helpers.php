@@ -7,40 +7,6 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Exceptions\AddressIllegalException;
-use FastD\Swoole\Exceptions\CantSupportSchemeException;
-use FastD\Swoole\Server;
-use FastD\Swoole\Support\Output;
-
-/**
- * @param $address
- * @return mixed
- */
-function parse_address($address)
-{
-    if (false === ($info = parse_url($address))) {
-        throw new AddressIllegalException($address);
-    }
-
-    switch (strtolower($info['scheme'])) {
-        case 'tcp':
-        case 'unix':
-            $sock = SWOOLE_SOCK_TCP;
-            break;
-        case 'udp':
-            $sock = SWOOLE_SOCK_UDP;
-            break;
-        case 'http':
-        case 'ws':
-        default:
-            $sock = null;
-    }
-
-    $info['sock'] = $sock;
-
-    return $info;
-}
-
 /**
  * @param $name
  */

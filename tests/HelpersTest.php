@@ -11,13 +11,23 @@ class HelpersTest extends PHPUnit_Framework_TestCase
 {
     public function testParseUri()
     {
-        $info = parse_address('http://examples.com:9527');
+        $info = parse_url('http://examples.com:9527');
 
-        $this->assertEquals($info, [
+        $this->assertEquals([
             'scheme' => 'http',
             'host' => 'examples.com',
-            'port' => '9527',
-            'sock' => null
-        ]);
+            'port' => '9527'
+        ], $info);
+    }
+
+    public function testSocketType()
+    {
+        $info = parse_url('tcp://examples.com:9527');
+
+        $this->assertEquals([
+            'scheme' => 'tcp',
+            'host' => 'examples.com',
+            'port' => '9527'
+        ], $info);
     }
 }

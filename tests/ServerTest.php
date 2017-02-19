@@ -22,30 +22,32 @@ class ServerTest extends PHPUnit_Framework_TestCase
     {
         $server = new TcpServer('foo');
 
-        $this->assertEquals(get_local_ip(), $server->getHost());
+        $this->assertEquals('127.0.0.1', $server->getHost());
         $this->assertEquals('9527', $server->getPort());
         $this->assertEquals('foo', $server->getName());
-        $this->assertNull($server->getPid());
+        $this->assertEmpty($server->getPid());
         $this->assertNull($server->getSwoole());
     }
 
     public function testServerBootstrap()
     {
-        $server = new TcpServer('foo');
+        $server = new TcpServer('foo', 'tcp://127.0.0.1:9529');
         $this->assertNull($server->getSwoole());
         $server->daemon();
         $server->bootstrap();
-        $this->assertEquals(get_local_ip(), $server->getSwoole()->host);
-        $this->assertEquals(9527, $server->getSwoole()->port);
+        $this->assertEquals('127.0.0.1', $server->getSwoole()->host);
+        $this->assertEquals(9529, $server->getSwoole()->port);
+        $this->assertEquals($server->getPort(), $server->getSwoole()->port);
         $this->assertEquals('/tmp/foo.pid', $server->getPid());
         $this->assertEquals([
+            'pid_file' => '/tmp/foo.pid',
             'daemonize' => true
         ], $server->getSwoole()->setting);
     }
 
     public function testServerBootstrapConfig()
     {
-        $server = new TcpServer('foo', 'tcp://127.0.0.1:9527', [
+        $server = new TcpServer('foo', 'tcp://127.0.0.1:9528', [
             'pid_file' => '/tmp/foo.pid'
         ]);
         $server->daemon();

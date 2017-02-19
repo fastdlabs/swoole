@@ -23,7 +23,7 @@ use swoole_server_port;
  */
 abstract class Server
 {
-    const VERSION = '1.0.0 (dev)';
+    const VERSION = '1.0.0';
 
     /**
      * @var $name
@@ -46,6 +46,11 @@ abstract class Server
      * @var array
      */
     protected $config = [];
+
+    /**
+     * @var string
+     */
+    protected $scheme = 'http';
 
     /**
      * @var string
@@ -90,14 +95,14 @@ abstract class Server
         $this->name = $name;
 
         if (null === $address) {
-            $address = 'tcp://' . get_local_ip() . ':' . $this->port;
+            $address = 'tcp://' . $this->host . ':' . $this->port;
         }
 
-        $info = parse_address($address);
+        $info = parse_url($address);
 
-        $this->type = $info['sock'];
+        $this->scheme = $info['scheme'];
         $this->host = $info['host'];
-        $this->port = $info['port'];
+        $this->port = isset($info['port']) ? $info['port'] : $this->port;
 
         $this->output = new Output();
 
@@ -110,11 +115,9 @@ abstract class Server
      */
     public function configure(array $config)
     {
-        $this->config = array_merge($this->config, (array) $config);
+        $this->config = array_merge($this->config, $config);
 
-        if (isset($this->config['pid_file'])) {
-            $this->pid = $this->config['pid_file'];
-        }
+        $this->pid = isset($this->config['pid_file']) ? $this->config['pid_file'] : '';
 
         return $this;
     }
@@ -128,6 +131,16 @@ abstract class Server
     }
 
     /**
+     * 是否主服务
+     *
+     * @return bool
+     */
+    public function isMasterServer()
+    {
+        return ($this->swoole instanceof swoole_server_port || $this->swoole instanceof \Swoole\Server\Port) ? false : true;
+    }
+
+    /**
      * 守護進程
      *
      * @return $this
@@ -137,6 +150,14 @@ abstract class Server
         $this->config['daemonize'] = true;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getScheme()
+    {
+        return $this->scheme;
     }
 
     /**
@@ -185,15 +206,10 @@ abstract class Server
     protected function handleCallback()
     {
         $handles = get_class_methods($this);
-        $isListenerPort = false;
-        $serverClass = get_class($this->getSwoole());
-        if ('Swoole\Server\Port' == $serverClass
-            || 'swoole_server_port' == $serverClass) {
-            $isListenerPort = true;
-        }
+
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
-                if ($isListenerPort) {
+                if (!$this->isMasterServer()) {
                     if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
                         $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
                     }
@@ -206,28 +222,6 @@ abstract class Server
     }
 
     /**
-     * @return string
-     */
-    public function getServerType()
-    {
-        switch (get_class($this->swoole)) {
-            case 'swoole_http_server':
-            case 'Swoole\Http\Server':
-                return 'http';
-            case 'swoole_websocket_server':
-            case 'Swoole\WebSocket\Server':
-                return 'ws';
-            case 'swoole_server':
-            case 'Swoole\Server':
-            case 'swoole_server_port':
-            case 'Swoole\Server\Port':
-                return ($this->swoole->type === SWOOLE_SOCK_UDP || $this->swoole->type === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
-            default:
-                return 'unknown';
-        }
-    }
-
-    /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
      * @param $swoole swoole server or swoole server port
@@ -237,12 +231,15 @@ abstract class Server
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
+            // master server pid file
+            if ($this->isMasterServer()) {
+                if (empty($this->pid)) {
+                    $this->pid = '/tmp/' . preg_replace('/\s+/', '-', $this->name) . '.pid';
+                    $this->config['pid_file'] = $this->pid;
+                }
+            }
 
             $this->swoole->set($this->config);
-
-            if (empty($this->pid)) {
-                $this->pid = '/tmp/' . $this->name . '.pid';
-            }
 
             $this->handleCallback();
 
@@ -292,7 +289,7 @@ abstract class Server
      * @param $config
      * @return static
      */
-    public static function createServer($name, $address, array $config = [])
+    public static function createServer($name, $address = null, array $config = [])
     {
         return new static($name, $address, $config);
     }
@@ -468,10 +465,10 @@ abstract class Server
         $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid, $server->master_pid));
         process_rename($this->name . ' master');
 
-        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getServerType(), $this->getHost(), $this->getPort()));
+        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $this->getServerType(), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $this->getScheme(), $listen->getHost(), $listen->getPort()));
         }
 
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
