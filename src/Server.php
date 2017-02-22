@@ -471,7 +471,7 @@ abstract class Server
         $this->output->write(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()) . PHP_EOL);
 
         foreach ($this->listens as $listen) {
-            $this->output->write(sprintf(" -> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()) . PHP_EOL);
+            $this->output->write(sprintf(" <info>➜</info> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()) . PHP_EOL);
         }
 
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
