@@ -45,7 +45,10 @@ abstract class Server
      *
      * @var array
      */
-    protected $config = [];
+    protected $config = [
+        'worker_num' => 10,
+        'task_worker_num' => 10,
+    ];
 
     /**
      * @var string
@@ -545,5 +548,41 @@ abstract class Server
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
         $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>#%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code));
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $taskId
+     * @param $workerId
+     * @param $data
+     */
+    public function doTask(swoole_server $server, $taskId, $workerId, $data){}
+
+    /**
+     * @param swoole_server $server
+     * @param $taskId
+     * @param $workerId
+     * @param $data
+     */
+    public function onTask(swoole_server $server, $taskId, $workerId, $data)
+    {
+        return $this->doTask($server, $taskId, $workerId, $data);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $taskId
+     * @param $data
+     */
+    public function doFinish(swoole_server $server, $taskId, $data){}
+
+    /**
+     * @param swoole_server $server
+     * @param $taskId
+     * @param $data
+     */
+    public function onFinish(swoole_server $server, $taskId, $data)
+    {
+        return $this->doFinish($server, $taskId, $data);
     }
 }

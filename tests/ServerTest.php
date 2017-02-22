@@ -41,7 +41,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/tmp/foo.pid', $server->getPid());
         $this->assertEquals([
             'pid_file' => '/tmp/foo.pid',
-            'daemonize' => true
+            'daemonize' => true,
+            'worker_num' => 10,
+            'task_worker_num' => 10,
         ], $server->getSwoole()->setting);
     }
 
@@ -55,6 +57,8 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([
             'daemonize' => true,
             'pid_file' => '/tmp/foo.pid',
+            'worker_num' => 10,
+            'task_worker_num' => 10,
         ], $server->getSwoole()->setting);
         $this->assertEquals('/tmp/foo.pid', $server->getPid());
     }
