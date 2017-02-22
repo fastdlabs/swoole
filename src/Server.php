@@ -468,10 +468,10 @@ abstract class Server
         $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid, $server->master_pid));
         process_rename($this->name . ' master');
 
-        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
+        $this->output->write(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()) . PHP_EOL);
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
+            $this->output->write(sprintf(" -> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()) . PHP_EOL);
         }
 
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
