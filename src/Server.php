@@ -468,7 +468,7 @@ abstract class Server
         $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $this->getScheme(), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
         }
 
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
