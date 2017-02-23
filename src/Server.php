@@ -328,7 +328,7 @@ abstract class Server
                 $this->bootstrap();
                 // 多端口监听
                 foreach ($this->listens as $listen) {
-                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $this->getSocketType());
+                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $listen->getSocketType());
                     $listen->bootstrap($swoole);
                 }
                 // 进程控制
