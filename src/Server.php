@@ -156,6 +156,25 @@ abstract class Server
     }
 
     /**
+     * @return mixed
+     */
+    public function getSocketType()
+    {
+        switch ($this->scheme) {
+            case 'udp':
+                $type = SWOOLE_SOCK_UDP;
+                break;
+            case 'unix':
+                $type = SWOOLE_UNIX_DGRAM;
+                break;
+            case 'tcp':
+            default:
+                $type = SWOOLE_SOCK_TCP;
+        }
+        return $type;
+    }
+
+    /**
      * @return string
      */
     public function getScheme()
@@ -259,7 +278,7 @@ abstract class Server
      */
     public function initSwoole()
     {
-        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, $this->getSocketType());
     }
 
     /**
@@ -309,7 +328,7 @@ abstract class Server
                 $this->bootstrap();
                 // 多端口监听
                 foreach ($this->listens as $listen) {
-                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $this->swoole->type);
+                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $this->getSocketType());
                     $listen->bootstrap($swoole);
                 }
                 // 进程控制
