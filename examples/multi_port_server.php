@@ -24,16 +24,15 @@ class Server extends \FastD\Swoole\Server\Tcp
     }
 }
 
-class Server2 extends \FastD\Swoole\Server\Tcp
+class Server2 extends \FastD\Swoole\Server\Udp
 {
     /**
      * @param swoole_server $server
-     * @param $fd
      * @param $data
-     * @param $from_id
+     * @param $client_info
      * @return mixed
      */
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    public function doPacket(swoole_server $server, $data, $client_info)
     {
         return 'hello server2';
     }
@@ -41,7 +40,7 @@ class Server2 extends \FastD\Swoole\Server\Tcp
 
 $server = new Server('tcp server', 'tcp://127.0.0.1:9527');
 
-$server->listen(new Server2('tcp server2', 'tcp://127.0.0.1:9528'));
+$server->listen(new Server2('tcp server2', 'udp://127.0.0.1:9528'));
 
 $server->start();
 
