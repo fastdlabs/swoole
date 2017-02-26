@@ -48,7 +48,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $server->bootstrap();
         $this->assertEquals(get_local_ip(), $server->getSwoole()->host);
         $this->assertEquals(9527, $server->getSwoole()->port);
-        $this->assertEquals(getcwd() . '/var/run/foo.pid', $server->getPid());
+        $this->assertEquals('/tmp/foo.pid', $server->getPid());
         $this->assertEquals([
             'daemonize' => true,
             'task_worker_num' => 8,
