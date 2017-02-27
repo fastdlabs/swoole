@@ -14,7 +14,7 @@ namespace FastD\Swoole\Coroutine;
  * Class Http
  * @package FastD\Swoole\Coroutine
  */
-class Http
+class HTTP
 {
     /**
      * Http constructor.
@@ -28,6 +28,6 @@ class Http
         $this->host = $info['host'];
         $this->port = $info['port'];
 
-        $this->client = new Swoole\Coroutine\Http\Client($this->host, $this->port);
+        $this->client = new \Swoole\Coroutine\Http\Client($this->host, $this->port);
     }
 }

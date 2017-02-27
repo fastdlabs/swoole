@@ -10,7 +10,9 @@
 namespace FastD\Swoole\Console;
 
 
+use FastD\Swoole\Client\Sync\HTTP;
 use FastD\Swoole\Client\Sync\TCP;
+use FastD\Swoole\Client\Sync\UDP;
 use FastD\Swoole\Swoole;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -42,19 +44,15 @@ class ClientCommand extends Command
         switch ($input->getOption('type')) {
             case 'http':
                 $address .= 'http://';
-                $client = Http::class;
+                $client = HTTP::class;
                 break;
             case 'tcp':
                 $address .= 'tcp://';
                 $client = TCP::class;
                 break;
             case 'udp':
-                $client = Udp::class;
+                $client = UDP::class;
                 $address .= 'udp://';
-                break;
-            case 'ws':
-                $client = WebSocket::class;
-                $address .= 'ws://';
                 break;
             default:
                 throw new \LogicException('Not support server type ' . $input->getOption('type'));

@@ -7,10 +7,10 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Client\Sync;
 
 
-class Coroutine
+class HTTP
 {
-    
+
 }

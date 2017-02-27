@@ -22,9 +22,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class Swoole extends Application
 {
-    /**
-     *
-     */
     const DEFAULT_COMMAND = 'client';
 
     /**

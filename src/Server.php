@@ -23,8 +23,8 @@ use swoole_server_port;
  */
 abstract class Server
 {
-    const NAME = 'fastd-';
-    const VERSION = '1.1.0 (dev)';
+    const NAME = 'fast-d';
+    const VERSION = '2.0.0 (dev)';
 
     /**
      * @var $name
@@ -50,6 +50,11 @@ abstract class Server
         'task_worker_num' => 8,
         'task_tmpdir' => '/tmp'
     ];
+
+    /**
+     * @var string
+     */
+    protected $scheme = 'tcp';
 
     /**
      * @var string
@@ -94,12 +99,12 @@ abstract class Server
         $this->name = $name;
 
         if (null === $address) {
-            $address = 'tcp://' . get_local_ip() . ':' . $this->port;
+            $address = sprintf('%s://%s:%s', $this->scheme, get_local_ip(), $this->port);
         }
 
-        $info = parse_address($address);
+        $info = parse_url($address);
 
-        $this->type = $info['sock'];
+        $this->scheme = $info['scheme'];
         $this->host = $info['host'];
         $this->port = $info['port'];
 
@@ -146,6 +151,14 @@ abstract class Server
     /**
      * @return string
      */
+    public function getScheme()
+    {
+        return $this->scheme;
+    }
+
+    /**
+     * @return string
+     */
     public function getHost()
     {
         return $this->host;
@@ -157,6 +170,28 @@ abstract class Server
     public function getPort()
     {
         return $this->port;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSocketType()
+    {
+        switch ($this->scheme) {
+            case 'tcp':
+                $type = SWOOLE_SOCK_TCP;
+                break;
+            case 'udp':
+                $type = SWOOLE_SOCK_UDP;
+                break;
+            case 'unix':
+                $type = SWOOLE_UNIX_STREAM;
+                break;
+            default :
+                $type = '';
+        }
+
+        return $type;
     }
 
     /**
@@ -191,14 +226,18 @@ abstract class Server
         $handles = get_class_methods($this);
         $isListenerPort = false;
         $serverClass = get_class($this->getSwoole());
-        if ('Swoole\Server\Port' == $serverClass
-            || 'swoole_server_port' == $serverClass) {
+        if ('Swoole\Server\Port' == $serverClass || 'swoole_server_port' == $serverClass) {
             $isListenerPort = true;
         }
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
                 if ($isListenerPort) {
-                    if (in_array($value, ['onConnect', 'onClose', 'onReceive', 'onPacket', 'onReceive'])) {
+                    if ('udp' === $this->getScheme()) {
+                        $callbacks = ['onConnect', 'onClose', 'onReceive'];
+                    } else {
+                        $callbacks = ['onPacket',];
+                    }
+                    if (in_array($value, $callbacks)) {
                         $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
                     }
                 } else {
@@ -207,28 +246,6 @@ abstract class Server
             }
         }
         return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getServerType()
-    {
-        switch (get_class($this->swoole)) {
-            case 'swoole_http_server':
-            case 'Swoole\Http\Server':
-                return 'http';
-            case 'swoole_websocket_server':
-            case 'Swoole\WebSocket\Server':
-                return 'ws';
-            case 'swoole_server':
-            case 'Swoole\Server':
-            case 'swoole_server_port':
-            case 'Swoole\Server\Port':
-                return ($this->swoole->type === SWOOLE_SOCK_UDP || $this->swoole->type === SWOOLE_SOCK_UDP6) ? 'udp' : 'tcp';
-            default:
-                return 'unknown';
-        }
     }
 
     /**
@@ -311,7 +328,7 @@ abstract class Server
                 $this->bootstrap();
                 // 多端口监听
                 foreach ($this->listens as $listen) {
-                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $this->swoole->type);
+                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $listen->getSocketType());
                     $listen->bootstrap($swoole);
                 }
                 // 进程控制
@@ -403,8 +420,8 @@ abstract class Server
         }
 
         $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
+        $this->output->writeln(sprintf('App version <info>%s</info>', Server::VERSION));
         $this->output->writeln(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION));
-        $this->output->writeln(sprintf('Application version <info>%s</info>', Server::VERSION));
         $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid, (int) @file_get_contents($this->pid)));
         $table = new Table($this->output);
         $table
@@ -465,15 +482,15 @@ abstract class Server
         }
 
         $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
+        $this->output->writeln(sprintf('App version <info>%s</info>', Server::VERSION));
         $this->output->writeln(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION));
-        $this->output->writeln(sprintf('Application version <info>%s</info>', Server::VERSION));
         $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid, $server->master_pid));
         process_rename($this->name . ' master');
 
-        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getServerType(), $this->getHost(), $this->getPort()));
+        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" -> Listen <info>%s://%s:%s</info>", $this->getServerType(), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf(" <info>➜</info> Listen <info>%s://%s:%s</info>", $this->getScheme(), $listen->getHost(), $listen->getPort()));
         }
 
         $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
@@ -487,10 +504,8 @@ abstract class Server
      */
     public function onShutdown(swoole_server $server)
     {
-        if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
-            if (file_exists($this->pid)) {
-                unlink($this->pid);
-            }
+        if (file_exists($this->pid)) {
+            unlink($this->pid);
         }
 
         $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>#%s</info>] is shutdown ', $this->name, $server->master_pid));

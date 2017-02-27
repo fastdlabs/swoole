@@ -14,7 +14,7 @@
 
 * Linux (不考虑windows)
 * PHP >= 5.6
-* Swoole >= 1.8 
+* swoole >= 1.9
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
