@@ -376,7 +376,7 @@ abstract class Server
 
         posix_kill($pid, SIGUSR1);
 
-        $this->output->writeln(sprintf('Server <info>%s</info> [<info>#%s</info>] is reloading...', $this->name, $pid));
+        $this->output->writeln(sprintf('Server <info>%s</info> [<info>%s</info>] is reloading...', $this->name, $pid));
 
         return 0;
     }
@@ -489,10 +489,10 @@ abstract class Server
         $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" <info>➜</info> Listen <info>%s://%s:%s</info>", $this->getScheme(), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf(" <info>➜</info> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
         }
 
-        $this->output->writeln(sprintf('Server Master[<info>#%s</info>] is started', $server->master_pid));
+        $this->output->writeln(sprintf('Server Master[<info>%s</info>] is started', $server->master_pid));
     }
 
     /**
@@ -507,7 +507,7 @@ abstract class Server
             unlink($this->pid);
         }
 
-        $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>#%s</info>] is shutdown ', $this->name, $server->master_pid));
+        $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>%s</info>] is shutdown ', $this->name, $server->master_pid));
     }
 
     /**
@@ -519,7 +519,7 @@ abstract class Server
     {
         process_rename($this->getName() . ' manager');
 
-        $this->output->write(sprintf('Server Manager[<info>#%s</info>] is started', $server->manager_pid) . PHP_EOL);
+        $this->output->write(sprintf('Server Manager[<info>%s</info>] is started', $server->manager_pid) . PHP_EOL);
     }
 
     /**
@@ -529,7 +529,7 @@ abstract class Server
      */
     public function onManagerStop(swoole_server $server)
     {
-        $this->output->writeln(sprintf('Server <info>%s</info> Manager[<info>#%s</info>] is shutdown.', $this->name, $server->manager_pid));
+        $this->output->writeln(sprintf('Server <info>%s</info> Manager[<info>%s</info>] is shutdown.', $this->name, $server->manager_pid));
     }
 
     /**
@@ -541,7 +541,7 @@ abstract class Server
     {
         process_rename($this->getName() . ' worker');
 
-        $this->output->write(sprintf('Server Worker[<info>#%s</info>] is started [<info>#%s</info>]', $server->worker_pid, $worker_id) . PHP_EOL);
+        $this->output->write(sprintf('Server Worker[<info>%s</info>] is started [<info>%s</info>]', $server->worker_pid, $worker_id) . PHP_EOL);
     }
 
     /**
@@ -551,7 +551,7 @@ abstract class Server
      */
     public function onWorkerStop(swoole_server $server, $worker_id)
     {
-        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>#%s</info>] is shutdown', $this->name, $worker_id));
+        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] is shutdown', $this->name, $worker_id));
     }
 
     /**
@@ -563,7 +563,7 @@ abstract class Server
      */
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
-        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>#%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code));
+        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code));
     }
 
     /**

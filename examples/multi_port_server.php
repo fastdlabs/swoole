@@ -9,7 +9,7 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-class Server extends \FastD\Swoole\Server\Tcp
+class Server extends \FastD\Swoole\Server\TCP
 {
     /**
      * @param swoole_server $server
@@ -24,7 +24,7 @@ class Server extends \FastD\Swoole\Server\Tcp
     }
 }
 
-class Server2 extends \FastD\Swoole\Server\Tcp
+class Server2 extends \FastD\Swoole\Server\UDP
 {
     /**
      * @param swoole_server $server
@@ -33,7 +33,7 @@ class Server2 extends \FastD\Swoole\Server\Tcp
      * @param $from_id
      * @return mixed
      */
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    public function doPacket(swoole_server $swoole_server, $data, $clientInfo)
     {
         return 'hello server2';
     }
@@ -41,7 +41,7 @@ class Server2 extends \FastD\Swoole\Server\Tcp
 
 $server = new Server('tcp server', 'tcp://127.0.0.1:9527');
 
-$server->listen(new Server2('tcp server2', 'tcp://127.0.0.1:9528'));
+$server->listen(new Server2('dup server2', 'udp://127.0.0.1:9528'));
 
 $server->start();
 

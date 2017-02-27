@@ -60,6 +60,16 @@ class Client
     }
 
     /**
+     * @param $address
+     * @param $socketType
+     * @return static
+     */
+    public static function create($address, $socketType = SWOOLE_SOCK_TCP)
+    {
+        return new static($address, $socketType);
+    }
+
+    /**
      * @param $name
      * @param $handler
      * @return mixed
