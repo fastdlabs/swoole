@@ -55,7 +55,6 @@ abstract class HTTP extends Server
             foreach ($swooleRequestServer->getCookieParams() as $key => $cookieParam) {
                 $swooleResponse->cookie($key, $cookieParam);
             }
-
             $swooleResponse->status($response->getStatusCode());
             $swooleResponse->end((string) $response->getBody());
             unset($response, $swooleRequestServer, $swooleResponse);
