@@ -24,13 +24,13 @@ abstract class UDP extends Server
      *
      * @param swoole_server $server
      * @param string $data
-     * @param array $client_info
+     * @param array $clientInfo
      * @return void
      */
-    public function onPacket(swoole_server $server, $data, array $client_info)
+    public function onPacket(swoole_server $server, $data, array $clientInfo)
     {
         try {
-            $content = $this->doPacket($server, $data, $client_info);
+            $content = $this->doPacket($server, $data, $clientInfo);
         } catch (\Exception $e) {
             $content = sprintf("Error: %s\nFile: %s \n Code: %s",
                 $e->getMessage(),
@@ -39,7 +39,7 @@ abstract class UDP extends Server
             );
         }
 
-        $server->sendto($client_info['address'], $client_info['port'], $content);
+        $server->sendto($clientInfo['address'], $clientInfo['port'], $content);
     }
 
     /**

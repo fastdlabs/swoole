@@ -12,6 +12,14 @@ use FastD\Swoole\Exceptions\CantSupportSchemeException;
 use FastD\Swoole\Server;
 use FastD\Swoole\Support\Output;
 
+function client($uri, $mode = SWOOLE_SOCK_TCP) {
+
+}
+
+function server ($name, $uri, array $options = []) {
+
+}
+
 /**
  * @param $name
  */

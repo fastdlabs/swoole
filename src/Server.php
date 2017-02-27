@@ -23,7 +23,6 @@ use swoole_server_port;
  */
 abstract class Server
 {
-    const NAME = 'fast-d';
     const VERSION = '2.0.0 (dev)';
 
     /**
@@ -280,7 +279,7 @@ abstract class Server
      */
     public function initSwoole()
     {
-        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, $this->getSocketType());
     }
 
     /**

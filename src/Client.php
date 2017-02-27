@@ -9,7 +9,7 @@
 
 namespace FastD\Swoole;
 
-use FastD\Swoole\Exceptions\AddressIllegalException;
+
 use swoole_client;
 
 /**
@@ -17,7 +17,7 @@ use swoole_client;
  *
  * @package FastD\Swoole
  */
-abstract class Client
+class Client
 {
     /**
      * @var swoole_client
@@ -37,53 +37,26 @@ abstract class Client
     /**
      * @var int
      */
-    protected $timeout = 5;
+    protected $socketType = SWOOLE_SOCK_TCP;
+
+    /**
+     * @var int
+     */
+    protected $timeout = 1;
 
     /**
      * Client constructor.
      *
      * @param $address
-     * @param $mode
+     * @param $socketType
      */
-    public function __construct($address, $mode = SWOOLE_SOCK_TCP)
+    public function __construct($address, $socketType = SWOOLE_SOCK_TCP)
     {
-        $info = $this->parse($address);
+        $info = parse_url($address);
 
         $this->host = $info['host'];
         $this->port = $info['port'];
-
-        $this->client = new swoole_client($info['sock']);
-    }
-
-    /**
-     * @param $address
-     * @return array
-     */
-    public function parse($address)
-    {
-        if (false === ($info = parse_url($address))) {
-            throw new AddressIllegalException($address);
-        }
-
-        switch (strtolower($info['scheme'])) {
-            case 'tcp':
-            case 'unix':
-                $sock = SWOOLE_SOCK_TCP;
-                break;
-            case 'udp':
-                $sock = SWOOLE_SOCK_UDP;
-                break;
-            case 'http':
-            case 'ws':
-                $sock = null;
-                break;
-            default:
-                $sock = 'unknown';
-        }
-
-        return array_merge($info, [
-            'sock' => $sock
-        ]);
+        $this->socketType = $socketType;
     }
 
     /**
@@ -110,52 +83,64 @@ abstract class Client
     }
 
     /**
+     * @param swoole_client $client
+     * @return mixed
+     */
+    public function connect(swoole_client $client){}
+
+    /**
+     * @param swoole_client $client
+     * @param string $data
+     * @return mixed
+     */
+    public function receive(swoole_client $client, $data){}
+
+    /**
+     * @param swoole_client $client
+     * @return mixed
+     */
+    public function error(swoole_client $client){}
+
+    /**
+     * @param swoole_client $client
+     * @return mixed
+     */
+    public function close(swoole_client $client){}
+
+    /**
      * @param $data
+     * @param bool $async
+     * @param bool $keep
      * @return mixed
      */
-    public function send($data)
+    public function send($data, $async = false, $keep = null)
     {
-        return $this->client->send($data);
+        $sync = SWOOLE_SOCK_SYNC;
+        if (true === $async) {
+            $sync = SWOOLE_SOCK_ASYNC;
+        }
+
+        $client = new swoole_client($this->socketType, $sync, $keep);
+
+        if (!$async) {
+            if (!$client->connect($this->host, $this->port, $this->timeout)) {
+                throw new \RuntimeException(socket_strerror($client->errCode));
+            } else {
+                $this->connect($client);
+            }
+            $client->send($data);
+            $receive = $client->recv();
+            call_user_func_array([$this, 'receive'], [$client, $receive]);
+            if (!$keep) {
+                $client->close();
+            }
+            return $receive;
+        } else {
+            $client->on("connect", function ($client) { call_user_func_array([$this, 'connect'], [$client]); });
+            $client->on("receive", function ($client, $data) { call_user_func_array([$this, 'receive'], [$client, $data]); });
+            $client->on("error", function ($client) { call_user_func_array([$this, 'error'], [$client]); });
+            $client->on("close", function ($client) { call_user_func_array([$this, 'close'], [$client]); });
+            $client->connect($this->host, $this->port, $this->timeout);
+        }
     }
-
-    /**
-     * @param $host
-     * @param $port
-     * @param $data
-     * @return mixed
-     */
-    public function sendTo($host, $port, $data)
-    {
-        return $this->client->sendto($host, $port, $data);
-    }
-
-    /**
-     * @param $callback
-     * @param int $timeout
-     * @return $this
-     */
-    abstract public function connect($callback, $timeout = 5);
-
-    /**
-     * @param $callback
-     * @return $this
-     */
-    abstract public function receive($callback);
-
-    /**
-     * @param $callback
-     * @return $this
-     */
-    abstract public function error($callback);
-
-    /**
-     * @param $callback
-     * @return mixed
-     */
-    abstract public function close($callback);
-
-    /**
-     * @return mixed
-     */
-    abstract public function resolve();
 }

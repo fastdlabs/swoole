@@ -5,7 +5,7 @@ include __DIR__ . '/../../vendor/autoload.php';
 /**
  * Class DemoServer
  */
-class DemoServer extends \FastD\Swoole\Server\Udp
+class DemoServer extends \FastD\Swoole\Server\UDP
 {
     /**
      * @param swoole_server $server
@@ -15,8 +15,9 @@ class DemoServer extends \FastD\Swoole\Server\Udp
      */
     public function doPacket(swoole_server $server, $data, $client_info)
     {
+        print_r($server);
         echo $data . PHP_EOL;
-        return 'hello tcp';
+        return 'hello udp';
     }
 }
 

@@ -20,6 +20,29 @@ use swoole_server;
 abstract class TCP extends Server
 {
     /**
+     * @var bool
+     */
+    protected $keepAlive = false;
+
+    /**
+     * @return $this
+     */
+    public function openKeepAlive()
+    {
+        $this->keepAlive = true;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isKeepAlive()
+    {
+        return $this->keepAlive;
+    }
+
+    /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *
      * @param swoole_server $server
@@ -33,7 +56,9 @@ abstract class TCP extends Server
         try {
             $content = $this->doWork($server, $fd, $data, $from_id);
             $server->send($fd, $content);
-            $server->close($fd);
+            if (!$this->isKeepAlive()) {
+                $server->close($fd);
+            }
         } catch (\Exception $e) {
             $server->send($fd, sprintf("Error: %s\nFile: %s \nCode: %s\nLine: %s\r\n\r\n",
                     $e->getMessage(),

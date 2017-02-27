@@ -29,7 +29,7 @@ class Swoole extends Application
      */
     public function __construct()
     {
-        parent::__construct(Server::NAME, Server::VERSION);
+        parent::__construct('swoole', Server::VERSION);
 
         $this->add(new ClientCommand());
     }
