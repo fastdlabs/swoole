@@ -15,7 +15,6 @@ class DemoServer extends \FastD\Swoole\Server\UDP
      */
     public function doPacket(swoole_server $server, $data, $client_info)
     {
-        print_r($server);
         echo $data . PHP_EOL;
         return 'hello udp';
     }

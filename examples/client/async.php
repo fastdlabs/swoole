@@ -7,22 +7,8 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Client\Async\AsyncClient;
-
 include __DIR__ . '/../../vendor/autoload.php';
 
-$client = new AsyncClient('tcp://127.0.0.1:9527');
+$client = new \FastD\Swoole\Client\Sync\TCP('tcp://127.0.0.1:9527');
 
-$client
-    ->connect(function ($client) {
-        $client->send('hello world');
-    })
-    ->receive(function ($client, $data) {
-        echo $data . PHP_EOL;
-    })
-    ->error(function ($client) {
-        print_r($client);
-    })
-    ->close(function ($client) {})
-    ->resolve()
-;
+echo $client->send('hello', true);

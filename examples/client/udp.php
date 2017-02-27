@@ -9,15 +9,6 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$client = new \FastD\Swoole\Client\Sync\UDP('udp://127.0.0.1:9527');
+$client = new \FastD\Swoole\Client\Sync\UDP('tcp://127.0.0.1:9527');
 
-$client
-    ->connect(function ($client) {
-        $client->send('hello world');
-    })
-    ->receive(function ($client, $data) {
-        echo $data . PHP_EOL;
-        $client->close();
-    })
-    ->resolve()
-;
+echo $client->send('hello');

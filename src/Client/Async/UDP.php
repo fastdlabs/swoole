@@ -20,6 +20,16 @@ use swoole_client;
 class UDP extends Client
 {
     /**
+     * UDP constructor.
+     * @param $address
+     * @param $socketType
+     */
+    public function __construct($address, $socketType = SWOOLE_SOCK_UDP)
+    {
+        parent::__construct($address, $socketType);
+    }
+
+    /**
      * @param $data
      * @param bool $async
      * @param bool $keep
