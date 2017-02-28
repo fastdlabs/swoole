@@ -10,6 +10,7 @@
 namespace FastD\Swoole;
 
 use Exception;
+use SebastianBergmann\CodeCoverage\Report\PHP;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput as Output;
 use FastD\Swoole\Support\Watcher;
@@ -328,7 +329,7 @@ abstract class Server
     public function start()
     {
         if (process_is_running($this->name)) {
-            $this->output->writeln(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port));
+            $this->output->write(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port) . PHP_EOL);
         } else {
             try {
                 $this->bootstrap();
@@ -343,7 +344,7 @@ abstract class Server
                 }
                 $this->swoole->start();
             } catch (Exception $e) {
-                $this->output->writeln("<error>{$e->getMessage()}</error>");
+                $this->output->write("<error>{$e->getMessage()}</error>\n");
             }
         }
 
@@ -356,7 +357,7 @@ abstract class Server
     public function shutdown()
     {
         if (false === process_is_running($this->name)) {
-            $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
+            $this->output->write(sprintf('Server <info>%s</info> is not running...', $this->name) . PHP_EOL);
             return -1;
         }
 
@@ -364,7 +365,7 @@ abstract class Server
 
         posix_kill($pid, SIGTERM);
 
-        $this->output->writeln(sprintf('Server <info>%s</info> [<info>#%s</info>] is shutdown...', $this->name, $pid));
+        $this->output->write(sprintf('Server <info>%s</info> [<info>#%s</info>] is shutdown...', $this->name, $pid) . PHP_EOL);
 
         return 0;
     }
@@ -375,7 +376,7 @@ abstract class Server
     public function reload()
     {
         if (false === process_is_running($this->name)) {
-            $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
+            $this->output->write(sprintf('Server <info>%s</info> is not running...', $this->name) . PHP_EOL);
             return -1;
         }
 
@@ -383,7 +384,7 @@ abstract class Server
 
         posix_kill($pid, SIGUSR1);
 
-        $this->output->writeln(sprintf('Server <info>%s</info> [<info>%s</info>] is reloading...', $this->name, $pid));
+        $this->output->write(sprintf('Server <info>%s</info> [<info>%s</info>] is reloading...', $this->name, $pid) . PHP_EOL);
 
         return 0;
     }
@@ -404,7 +405,7 @@ abstract class Server
     public function status()
     {
         if (!($status = process_is_running($this->name))) {
-            $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
+            $this->output->write(sprintf('Server <info>%s</info> is not running...', $this->name) . PHP_EOL);
             return -1;
         }
 
@@ -425,10 +426,10 @@ abstract class Server
             $output[$key] = array_combine($headers, $value);
         }
 
-        $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
-        $this->output->writeln(sprintf('App version <info>%s</info>', Server::VERSION));
-        $this->output->writeln(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION));
-        $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid, (int) @file_get_contents($this->pid)));
+        $this->output->write(sprintf("Server: <info>%s</info>", $this->name) . PHP_EOL);
+        $this->output->write(sprintf('App version <info>%s</info>', Server::VERSION) . PHP_EOL);
+        $this->output->write(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION) . PHP_EOL);
+        $this->output->write(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid, (int) @file_get_contents($this->pid)) . PHP_EOL);
         $table = new Table($this->output);
         $table
             ->setHeaders($headers)
@@ -458,7 +459,7 @@ abstract class Server
         }
 
         foreach ($directories as $directory) {
-            $this->output->writeln(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
+            $this->output->write(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)) . PHP_EOL);
         }
 
         $watcher = new Watcher($this->output);
@@ -487,19 +488,19 @@ abstract class Server
             file_put_contents($this->pid, $server->master_pid);
         }
 
-        $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
-        $this->output->writeln(sprintf('App version <info>%s</info>', Server::VERSION));
-        $this->output->writeln(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION));
-        $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid, $server->master_pid));
+        $this->output->write(sprintf("Server: <info>%s</info>", $this->name) . PHP_EOL);
+        $this->output->write(sprintf('App version <info>%s</info>', Server::VERSION) . PHP_EOL);
+        $this->output->write(sprintf('Swoole version <info>%s</info>', SWOOLE_VERSION) . PHP_EOL);
+        $this->output->write(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid, $server->master_pid) . PHP_EOL);
         process_rename($this->name . ' master');
 
-        $this->output->writeln(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
+        $this->output->write(sprintf("Server <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()) . PHP_EOL);
 
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" <info>➜</info> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
+            $this->output->write(sprintf(" <info>➜</info> Listen <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()) . PHP_EOL);
         }
 
-        $this->output->writeln(sprintf('Server Master[<info>%s</info>] is started', $server->master_pid));
+        $this->output->write(sprintf('Server Master[<info>%s</info>] is started', $server->master_pid) . PHP_EOL);
     }
 
     /**
@@ -514,7 +515,7 @@ abstract class Server
             unlink($this->pid);
         }
 
-        $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>%s</info>] is shutdown ', $this->name, $server->master_pid));
+        $this->output->write(sprintf('Server <info>%s</info> Master[<info>%s</info>] is shutdown ', $this->name, $server->master_pid) . PHP_EOL);
     }
 
     /**
@@ -536,7 +537,7 @@ abstract class Server
      */
     public function onManagerStop(swoole_server $server)
     {
-        $this->output->writeln(sprintf('Server <info>%s</info> Manager[<info>%s</info>] is shutdown.', $this->name, $server->manager_pid));
+        $this->output->write(sprintf('Server <info>%s</info> Manager[<info>%s</info>] is shutdown.', $this->name, $server->manager_pid) . PHP_EOL);
     }
 
     /**
@@ -558,7 +559,7 @@ abstract class Server
      */
     public function onWorkerStop(swoole_server $server, $worker_id)
     {
-        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] is shutdown', $this->name, $worker_id));
+        $this->output->write(sprintf('Server <info>%s</info> Worker[<info>%s</info>] is shutdown', $this->name, $worker_id) . PHP_EOL);
     }
 
     /**
@@ -570,7 +571,7 @@ abstract class Server
      */
     public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
     {
-        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code));
+        $this->output->write(sprintf('Server <info>%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code) . PHP_EOL);
     }
 
     /**
