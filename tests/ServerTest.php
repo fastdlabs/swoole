@@ -36,7 +36,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(get_local_ip(), $server->getHost());
         $this->assertEquals('9527', $server->getPort());
         $this->assertEquals('foo', $server->getName());
-        $this->assertNull($server->getPid());
+        $this->assertEquals('/tmp/foo.pid', $server->getPid());
         $this->assertNull($server->getSwoole());
     }
 

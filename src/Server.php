@@ -16,6 +16,7 @@ use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
 use swoole_server_port;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class Server
@@ -92,8 +93,9 @@ abstract class Server
      * @param $name
      * @param null $address
      * @param array $config
+     * @param OutputInterface $output
      */
-    public function __construct($name, $address = null, array $config = [])
+    public function __construct($name, $address = null, array $config = [], OutputInterface $output = null)
     {
         $this->name = $name;
 
@@ -107,7 +109,11 @@ abstract class Server
         $this->host = $info['host'];
         $this->port = $info['port'];
 
-        $this->output = new Output();
+        if (null === $output) {
+            $output = new Output();
+        }
+
+        $this->output = $output;
 
         $this->configure($config);
     }
@@ -122,6 +128,11 @@ abstract class Server
 
         if (isset($this->config['pid_file'])) {
             $this->pid = $this->config['pid_file'];
+        }
+
+        if (empty($this->pid)) {
+            $this->pid = '/tmp/' . $this->name . '.pid';
+            $this->config['pid_file'] = $this->pid;
         }
 
         return $this;
@@ -257,11 +268,6 @@ abstract class Server
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
-
-            if (empty($this->pid)) {
-                $this->pid = '/tmp/' . $this->name . '.pid';
-                $this->config['pid_file'] = $this->pid;
-            }
 
             $this->swoole->set($this->config);
 
