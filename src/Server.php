@@ -232,9 +232,9 @@ abstract class Server
             if ('on' == substr($value, 0, 2)) {
                 if ($isListenerPort) {
                     if ('udp' === $this->getScheme()) {
-                        $callbacks = ['onConnect', 'onClose', 'onReceive'];
-                    } else {
                         $callbacks = ['onPacket',];
+                    } else {
+                        $callbacks = ['onConnect', 'onClose', 'onReceive'];
                     }
                     if (in_array($value, $callbacks)) {
                         $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
@@ -258,11 +258,12 @@ abstract class Server
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
 
-            $this->swoole->set($this->config);
-
             if (empty($this->pid)) {
                 $this->pid = '/tmp/' . $this->name . '.pid';
+                $this->config['pid_file'] = $this->pid;
             }
+
+            $this->swoole->set($this->config);
 
             $this->handleCallback();
 

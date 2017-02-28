@@ -53,6 +53,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
             'daemonize' => true,
             'task_worker_num' => 8,
             'task_tmpdir' => '/tmp',
+            'pid_file' => '/tmp/foo.pid'
         ], $server->getSwoole()->setting);
     }
 
