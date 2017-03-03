@@ -49,7 +49,8 @@ abstract class Server
      */
     protected $config = [
         'task_worker_num' => 8,
-        'task_tmpdir' => '/tmp'
+        'task_tmpdir' => '/tmp',
+        'open_cpu_affinity' => true
     ];
 
     /**
