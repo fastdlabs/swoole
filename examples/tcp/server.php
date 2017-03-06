@@ -18,6 +18,7 @@ class DemoServer extends TCP
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
+        echo $fd;
         echo $data . PHP_EOL;
         $server->task($data);
         return $data;

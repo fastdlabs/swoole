@@ -10,7 +10,6 @@
 namespace FastD\Swoole;
 
 use Exception;
-use SebastianBergmann\CodeCoverage\Report\PHP;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput as Output;
 use FastD\Swoole\Support\Watcher;
@@ -48,9 +47,10 @@ abstract class Server
      * @var array
      */
     protected $config = [
+        'worker_num' => 8,
         'task_worker_num' => 8,
         'task_tmpdir' => '/tmp',
-        'open_cpu_affinity' => true
+        'open_cpu_affinity' => true,
     ];
 
     /**

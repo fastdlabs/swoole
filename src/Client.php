@@ -19,6 +19,8 @@ use swoole_client;
  */
 class Client
 {
+    protected $swoole;
+
     /**
      * @var swoole_client
      */
@@ -57,6 +59,8 @@ class Client
         $this->host = $info['host'];
         $this->port = $info['port'];
         $this->socketType = $socketType;
+
+        $this->swoole = new swoole_client($this->socketType, SWOOLE_SOCK_SYNC);
     }
 
     /**
@@ -123,14 +127,15 @@ class Client
      * @param bool $keep
      * @return mixed
      */
-    public function send($data, $async = false, $keep = null)
+    public function send($data, $async = false, $keep = false)
     {
-        $sync = SWOOLE_SOCK_SYNC;
-        if (true === $async) {
-            $sync = SWOOLE_SOCK_ASYNC;
+        if (true === $async || true === $keep) {
+            $sync = true === $async ? SWOOLE_SOCK_ASYNC : SWOOLE_SOCK_ASYNC;
+            $this->socketType = true === $keep ? ($this->socketType | SWOOLE_KEEP) : $this->socketType;
+            $this->swoole = new swoole_client($this->socketType, $sync);
         }
 
-        $client = new swoole_client($this->socketType, $sync, $keep);
+        $client = $this->swoole;
 
         if (!$async) {
             if (!$client->connect($this->host, $this->port, $this->timeout)) {
@@ -141,9 +146,6 @@ class Client
             $client->send($data);
             $receive = $client->recv();
             call_user_func_array([$this, 'receive'], [$client, $receive]);
-            if (!$keep) {
-                $client->close();
-            }
             return $receive;
         } else {
             $client->on("connect", function ($client) { call_user_func_array([$this, 'connect'], [$client]); });
@@ -152,5 +154,7 @@ class Client
             $client->on("close", function ($client) { call_user_func_array([$this, 'close'], [$client]); });
             $client->connect($this->host, $this->port, $this->timeout);
         }
+        unset($client);
+        return true;
     }
 }
