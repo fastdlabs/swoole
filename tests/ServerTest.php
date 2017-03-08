@@ -53,7 +53,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
             'daemonize' => true,
             'task_worker_num' => 8,
             'task_tmpdir' => '/tmp',
-            'pid_file' => '/tmp/foo.pid'
+            'pid_file' => '/tmp/foo.pid',
+            'worker_num' => 8,
+            'open_cpu_affinity' => true,
         ], $server->getSwoole()->setting);
     }
 
@@ -69,6 +71,8 @@ class ServerTest extends PHPUnit_Framework_TestCase
             'pid_file' => '/tmp/foo.pid',
             'task_worker_num' => 8,
             'task_tmpdir' => '/tmp',
+            'worker_num' => 8,
+            'open_cpu_affinity' => true,
         ], $server->getSwoole()->setting);
         $this->assertEquals('/tmp/foo.pid', $server->getPid());
     }
