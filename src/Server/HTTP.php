@@ -11,6 +11,7 @@ namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\HttpException;
+use FastD\Http\Request;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
@@ -45,25 +46,30 @@ abstract class HTTP extends Server
     {
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
-
             $response = $this->doRequest($swooleRequestServer);
 
-            foreach ($response->getHeaders() as $key => $header) {
-                $swooleResponse->header($key, $response->getHeaderLine($key));
-            }
+            $this->sendHeader($swooleResponse, $response);
 
-            foreach ($swooleRequestServer->getCookieParams() as $key => $cookieParam) {
-                $swooleResponse->cookie($key, $cookieParam);
-            }
             $swooleResponse->status($response->getStatusCode());
             $swooleResponse->end((string) $response->getBody());
-            unset($response, $swooleRequestServer, $swooleResponse);
+            unset($response);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($e->getMessage());
         } catch (Exception $e) {
             $swooleResponse->status(500);
             $swooleResponse->end($e->getMessage());
+        }
+    }
+
+    protected function sendHeader(swoole_http_response $swooleResponse, Response $response)
+    {
+        foreach ($response->getHeaders() as $key => $header) {
+            $swooleResponse->header($key, $response->getHeaderLine($key));
+        }
+
+        foreach ($request->getCookieParams() as $key => $cookieParam) {
+            $swooleResponse->cookie($key, $cookieParam);
         }
     }
 
