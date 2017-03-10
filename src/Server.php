@@ -334,6 +334,9 @@ abstract class Server
         } else {
             try {
                 $this->bootstrap();
+                if (!file_exists($dir = dirname($this->pid))) {
+                    mkdir($dir, 0755, true);
+                }
                 // 多端口监听
                 foreach ($this->listens as $listen) {
                     $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $listen->getSocketType());
@@ -483,9 +486,6 @@ abstract class Server
     public function onStart(swoole_server $server)
     {
         if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
-            if (!is_dir($dir = dirname($this->pid))) {
-                mkdir($dir, 0755, true);
-            }
             file_put_contents($this->pid, $server->master_pid);
         }
 
