@@ -7,11 +7,10 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Async;
+include __DIR__ . '/../../vendor/autoload.php';
 
-use FastD\Swoole\Client;
+$client = new \FastD\Swoole\Client\Sync\TCP('tcp://127.0.0.1:9527');
 
-class AsyncMySQL extends Client
-{
+echo $client->send('hello', false, true) . PHP_EOL;
 
-}
+

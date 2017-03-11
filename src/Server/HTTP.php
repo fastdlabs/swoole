@@ -11,6 +11,7 @@ namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\HttpException;
+use FastD\Http\Request;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
@@ -25,13 +26,12 @@ use swoole_server;
  *
  * @package FastD\Swoole\Server
  */
-abstract class Http extends Server
+abstract class HTTP extends Server
 {
-    const GZIP_LEVEL = 2;
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
     /**
-     * @return \swoole_server
+     * @return \swoole_http_server
      */
     public function initSwoole()
     {
@@ -46,20 +46,13 @@ abstract class Http extends Server
     {
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
-
             $response = $this->doRequest($swooleRequestServer);
 
-            foreach ($response->getHeaders() as $key => $header) {
-                $swooleResponse->header($key, $response->getHeaderLine($key));
-            }
-
-            foreach ($swooleRequestServer->getCookieParams() as $key => $cookieParam) {
-                $swooleResponse->cookie($key, $cookieParam);
-            }
+            $this->sendHeader($swooleResponse, $response);
 
             $swooleResponse->status($response->getStatusCode());
             $swooleResponse->end((string) $response->getBody());
-            unset($response, $swooleRequestServer, $swooleResponse);
+            unset($response);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($e->getMessage());
@@ -69,9 +62,37 @@ abstract class Http extends Server
         }
     }
 
+    protected function sendHeader(swoole_http_response $swooleResponse, Response $response)
+    {
+        foreach ($response->getHeaders() as $key => $header) {
+            $swooleResponse->header($key, $response->getHeaderLine($key));
+        }
+
+        foreach ($request->getCookieParams() as $key => $cookieParam) {
+            $swooleResponse->cookie($key, $cookieParam);
+        }
+    }
+
     /**
      * @param ServerRequestInterface $serverRequest
      * @return Response
      */
     abstract public function doRequest(ServerRequestInterface $serverRequest);
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @param $workerId
+     * @return mixed
+     */
+    public function doTask(swoole_server $server, $data, $taskId, $workerId){}
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @return mixed
+     */
+    public function doFinish(swoole_server $server, $data, $taskId){}
 }

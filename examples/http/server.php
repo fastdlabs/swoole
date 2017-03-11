@@ -1,16 +1,16 @@
 <?php
 use FastD\Http\JsonResponse;
-use FastD\Http\ServerRequest;
+use Psr\Http\Message\ServerRequestInterface;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class Http extends \FastD\Swoole\Server\Http
+class Http extends \FastD\Swoole\Server\HTTP
 {
     /**
-     * @param ServerRequest $serverRequest
+     * @param ServerRequestInterface $serverRequest
      * @return JsonResponse
      */
-    public function doRequest(ServerRequest $serverRequest)
+    public function doRequest(ServerRequestInterface $serverRequest)
     {
         return new JsonResponse([
             'msg' => 'hello world',

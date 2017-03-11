@@ -7,11 +7,8 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Async;
+$server = include __DIR__ . '/../tcp/server.php';
 
-use FastD\Swoole\Client;
+$server->openKeepAlive();
 
-class AsyncRedis extends Client
-{
-
-}
+$server->start();

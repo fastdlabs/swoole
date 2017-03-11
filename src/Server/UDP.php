@@ -17,29 +17,28 @@ use swoole_server;
  *
  * @package FastD\Swoole\Server
  */
-abstract class Udp extends Server
+abstract class UDP extends Server
 {
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *
      * @param swoole_server $server
      * @param string $data
-     * @param array $client_info
+     * @param array $clientInfo
      * @return void
      */
-    public function onPacket(swoole_server $server, $data, array $client_info)
+    public function onPacket(swoole_server $server, $data, array $clientInfo)
     {
         try {
-            $content = $this->doPacket($server, $data, $client_info);
+            $this->doPacket($server, $data, $clientInfo);
         } catch (\Exception $e) {
             $content = sprintf("Error: %s\nFile: %s \n Code: %s",
                 $e->getMessage(),
                 $e->getFile(),
                 $e->getCode()
             );
+            $server->sendto($clientInfo['address'], $clientInfo['port'], $content);
         }
-
-        $server->sendto($client_info['address'], $client_info['port'], $content);
     }
 
     /**
@@ -49,4 +48,21 @@ abstract class Udp extends Server
      * @return mixed
      */
     abstract public function doPacket(swoole_server $server, $data, $client_info);
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @param $workerId
+     * @return mixed
+     */
+    public function doTask(swoole_server $server, $data, $taskId, $workerId){}
+
+    /**
+     * @param swoole_server $server
+     * @param $data
+     * @param $taskId
+     * @return mixed
+     */
+    public function doFinish(swoole_server $server, $data, $taskId){}
 }

@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/JanHuang/swoole.svg?branch=master)](https://travis-ci.org/JanHuang/swoole)
 [![PHP Require Version](https://img.shields.io/badge/php-%3E%3D5.6-8892BF.svg)](https://secure.php.net/)
-[![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D1.8-8892BF.svg)](http://www.swoole.com/)
+[![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D2.0.2-8892BF.svg)](http://www.swoole.com/)
 [![Latest Stable Version](https://poser.pugx.org/fastd/swoole/v/stable)](https://packagist.org/packages/fastd/swoole)
 [![Total Downloads](https://poser.pugx.org/fastd/swoole/downloads)](https://packagist.org/packages/fastd/swoole) 
 [![Latest Unstable Version](https://poser.pugx.org/fastd/swoole/v/unstable)](https://packagist.org/packages/fastd/swoole) 
@@ -14,7 +14,7 @@
 
 * Linux (不考虑windows)
 * PHP >= 5.6
-* Swoole >= 1.8 
+* swoole >= 1.9
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 

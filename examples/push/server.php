@@ -7,8 +7,8 @@
  * @link      http://www.fast-d.cn/
  */
 
-include __DIR__ . '/../../vendor/autoload.php';
+$server = include __DIR__ . '/../tcp/server.php';
 
-$client = new \FastD\Swoole\Client('tcp://127.0.0.1:9527', SWOOLE_SOCK_UDP);
+$server->openKeepAlive();
 
-echo $client->send('hello');
+$server->start();

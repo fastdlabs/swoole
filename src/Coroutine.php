@@ -7,11 +7,10 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Exceptions;
+namespace FastD\Swoole;
 
-use RuntimeException;
 
-class SwooleException extends RuntimeException
+class Coroutine
 {
-
+    
 }
