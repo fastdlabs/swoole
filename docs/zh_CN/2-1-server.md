@@ -22,7 +22,7 @@ class DemoServer extends TCP
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
-        return 'hello tcp';
+         $server->send($fd, $data);
     }
 }
 
@@ -41,9 +41,9 @@ use \FastD\Swoole\Server\UDP;
 
 class DemoServer extends UDP
 {
-    public function doPacket(swoole_server $server, $data, $client_info)
+    public function doPacket(swoole_server $server, $data, $clientInfo)
     {
-        return 'hello udp';
+        $server->sendto($clientInfo['address'], $clientInfo['port'], $data);
     }
 }
 

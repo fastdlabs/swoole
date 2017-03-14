@@ -9,6 +9,4 @@
 
 $server = include __DIR__ . '/../tcp/server.php';
 
-$server->openKeepAlive();
-
 $server->start();

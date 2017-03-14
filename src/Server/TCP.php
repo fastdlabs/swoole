@@ -47,6 +47,23 @@ abstract class TCP extends Server
     /**
      * @param swoole_server $server
      * @param $fd
+     * @param $from_id
+     */
+    public function onConnect(swoole_server $server, $fd, $from_id)
+    {
+        $this->doConnect($server, $fd, $from_id);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function doConnect(swoole_server $server, $fd, $from_id){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
      * @param $data
      * @param $from_id
      * @return mixed

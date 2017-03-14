@@ -21,6 +21,7 @@ class DemoServer extends TCP
         echo $fd;
         echo $data . PHP_EOL;
         $server->task($data);
+        $server->send($fd, $data);
         return $data;
     }
 

@@ -13,7 +13,7 @@ use FastD\Swoole\Server\TCP;
 
 class DemoServer extends TCP
 {
-    public function onConnect(swoole_server $server, int $fd, int $from_id)
+    public function doConnect(swoole_server $server, $fd, $from_id)
     {
         echo 'onConnect: ' . $fd . PHP_EOL;
         timer_tick(1000, function () use ($server, $fd) {

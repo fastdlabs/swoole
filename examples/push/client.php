@@ -32,7 +32,7 @@ class Cli extends \FastD\Swoole\Client
     }
 }
 
-$client = new Cli('tcp://127.0.0.1:9527');
+$client = new Cli('tcp://127.0.0.1:9527', true);
 
-$client->send(null, true);
+$client->start();
 

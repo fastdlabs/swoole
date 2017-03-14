@@ -565,14 +565,13 @@ abstract class Server
 
     /**
      * @param swoole_server $server
-     * @param int $worker_id
-     * @param int $worker_pid
-     * @param int $exit_code
-     * @return void
+     * @param $workerId
+     * @param $workerPid
+     * @param $code
      */
-    public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
+    public function onWorkerError(swoole_server $server, $workerId, $workerPid, $code)
     {
-        $this->output->write(sprintf('Server <info>%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code) . PHP_EOL);
+        $this->output->write(sprintf('Server <info>%s:%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $workerPid, $workerId, $code) . PHP_EOL);
     }
 
     /**
