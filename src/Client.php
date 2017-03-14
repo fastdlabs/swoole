@@ -127,7 +127,7 @@ class Client
      * @param bool $keep
      * @return mixed
      */
-    public function send($data, $async = false, $keep = false)
+    public function send($data = null, $async = false, $keep = false)
     {
         if (true === $async || true === $keep) {
             $sync = true === $async ? SWOOLE_SOCK_ASYNC : SWOOLE_SOCK_ASYNC;

@@ -9,8 +9,30 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$client = new \FastD\Swoole\Client\Sync\TCP('tcp://127.0.0.1:9527');
+class Cli extends \FastD\Swoole\Client
+{
+    public function receive(swoole_client $client, $data)
+    {
+        echo $data;
+    }
 
-echo $client->send('hello', false, true) . PHP_EOL;
+    public function error(swoole_client $client)
+    {
 
+    }
+
+    public function connect(swoole_client $client)
+    {
+        echo 'connect';
+    }
+
+    public function close(swoole_client $client)
+    {
+
+    }
+}
+
+$client = new Cli('tcp://127.0.0.1:9527');
+
+$client->send(null, true);
 
