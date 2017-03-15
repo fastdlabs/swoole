@@ -613,4 +613,38 @@ abstract class Server
      * @return mixed
      */
     abstract public function doFinish(swoole_server $server, $data, $taskId);
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function onConnect(swoole_server $server, $fd, $from_id)
+    {
+        $this->doConnect($server, $fd, $from_id);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    abstract public function doConnect(swoole_server $server, $fd, $from_id);
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function onClose(swoole_server $server, $fd, $fromId)
+    {
+        $this->doClose($server, $fd, $fromId);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    abstract public function doClose(swoole_server $server, $fd, $fromId);
 }

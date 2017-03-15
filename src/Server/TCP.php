@@ -49,17 +49,14 @@ abstract class TCP extends Server
      * @param $fd
      * @param $from_id
      */
-    public function onConnect(swoole_server $server, $fd, $from_id)
-    {
-        $this->doConnect($server, $fd, $from_id);
-    }
+    public function doConnect(swoole_server $server, $fd, $from_id){}
 
     /**
      * @param swoole_server $server
      * @param $fd
-     * @param $from_id
+     * @param $fromId
      */
-    public function doConnect(swoole_server $server, $fd, $from_id){}
+    public function doClose(swoole_server $server, $fd, $fromId){}
 
     /**
      * @param swoole_server $server
