@@ -38,7 +38,7 @@ abstract class WebSocket extends Server
      * @param swoole_http_request $request
      * @return mixed
      */
-    abstract public function doOpen(swoole_websocket_server $server, swoole_http_request $request);
+    public function doOpen(swoole_websocket_server $server, swoole_http_request $request){}
 
     /**
      * @param swoole_server $server

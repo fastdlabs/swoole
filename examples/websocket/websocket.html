@@ -6,10 +6,10 @@
 </head>
 <body>
 <script>
-    var ws = new WebSocket('ws://11.11.11.22:9527');
+    var ws = new WebSocket('ws://127.0.0.1:9527');
     ws.onopen = function () {
         console.log('on open');
-        ws.send('Ping');
+        ws.send(JSON.stringify({"method": "GET", "path": "/"}));
     };
 
     ws.onclose = function (error) {
