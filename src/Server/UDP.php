@@ -44,10 +44,10 @@ abstract class UDP extends Server
     /**
      * @param swoole_server $server
      * @param $data
-     * @param $client_info
+     * @param $clientInfo
      * @return mixed
      */
-    abstract public function doPacket(swoole_server $server, $data, $client_info);
+    abstract public function doPacket(swoole_server $server, $data, $clientInfo);
 
     /**
      * @param swoole_server $server
@@ -65,4 +65,18 @@ abstract class UDP extends Server
      * @return mixed
      */
     public function doFinish(swoole_server $server, $data, $taskId){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function doConnect(swoole_server $server, $fd, $from_id){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function doClose(swoole_server $server, $fd, $fromId){}
 }

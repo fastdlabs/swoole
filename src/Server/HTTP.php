@@ -47,9 +47,7 @@ abstract class HTTP extends Server
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
             $response = $this->doRequest($swooleRequestServer);
-
             $this->sendHeader($swooleResponse, $response);
-
             $swooleResponse->status($response->getStatusCode());
             $swooleResponse->end((string) $response->getBody());
             unset($response);
@@ -62,13 +60,17 @@ abstract class HTTP extends Server
         }
     }
 
+    /**
+     * @param swoole_http_response $swooleResponse
+     * @param Response $response
+     */
     protected function sendHeader(swoole_http_response $swooleResponse, Response $response)
     {
         foreach ($response->getHeaders() as $key => $header) {
             $swooleResponse->header($key, $response->getHeaderLine($key));
         }
 
-        foreach ($request->getCookieParams() as $key => $cookieParam) {
+        foreach ($response->getCookieParams() as $key => $cookieParam) {
             $swooleResponse->cookie($key, $cookieParam);
         }
     }
@@ -95,4 +97,18 @@ abstract class HTTP extends Server
      * @return mixed
      */
     public function doFinish(swoole_server $server, $data, $taskId){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function doConnect(swoole_server $server, $fd, $from_id){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function doClose(swoole_server $server, $fd, $fromId){}
 }

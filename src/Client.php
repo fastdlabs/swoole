@@ -48,19 +48,23 @@ class Client
 
     /**
      * Client constructor.
-     *
      * @param $address
+     * @param bool $async
+     * @param bool $keep
      * @param $socketType
      */
-    public function __construct($address, $socketType = SWOOLE_SOCK_TCP)
+    public function __construct($address, $async = false, $keep = false, $socketType = SWOOLE_SOCK_TCP)
     {
         $info = parse_url($address);
 
         $this->host = $info['host'];
         $this->port = $info['port'];
-        $this->socketType = $socketType;
 
-        $this->swoole = new swoole_client($this->socketType, SWOOLE_SOCK_SYNC);
+        $this->socketType = $socketType;
+        $sync = true === $async ? SWOOLE_SOCK_ASYNC : SWOOLE_SOCK_SYNC;
+        $this->socketType = true === $keep ? ($socketType | SWOOLE_KEEP) : $socketType;
+
+        $this->swoole = new swoole_client($this->socketType, $sync);
     }
 
     /**
@@ -122,39 +126,31 @@ class Client
     public function close(swoole_client $client){}
 
     /**
-     * @param $data
-     * @param bool $async
-     * @param bool $keep
+     * @param null $data
      * @return mixed
      */
-    public function send($data, $async = false, $keep = false)
+    public function send($data = null)
     {
-        if (true === $async || true === $keep) {
-            $sync = true === $async ? SWOOLE_SOCK_ASYNC : SWOOLE_SOCK_ASYNC;
-            $this->socketType = true === $keep ? ($this->socketType | SWOOLE_KEEP) : $this->socketType;
-            $this->swoole = new swoole_client($this->socketType, $sync);
-        }
-
         $client = $this->swoole;
-
-        if (!$async) {
-            if (!$client->connect($this->host, $this->port, $this->timeout)) {
-                throw new \RuntimeException(socket_strerror($client->errCode));
-            } else {
-                $this->connect($client);
-            }
-            $client->send($data);
-            $receive = $client->recv();
-            call_user_func_array([$this, 'receive'], [$client, $receive]);
-            return $receive;
-        } else {
-            $client->on("connect", function ($client) { call_user_func_array([$this, 'connect'], [$client]); });
-            $client->on("receive", function ($client, $data) { call_user_func_array([$this, 'receive'], [$client, $data]); });
-            $client->on("error", function ($client) { call_user_func_array([$this, 'error'], [$client]); });
-            $client->on("close", function ($client) { call_user_func_array([$this, 'close'], [$client]); });
-            $client->connect($this->host, $this->port, $this->timeout);
+        if (!$client->connect($this->host, $this->port, $this->timeout)) {
+            throw new \RuntimeException(socket_strerror($client->errCode));
         }
-        unset($client);
-        return true;
+        $client->send($data);
+        $receive = $client->recv();
+        $client->close();
+        return $receive;
+    }
+
+    /**
+     * start async client
+     */
+    public function start()
+    {
+        $client = $this->swoole;
+        $client->on("connect", function ($client) { call_user_func_array([$this, 'connect'], [$client]); });
+        $client->on("receive", function ($client, $data) { call_user_func_array([$this, 'receive'], [$client, $data]); });
+        $client->on("error", function ($client) { call_user_func_array([$this, 'error'], [$client]); });
+        $client->on("close", function ($client) { call_user_func_array([$this, 'close'], [$client]); });
+        $client->connect($this->host, $this->port, $this->timeout);
     }
 }

@@ -63,11 +63,11 @@ class Process
     /**
      * Process constructor.
      * @param $name
-     * @param callable $callback
+     * @param $callback
      * @param bool $stdout
      * @param bool $pipe
      */
-    public function __construct($name = null, callable $callback = null, $stdout = false, $pipe = true)
+    public function __construct($name = null, $callback = null, $stdout = false, $pipe = true)
     {
         $this->name = $name;
 

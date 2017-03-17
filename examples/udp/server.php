@@ -10,13 +10,13 @@ class DemoServer extends \FastD\Swoole\Server\UDP
     /**
      * @param swoole_server $server
      * @param $data
-     * @param $client_info
+     * @param $clientInfo
      * @return mixed
      */
-    public function doPacket(swoole_server $server, $data, $client_info)
+    public function doPacket(swoole_server $server, $data, $clientInfo)
     {
         echo $data . PHP_EOL;
-        return 'hello udp';
+        $server->sendto($clientInfo['address'], $clientInfo['port'], $data);
     }
 }
 

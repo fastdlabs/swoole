@@ -565,14 +565,13 @@ abstract class Server
 
     /**
      * @param swoole_server $server
-     * @param int $worker_id
-     * @param int $worker_pid
-     * @param int $exit_code
-     * @return void
+     * @param $workerId
+     * @param $workerPid
+     * @param $code
      */
-    public function onWorkerError(swoole_server $server, $worker_id, $worker_pid, $exit_code)
+    public function onWorkerError(swoole_server $server, $workerId, $workerPid, $code)
     {
-        $this->output->write(sprintf('Server <info>%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $worker_pid, $exit_code) . PHP_EOL);
+        $this->output->write(sprintf('Server <info>%s:%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $workerPid, $workerId, $code) . PHP_EOL);
     }
 
     /**
@@ -614,4 +613,38 @@ abstract class Server
      * @return mixed
      */
     abstract public function doFinish(swoole_server $server, $data, $taskId);
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function onConnect(swoole_server $server, $fd, $from_id)
+    {
+        $this->doConnect($server, $fd, $from_id);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    abstract public function doConnect(swoole_server $server, $fd, $from_id);
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function onClose(swoole_server $server, $fd, $fromId)
+    {
+        $this->doClose($server, $fd, $fromId);
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    abstract public function doClose(swoole_server $server, $fd, $fromId);
 }

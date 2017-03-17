@@ -17,7 +17,8 @@
 高级
 -------
 
-* [信号量](3-1-singo.md)
+* [信号量](3-1-signo.md)
+* [重写回调](3-2-overrite.md)
 
 ### Support
 

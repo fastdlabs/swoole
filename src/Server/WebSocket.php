@@ -38,7 +38,7 @@ abstract class WebSocket extends Server
      * @param swoole_http_request $request
      * @return mixed
      */
-    abstract public function doOpen(swoole_websocket_server $server, swoole_http_request $request);
+    public function doOpen(swoole_websocket_server $server, swoole_http_request $request){}
 
     /**
      * @param swoole_server $server
@@ -81,4 +81,18 @@ abstract class WebSocket extends Server
      * @return mixed
      */
     public function doFinish(swoole_server $server, $data, $taskId){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function doConnect(swoole_server $server, $fd, $from_id){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function doClose(swoole_server $server, $fd, $fromId){}
 }
