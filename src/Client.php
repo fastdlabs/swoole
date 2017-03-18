@@ -51,12 +51,21 @@ class Client
      * @param $address
      * @param bool $async
      * @param bool $keep
-     * @param $socketType
      */
-    public function __construct($address, $async = false, $keep = false, $socketType = SWOOLE_SOCK_TCP)
+    public function __construct($address, $async = false, $keep = false)
     {
         $info = parse_url($address);
 
+        switch ($info['scheme']) {
+            case 'tcp':
+                $socketType = SWOOLE_SOCK_TCP;
+                break;
+            case 'udp':
+                $socketType = SWOOLE_SOCK_UDP;
+                break;
+            default:
+                throw new \LogicException("Don't support schema " . $info['scheme']);
+        }
         $this->host = $info['host'];
         $this->port = $info['port'];
 
@@ -65,16 +74,6 @@ class Client
         $this->socketType = true === $keep ? ($socketType | SWOOLE_KEEP) : $socketType;
 
         $this->swoole = new swoole_client($this->socketType, $sync);
-    }
-
-    /**
-     * @param $address
-     * @param $socketType
-     * @return static
-     */
-    public static function create($address, $socketType = SWOOLE_SOCK_TCP)
-    {
-        return new static($address, $socketType);
     }
 
     /**
