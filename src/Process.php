@@ -21,6 +21,11 @@ use swoole_process;
 class Process
 {
     /**
+     * @var Server
+     */
+    protected $server;
+
+    /**
      * @var swoole_process
      */
     protected $process;
@@ -112,6 +117,17 @@ class Process
     public function write($data)
     {
         return $this->process->write($data);
+    }
+
+    /**
+     * @param Server $server
+     * @return $this
+     */
+    public function setServer(Server $server)
+    {
+        $this->server = $server;
+
+        return $this;
     }
 
     /**
