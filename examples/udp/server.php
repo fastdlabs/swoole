@@ -17,6 +17,12 @@ class DemoServer extends \FastD\Swoole\Server\UDP
     {
         echo $data . PHP_EOL;
         $server->sendto($clientInfo['address'], $clientInfo['port'], $data);
+        $server->task($data);
+    }
+
+    public function doTask(swoole_server $server, $data, $taskId, $workerId)
+    {
+        echo 'do task';
     }
 }
 
