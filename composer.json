@@ -17,15 +17,14 @@
         "symfony/console": "^3.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.0",
-        "fzaninotto/faker": "^1.6"
+        "phpunit/phpunit": "^5.0"
     },
     "autoload": {
         "psr-4": {
             "FastD\\Swoole\\": "src"
         },
         "files": [
-            "src/Support/helpers.php"
+            "helpers.php"
         ]
     },
     "suggests": {

@@ -308,6 +308,8 @@ abstract class Server
      */
     public function process(Process $process)
     {
+        $process->setServer($this);
+
         $this->processes[] = $process;
 
         return $this;

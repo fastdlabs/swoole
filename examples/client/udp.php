@@ -9,6 +9,6 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$client = new \FastD\Swoole\Client('tcp://127.0.0.1:9527', false, false, SWOOLE_SOCK_UDP);
+$client = new \FastD\Swoole\Client('udp://127.0.0.1:9527');
 
 echo $client->send('hello');
