@@ -128,7 +128,7 @@ function get_local_ip()
         }
     }
 
-    return 'unknown';
+    return gethostname();
 }
 
 /**
