@@ -7,11 +7,6 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Exceptions\AddressIllegalException;
-use FastD\Swoole\Exceptions\CantSupportSchemeException;
-use FastD\Swoole\Server;
-use FastD\Swoole\Support\Output;
-
 /**
  * @param $name
  */
@@ -128,7 +123,7 @@ function get_local_ip()
         }
     }
 
-    return gethostname();
+    return gethostbyname(gethostname());
 }
 
 /**
