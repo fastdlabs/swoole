@@ -23,7 +23,7 @@ class Queue extends Process
      * @param bool $stdout
      * @param bool $pipe
      */
-    public function __construct($name, $callback, $stdout = false, $pipe = true)
+    public function __construct($name = null, $callback = null, $stdout = false, $pipe = true)
     {
         parent::__construct($name, $callback, $stdout, $pipe);
 
