@@ -141,9 +141,10 @@ class Process
     }
 
     /**
-     * @return void
+     * @param callable $callback
+     * @param bool $blocking
      */
-    public function wait(callable $callback, $blocking = true)
+    public function wait(callable $callback, $blocking = false)
     {
         while ($ret = process_wait($blocking)) {
             $callback($ret);
