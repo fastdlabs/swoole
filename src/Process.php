@@ -141,9 +141,10 @@ class Process
     }
 
     /**
-     * @return void
+     * @param callable $callback
+     * @param bool $blocking
      */
-    public function wait(callable $callback, $blocking = true)
+    public function wait(callable $callback, $blocking = false)
     {
         while ($ret = process_wait($blocking)) {
             $callback($ret);
@@ -175,7 +176,7 @@ class Process
     public function start()
     {
         if (!empty($this->name)) {
-            $this->process->name($this->name);
+            process_rename($this->name);
         }
         if (true === $this->daemonize) {
             $this->process->daemon();
