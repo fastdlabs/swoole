@@ -175,7 +175,7 @@ class Process
     public function start()
     {
         if (!empty($this->name)) {
-            $this->process->name($this->name);
+            process_rename($this->name);
         }
         if (true === $this->daemonize) {
             $this->process->daemon();

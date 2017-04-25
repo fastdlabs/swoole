@@ -31,7 +31,7 @@ class Queue extends Process
     }
 
     /**
-     *
+     * free queue
      */
     public function clean()
     {
