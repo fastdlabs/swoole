@@ -127,16 +127,16 @@ function get_local_ip()
 }
 
 /**
- * @param $keyword
- * @return array|bool
+ * @param $pid
+ * @return bool
  */
-function process_is_running($keyword)
+function process_is_running($pid)
 {
-    $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
-
-    $command = "ps axu | grep '{$keyword}' | grep -v grep | grep -v {$scriptName}";
-
-    exec($command, $output);
-
-    return empty($output) ? false : true;
+    return process_kill($pid, 0);
 }
+
+function process_state()
+{
+
+}
+

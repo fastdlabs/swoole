@@ -84,11 +84,19 @@ class Process
      * @param $name
      * @return $this
      */
-    public function name($name)
+    public function setName($name)
     {
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
@@ -120,6 +128,14 @@ class Process
     }
 
     /**
+     * @return Server
+     */
+    public function getServer()
+    {
+        return $this->server;
+    }
+
+    /**
      * @param Server $server
      * @return $this
      */
@@ -144,7 +160,7 @@ class Process
      * @param callable $callback
      * @param bool $blocking
      */
-    public function wait(callable $callback, $blocking = false)
+    public function wait(callable $callback, $blocking = true)
     {
         while ($ret = process_wait($blocking)) {
             $callback($ret);
@@ -167,7 +183,7 @@ class Process
      */
     public function exists($pid)
     {
-        return process_kill($pid, 0);
+        return process_is_running($pid);
     }
 
     /**
@@ -197,7 +213,7 @@ class Process
         for ($i = 0; $i < $length; $i++) {
             $process = new static($this->name, $this->callback, $this->stdout, $this->pipe);
             if (!empty($this->name)) {
-                $process->name($this->name);
+                $process->setName($this->name . ' worker');
             }
             if (true === $this->daemonize) {
                 $process->daemon();
@@ -208,6 +224,7 @@ class Process
             }
             $this->processes[$pid] = $process;
         }
+
         return 0;
     }
 

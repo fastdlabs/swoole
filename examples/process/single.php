@@ -16,7 +16,7 @@ $process = new Process('single', function () {
         static $index = 0;
         $index++;
         echo $index . PHP_EOL;
-        if ($index === 10) {
+        if ($index === 3) {
             timer_clear($id);
         }
     });
