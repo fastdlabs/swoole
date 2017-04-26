@@ -18,6 +18,15 @@ use SplFileObject;
  */
 class File extends SplFileObject
 {
+    public function __construct($file_name, $open_mode = 'wb+', $use_include_path = false, $context = null)
+    {
+        if (!file_exists($file_name)) {
+            touch($file_name);
+        }
+
+        parent::__construct($file_name, $open_mode, $use_include_path, $context);
+    }
+
     /**
      * @param $content
      * @param int $offset
