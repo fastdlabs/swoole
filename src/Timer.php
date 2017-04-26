@@ -7,10 +7,10 @@
  * @see      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Async;
+namespace FastD\Swoole;
 
 
-class EventLoop
+class Timer
 {
 
 }

@@ -43,7 +43,7 @@ class Process
     /**
      * @var bool
      */
-    protected $stdout = false;
+    protected $redirect = false;
 
     /**
      * @var bool
@@ -64,20 +64,20 @@ class Process
      * Process constructor.
      * @param $name
      * @param $callback
-     * @param bool $stdout
+     * @param bool $redirect
      * @param bool $pipe
      */
-    public function __construct($name = null, $callback = null, $stdout = false, $pipe = true)
+    public function __construct($name = null, $callback = null, $redirect = false, $pipe = true)
     {
         $this->name = $name;
 
-        $this->stdout = $stdout;
+        $this->redirect = $redirect;
 
         $this->pipe = $pipe;
 
         $this->callback = null === $callback ? [$this, 'handle'] : $callback;
 
-        $this->process = new swoole_process($this->callback, $stdout, $pipe);
+        $this->process = new swoole_process($this->callback, $redirect, $pipe);
     }
 
     /**
@@ -97,6 +97,14 @@ class Process
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRedirect()
+    {
+        return $this->redirect;
     }
 
     /**
