@@ -84,7 +84,7 @@ class Process
      * @param $name
      * @return $this
      */
-    public function setName($name)
+    public function name($name)
     {
         $this->name = $name;
 
@@ -213,7 +213,7 @@ class Process
         for ($i = 0; $i < $length; $i++) {
             $process = new static($this->name, $this->callback, $this->stdout, $this->pipe);
             if (!empty($this->name)) {
-                $process->setName($this->name . ' worker');
+                $process->name($this->name . ' worker');
             }
             if (true === $this->daemonize) {
                 $process->daemon();
