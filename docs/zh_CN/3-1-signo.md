@@ -1,8 +1,15 @@
 #信号量
 
-1. SIGHUP
-2. SIGINT
-3. SIGQUIT
+对应 PHP 常量，如 SIGTERM -15
+
+```php
+<?php 
+posix_kill(pid, SIGTERM);
+```
+
+1. SIGHUP 
+2. SIGINT 
+3. SIGQUIT 
 4. SIGILL
 5. SIGTRAP
 6. SIGABRT
