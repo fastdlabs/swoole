@@ -10,11 +10,11 @@
 
 高性能网络服务组件. 提供底层服务封装, 基础管理及客户端调用功能. 使用 `composer` 进行管理, 可在此基础上进行封装整合.
 
-## ＃环境要求
+## 环境要求
 
 * Linux (不考虑windows)
 * PHP >= 5.6
-* swoole >= 1.9
+* swoole >= 1.9.6
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
@@ -24,7 +24,7 @@ pecl 安装
 pecl install swoole
 ```
 
-### ＃可选扩展
+### 可选扩展
 
 **如果 PHP >= 7.0 的安装 2.0 版本.**
 
@@ -36,13 +36,13 @@ pecl 安装
 pecl install inotify
 ```
 
-### ＃安装
+### 安装
 
 ```
 composer require "fastd/swoole:1.0.x-dev" -vvv
 ```
 
-## ＃文档
+## 文档
 
 [中文文档](docs/zh_CN/readme.md)
 
