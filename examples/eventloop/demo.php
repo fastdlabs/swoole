@@ -14,5 +14,4 @@ include __DIR__ . '/BaseEvent.php';
 
 $loop = new EventLoop();
 
-$loop->set(BaseEvent::create(STDIN));
-
+$loop->set(new BaseEvent(STDIN));

@@ -47,5 +47,9 @@ class DNS
         swoole_async_dns_lookup($this->host, null === $callback ? [$this, 'doLookup'] : $callback);
     }
 
+    /**
+     * @param $host
+     * @param $ip
+     */
     public function doLookup($host, $ip) {}
 }

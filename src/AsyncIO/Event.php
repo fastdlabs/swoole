@@ -99,12 +99,10 @@ class Event
     public function doWrite($resource) {}
 
     /**
-     * @param $resource
-     * @param null $flag
-     * @return static
+     * Exit event
      */
-    public static function create($resource, $flag = null)
+    public function exit()
     {
-        return new static($resource, $flag);
+        $this->loop->remove($this);
     }
 }

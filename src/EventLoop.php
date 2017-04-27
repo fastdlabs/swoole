@@ -12,35 +12,68 @@ namespace FastD\Swoole;
 
 use FastD\Swoole\AsyncIO\Event;
 
+/**
+ * Class EventLoop
+ * @package FastD\Swoole
+ */
 class EventLoop
 {
-    protected $loop = [];
+    /**
+     * @var Event[]
+     */
+    protected $events = [];
 
+    /**
+     * @param Event $eventAbstract
+     */
     public function set(Event $eventAbstract)
     {
-        \swoole_event_add(
-            $eventAbstract->getResource(),
-            [$eventAbstract, 'onRead'],
-            [$eventAbstract, 'doWrite'],
-            $eventAbstract->getFlag()
-        );
+        $key = spl_object_hash($eventAbstract);
+        if (isset($this->events[$key])) {
+            \swoole_event_set(
+                $eventAbstract->getResource(),
+                [$eventAbstract, 'onRead'],
+                [$eventAbstract, 'doWrite'],
+                $eventAbstract->getFlag()
+            );
+        } else {
+            \swoole_event_add(
+                $eventAbstract->getResource(),
+                [$eventAbstract, 'onRead'],
+                [$eventAbstract, 'doWrite'],
+                $eventAbstract->getFlag()
+            );
+            $eventAbstract->setEventLoop($this);
+        }
+        $this->events[$key] = $eventAbstract;
     }
 
+    /**
+     * @param Event $eventAbstract
+     */
     public function remove(Event $eventAbstract)
     {
         \swoole_event_del($eventAbstract->getResource());
+
+        unset($this->events[spl_object_hash($eventAbstract)]);
+        if (empty($this->events)) {
+            $this->exit();
+        }
     }
 
+    /**
+     * Exit event loop
+     */
     public function exit()
     {
         \swoole_event_exit();
     }
 
-    public function wait()
-    {
-        \swoole_event_wait();
-    }
-
+    /**
+     * @param Event $eventAbstract
+     * @param $data
+     * @return mixed
+     */
     public function write(Event $eventAbstract, $data)
     {
         return \swoole_event_write($eventAbstract->getResource(), $data);
