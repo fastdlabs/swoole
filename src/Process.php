@@ -43,7 +43,7 @@ class Process
     /**
      * @var bool
      */
-    protected $stdout = false;
+    protected $redirect = false;
 
     /**
      * @var bool
@@ -64,20 +64,20 @@ class Process
      * Process constructor.
      * @param $name
      * @param $callback
-     * @param bool $stdout
+     * @param bool $redirect
      * @param bool $pipe
      */
-    public function __construct($name = null, $callback = null, $stdout = false, $pipe = true)
+    public function __construct($name = null, $callback = null, $redirect = false, $pipe = true)
     {
         $this->name = $name;
 
-        $this->stdout = $stdout;
+        $this->redirect = $redirect;
 
         $this->pipe = $pipe;
 
         $this->callback = null === $callback ? [$this, 'handle'] : $callback;
 
-        $this->process = new swoole_process($this->callback, $stdout, $pipe);
+        $this->process = new swoole_process($this->callback, $redirect, $pipe);
     }
 
     /**
@@ -89,6 +89,22 @@ class Process
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRedirect()
+    {
+        return $this->redirect;
     }
 
     /**
@@ -120,6 +136,14 @@ class Process
     }
 
     /**
+     * @return Server
+     */
+    public function getServer()
+    {
+        return $this->server;
+    }
+
+    /**
      * @param Server $server
      * @return $this
      */
@@ -144,7 +168,7 @@ class Process
      * @param callable $callback
      * @param bool $blocking
      */
-    public function wait(callable $callback, $blocking = false)
+    public function wait(callable $callback, $blocking = true)
     {
         while ($ret = process_wait($blocking)) {
             $callback($ret);
@@ -167,7 +191,7 @@ class Process
      */
     public function exists($pid)
     {
-        return process_kill($pid, 0);
+        return process_is_running($pid);
     }
 
     /**
@@ -197,7 +221,7 @@ class Process
         for ($i = 0; $i < $length; $i++) {
             $process = new static($this->name, $this->callback, $this->stdout, $this->pipe);
             if (!empty($this->name)) {
-                $process->name($this->name);
+                $process->name($this->name . ' worker');
             }
             if (true === $this->daemonize) {
                 $process->daemon();
@@ -208,6 +232,7 @@ class Process
             }
             $this->processes[$pid] = $process;
         }
+
         return 0;
     }
 

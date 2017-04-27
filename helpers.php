@@ -89,9 +89,20 @@ function process_affinity(array $cpus)
  * @param callable $callback
  * @return mixed
  */
-function timer_tick($interval, callable $callback)
+function timer_tick($interval, $callback, array $params = [])
 {
-    return swoole_timer_tick($interval, $callback);
+    return swoole_timer_tick($interval, $callback, $params);
+}
+
+/**
+ * @param $interval
+ * @param callable $callback
+ * @param array $params
+ * @return mixed
+ */
+function timer_after($interval, $callback, array $params = [])
+{
+    return swoole_timer_after($interval, $callback, $params);
 }
 
 /**
@@ -128,7 +139,7 @@ function get_local_ip()
 
 /**
  * @param $keyword
- * @return array|bool
+ * @return bool
  */
 function process_is_running($keyword)
 {
@@ -140,3 +151,4 @@ function process_is_running($keyword)
 
     return empty($output) ? false : true;
 }
+
