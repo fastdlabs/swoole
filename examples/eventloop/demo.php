@@ -7,11 +7,4 @@
  * @see      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\EventLoop;
-
-include __DIR__ . '/../../vendor/autoload.php';
-include __DIR__ . '/BaseEvent.php';
-
-$loop = new EventLoop();
-
-$loop->set(new BaseEvent(STDIN));
+fwrite(STDIN, 'hello world');
