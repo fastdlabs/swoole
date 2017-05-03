@@ -91,6 +91,11 @@ abstract class Server
     protected $processes = [];
 
     /**
+     * @var Timer[]
+     */
+    protected $timers = [];
+
+    /**
      * Server constructor.
      * @param $name
      * @param null $address
@@ -308,9 +313,22 @@ abstract class Server
      */
     public function process(Process $process)
     {
-        $process->setServer($this);
+        $process->withServer($this);
 
         $this->processes[] = $process;
+
+        return $this;
+    }
+
+    /**
+     * @param Timer $timer
+     * @return $this
+     */
+    public function timer(Timer $timer)
+    {
+        $timer->withServer($this);
+
+        $this->timers[] = $timer;
 
         return $this;
     }
