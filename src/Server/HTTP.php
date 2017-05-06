@@ -57,6 +57,9 @@ abstract class HTTP extends Server
         } catch (Exception $e) {
             $swooleResponse->status(500);
             $swooleResponse->end($e->getMessage());
+        } finally {
+            $swooleResponse->status(500);
+            $swooleResponse->end(static::SERVER_INTERVAL_ERROR);
         }
     }
 
