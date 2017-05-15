@@ -32,6 +32,11 @@ abstract class Timer
     protected $params = [];
 
     /**
+     * @var Server
+     */
+    protected $server;
+
+    /**
      * Timer constructor.
      * @param int $ms
      * @param array $params
@@ -41,6 +46,25 @@ abstract class Timer
         $this->ms = $ms;
 
         $this->params = $params;
+    }
+
+    /**
+     * @return Server
+     */
+    public function getServer()
+    {
+        return $this->server;
+    }
+
+    /**
+     * @param Server $server
+     * @return $this
+     */
+    public function withServer(Server $server)
+    {
+        $this->server = $server;
+
+        return $this;
     }
 
     /**

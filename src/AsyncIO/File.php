@@ -18,6 +18,13 @@ use SplFileObject;
  */
 class File extends SplFileObject
 {
+    /**
+     * File constructor.
+     * @param $file_name
+     * @param string $open_mode
+     * @param bool $use_include_path
+     * @param null $context
+     */
     public function __construct($file_name, $open_mode = 'wb+', $use_include_path = false, $context = null)
     {
         if (!file_exists($file_name)) {

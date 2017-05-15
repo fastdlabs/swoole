@@ -147,7 +147,7 @@ class Process
      * @param Server $server
      * @return $this
      */
-    public function setServer(Server $server)
+    public function withServer(Server $server)
     {
         $this->server = $server;
 
