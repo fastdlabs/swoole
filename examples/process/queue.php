@@ -11,6 +11,7 @@ include __DIR__ . '/../../vendor/autoload.php';
 
 $queue = new \FastD\Swoole\Queue('queue', function ($worker) {
     while (true) {
+        echo get_class($worker);
         $recv = $worker->pop();
         echo "From Master: $recv\n";
     }
