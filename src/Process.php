@@ -219,7 +219,7 @@ class Process
         $this->start();
         // new sub process
         for ($i = 0; $i < $length; $i++) {
-            $process = new static($this->name, $this->callback, $this->stdout, $this->pipe);
+            $process = new static($this->name, $this->callback, $this->redirect, $this->pipe);
             if (!empty($this->name)) {
                 $process->name($this->name . ' worker');
             }
