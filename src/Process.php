@@ -77,7 +77,7 @@ class Process
 
         $this->callback = null === $callback ? [$this, 'handle'] : $callback;
 
-        $this->process = new swoole_process($this->callback, $redirect, $pipe);
+        $this->process = new swoole_process([$this, 'runProcess'], $redirect, $pipe);
     }
 
     /**
@@ -199,9 +199,6 @@ class Process
      */
     public function start()
     {
-        if (!empty($this->name)) {
-            process_rename($this->name);
-        }
         if (true === $this->daemonize) {
             $this->process->daemon();
         }
@@ -255,8 +252,19 @@ class Process
     /**
      * Process handle
      *
-     * @param $swoole_process
+     * @param swoole_process $swoole_process
      * @return callable
      */
     public function handle(swoole_process $swoole_process){}
+
+    /**
+     * @param swoole_process $worker
+     * @return void
+     */
+    public function runProcess(swoole_process $worker)
+    {
+        process_rename($this->name);
+
+        call_user_func($this->callback, $worker);
+    }
 }
