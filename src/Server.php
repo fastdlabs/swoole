@@ -349,7 +349,7 @@ abstract class Server
      */
     public function start()
     {
-        if (process_is_running($this->name)) {
+        if ($this->isRunning()) {
             $this->output->write(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port) . PHP_EOL);
         } else {
             try {
@@ -380,7 +380,7 @@ abstract class Server
      */
     public function shutdown()
     {
-        if (false === process_is_running($this->name)) {
+        if (!$this->isRunning()) {
             $this->output->write(sprintf('Server <info>%s</info> is not running...', $this->name) . PHP_EOL);
             return -1;
         }
@@ -399,7 +399,7 @@ abstract class Server
      */
     public function reload()
     {
-        if (false === process_is_running($this->name)) {
+        if (!$this->isRunning()) {
             $this->output->write(sprintf('Server <info>%s</info> is not running...', $this->name) . PHP_EOL);
             return -1;
         }
@@ -428,7 +428,7 @@ abstract class Server
      */
     public function status()
     {
-        if (!($status = process_is_running($this->name))) {
+        if (!$this->isRunning()) {
             $this->output->write(sprintf('Server <info>%s</info> is not running...', $this->name) . PHP_EOL);
             return -1;
         }
@@ -475,7 +475,7 @@ abstract class Server
     {
         $that = $this;
 
-        if (false === ($status = process_is_running($this->name))) {
+        if (!$this->isRunning()) {
             $process = new Process('server watch process', function () use ($that) {
                 $that->start();
             }, true);
@@ -495,6 +495,17 @@ abstract class Server
         $watcher->run();
 
         process_wait();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRunning()
+    {
+        if (file_exists($this->config['pid_file'])) {
+            return posix_kill(file_get_contents($this->config['pid_file']), 0);
+        }
+        return process_is_running("{$this->name} master");
     }
 
     /**
