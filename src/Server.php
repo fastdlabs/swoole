@@ -96,6 +96,16 @@ abstract class Server
     protected $timers = [];
 
     /**
+     * @var int
+     */
+    public $from_fd;
+
+    /**
+     * @var int
+     */
+    public $to_fd;
+
+    /**
      * Server constructor.
      * @param $name
      * @param null $address
@@ -641,6 +651,8 @@ abstract class Server
      */
     public function onConnect(swoole_server $server, $fd, $from_id)
     {
+        $this->from_fd = $fd;
+
         $this->doConnect($server, $fd, $from_id);
     }
 
