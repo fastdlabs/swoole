@@ -23,6 +23,8 @@ use swoole_websocket_frame;
  */
 abstract class WebSocket extends Server
 {
+    protected $scheme = 'ws';
+
     /**
      * @param swoole_websocket_server $server
      * @param swoole_http_request $request

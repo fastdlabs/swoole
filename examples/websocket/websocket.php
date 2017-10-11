@@ -33,4 +33,4 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
     }
 }
 
-WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
+WebSocket::createServer('ws', '0.0.0.0:9527')->start();

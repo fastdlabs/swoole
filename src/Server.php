@@ -10,12 +10,15 @@
 namespace FastD\Swoole;
 
 use Exception;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput as Output;
 use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
 use swoole_server_port;
+use swoole_websocket_server;
+use swoole_http_server;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -122,7 +125,6 @@ abstract class Server
 
         $info = parse_url($address);
 
-        $this->scheme = $info['scheme'];
         $this->host = $info['host'];
         $this->port = $info['port'];
 

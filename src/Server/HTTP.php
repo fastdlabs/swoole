@@ -30,6 +30,8 @@ abstract class HTTP extends Server
 {
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
+    protected $scheme = 'http';
+
     /**
      * @return \swoole_http_server
      */
@@ -55,9 +57,6 @@ abstract class HTTP extends Server
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($e->getMessage());
         } catch (Exception $e) {
-            $swooleResponse->status(500);
-            $swooleResponse->end($e->getMessage());
-        } finally {
             $swooleResponse->status(500);
             $swooleResponse->end(static::SERVER_INTERVAL_ERROR);
         }
