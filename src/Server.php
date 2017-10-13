@@ -10,7 +10,6 @@
 namespace FastD\Swoole;
 
 use Exception;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput as Output;
 use FastD\Swoole\Support\Watcher;
@@ -27,7 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class Server
 {
-    const VERSION = '2.0.0 (dev)';
+    const VERSION = '2.0.0';
 
     /**
      * @var $name
@@ -101,12 +100,7 @@ abstract class Server
     /**
      * @var int
      */
-    public $from_fd;
-
-    /**
-     * @var int
-     */
-    public $to_fd;
+    protected $fd;
 
     /**
      * Server constructor.
@@ -199,6 +193,14 @@ abstract class Server
     public function getPort()
     {
         return $this->port;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFileDescriptor()
+    {
+        return $this->fd;
     }
 
     /**
@@ -664,7 +666,7 @@ abstract class Server
      */
     public function onConnect(swoole_server $server, $fd, $from_id)
     {
-        $this->from_fd = $fd;
+        $this->fd = $fd;
 
         $this->doConnect($server, $fd, $from_id);
     }

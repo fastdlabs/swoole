@@ -28,8 +28,9 @@ class WebSocket extends \FastD\Swoole\Server\WebSocket
      */
     public function doMessage(swoole_server $server, swoole_websocket_frame $frame)
     {
+        echo $this->getFileDescriptor() . PHP_EOL;
+        echo $frame->fd;
         echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
-        $server->push($frame->fd, "this is server");
     }
 }
 

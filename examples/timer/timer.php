@@ -18,7 +18,7 @@ class DemoTimer extends \FastD\Swoole\Timer
      * @param array $params
      * @return mixed
      */
-    public function doTick($id, array $params = [])
+    public function handle($id, array $params = [])
     {
         echo ++$this->count;
         if (3 === $this->count) {
