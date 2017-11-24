@@ -11,7 +11,6 @@ namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\HttpException;
-use FastD\Http\Request;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
@@ -30,7 +29,7 @@ abstract class HTTP extends Server
 {
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
-    protected $scheme = 'http';
+    const SCHEME = 'http';
 
     /**
      * @return \swoole_http_server

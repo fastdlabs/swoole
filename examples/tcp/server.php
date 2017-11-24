@@ -37,6 +37,5 @@ class DemoServer extends TCP
     }
 }
 
-return DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527', [
-    'pid_file' => '/tmp/swoole.pid',
+return DemoServer::createServer('tcp swoole', '0.0.0.0:9527', [
 ]);
