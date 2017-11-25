@@ -72,7 +72,7 @@ abstract class Timer
      */
     public function tick()
     {
-        $this->id = timer_tick($this->ms, [$this, 'doTick'], $this->params);
+        $this->id = timer_tick($this->ms, [$this, 'handle'], $this->params);
 
         return $this->id;
     }
@@ -82,7 +82,7 @@ abstract class Timer
      */
     public function after()
     {
-        $this->id = timer_after($this->ms, [$this, 'doTick'], $this->params);
+        $this->id = timer_after($this->ms, [$this, 'handle'], $this->params);
 
         return $this->id;
     }
@@ -100,5 +100,5 @@ abstract class Timer
      * @param array $params
      * @return mixed
      */
-    abstract public function doTick($id, array $params = []);
+    abstract public function handle($id, array $params = []);
 }
