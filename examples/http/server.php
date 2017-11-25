@@ -13,7 +13,9 @@ class Http extends \FastD\Swoole\Server\HTTP
     public function doRequest(ServerRequestInterface $serverRequest)
     {
         return new JsonResponse([
-            'msg' => 'hello world',
+            'method' => $serverRequest->getMethod(),
+            '_GET' => $serverRequest->getQueryParams(),
+            '_POST' => $serverRequest->getParsedBody(),
         ]);
     }
 }
