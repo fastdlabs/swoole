@@ -12,6 +12,7 @@ namespace FastD\Swoole;
 
 use FastD\Http\Cookie;
 use swoole_client;
+use swoole_http_client;
 
 /**
  * Class Client
@@ -75,15 +76,18 @@ class Client
 
     /**
      * Client constructor.
-     * @param $address
+     * @param $url
      * @param bool $async
      * @param bool $keep
      */
-    public function __construct($address, $async = false, $keep = false)
+    public function __construct($url, $async = false, $keep = false)
     {
-        $info = parse_url($address);
+        $info = parse_url($url);
+        $this->scheme = isset($info['scheme']) ? $info['scheme'] : 'http';
+        $this->host = $info['host'];
+        $this->port = isset($info['port']) ? $info['port'] : 80;
 
-        switch ($info['scheme']) {
+        switch ($this->scheme) {
             case 'tcp':
             case 'http':
                 $socketType = SWOOLE_SOCK_TCP;
@@ -94,15 +98,18 @@ class Client
             default:
                 throw new \LogicException("Don't support schema " . $info['scheme']);
         }
-        $this->scheme = $info['scheme'];
-        $this->host = $info['host'];
-        $this->port = $info['port'];
+
         $this->path = isset($info['path']) ? $info['path'] : '/';
 
-        $sync = true === $async ? SWOOLE_SOCK_ASYNC : SWOOLE_SOCK_SYNC;
+        $sync = false === $async ? SWOOLE_SOCK_SYNC : SWOOLE_SOCK_ASYNC;
         $this->socketType = true === $keep ? ($socketType | SWOOLE_KEEP) : $socketType;
 
-        $this->client = new swoole_client($this->socketType, $sync);
+        // async
+        if ($async && false !== strpos($this->scheme, 'http')) {
+            $this->client = new swoole_http_client($this->host, $this->port);
+        } else {
+            $this->client = new swoole_client($this->socketType, $sync);
+        }
     }
 
     /**
