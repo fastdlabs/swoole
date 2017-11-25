@@ -18,8 +18,14 @@ use FastD\Swoole\AsyncIO\DNS;
  */
 abstract class Proxy
 {
+    /**
+     * @var string
+     */
     protected $url;
 
+    /**
+     * @var bool
+     */
     protected $async = false;
 
     /**
