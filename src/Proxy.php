@@ -45,11 +45,23 @@ abstract class Proxy
         $dns = new DNS($this->url);
         $async = $this->async;
         $dns->lookup(function ($domain, $ip) use ($async) {
-            $client = new Client('http://'.$domain, $async);
-            $content = $client->send();
-            list($headers, $content) = explode("\r\n\r\n", $content);
-            call_user_func_array([$this, 'handle'], [$headers, $content]);
+            $this->forward('http://'.$domain, $async);
         });
+    }
+
+    /**
+     * @param $url
+     * @param string $data
+     * @param array $headers
+     * @return mixed
+     */
+    public function forward($url, $data = '', array $headers = [])
+    {
+        $client = new Client($url);
+        $client->setHeaders($headers);
+        $content = $client->send($data);
+        list($headers, $content) = explode("\r\n\r\n", $content);
+        return call_user_func_array([$this, 'handle'], [$headers, $content]);
     }
 
     /**
