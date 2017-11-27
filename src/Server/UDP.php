@@ -19,6 +19,8 @@ use swoole_server;
  */
 abstract class UDP extends Server
 {
+    const SCHEME = 'udp';
+
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *

@@ -11,7 +11,6 @@ namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\HttpException;
-use FastD\Http\Request;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server;
@@ -29,6 +28,8 @@ use swoole_server;
 abstract class HTTP extends Server
 {
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
+
+    const SCHEME = 'http';
 
     /**
      * @return \swoole_http_server
@@ -55,9 +56,6 @@ abstract class HTTP extends Server
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($e->getMessage());
         } catch (Exception $e) {
-            $swooleResponse->status(500);
-            $swooleResponse->end($e->getMessage());
-        } finally {
             $swooleResponse->status(500);
             $swooleResponse->end(static::SERVER_INTERVAL_ERROR);
         }
