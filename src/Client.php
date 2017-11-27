@@ -48,13 +48,25 @@ class Client
 
     /**
      * Client constructor.
-     * @param $address
+     * @param $uri
      * @param bool $async
      * @param bool $keep
      */
-    public function __construct($address, $async = false, $keep = false)
+    public function __construct($uri = null, $async = false, $keep = false)
     {
-        $info = parse_url($address);
+        if (null !== $uri) {
+            $this->createRequest($uri, $async, $keep);
+        }
+    }
+
+    /**
+     * @param $uri
+     * @param bool $async
+     * @param bool $keep
+     */
+    public function createRequest($uri, $async = false, $keep = false)
+    {
+        $info = parse_url($uri);
 
         switch ($info['scheme']) {
             case 'tcp':
