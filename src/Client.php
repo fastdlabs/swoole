@@ -108,7 +108,7 @@ class Client
                 $socketType = SWOOLE_SOCK_UDP;
                 break;
             default:
-                throw new \LogicException("Don't support schema " . $info['scheme']);
+                throw new \LogicException("Don't support schema ".$info['scheme']);
         }
 
         $this->path = isset($info['path']) ? $info['path'] : '/';
@@ -136,11 +136,11 @@ class Client
 
         if (false !== strpos($this->scheme, 'http')) {
             $cookies = '';
-            if (!in_array($this->method, ['GET', 'HEAD', 'OPTIONS'])) {
+            if ( ! in_array($this->method, ['GET', 'HEAD', 'OPTIONS'])) {
                 $this->setHeader('Content-Length', strlen($data));
                 $this->setHeader('Content-Type', 'application/x-www-form-urlencoded');
             } else {
-                $this->path .= '?' . $data;
+                $this->path .= '?'.$data;
             }
             foreach ($this->cookies as $cookie) {
                 $cookies .= $cookie->asString();
@@ -149,16 +149,16 @@ class Client
             $version = static::HTTP_VERSION;
             $header = "{$this->method} {$this->path} HTTP/{$version}\r\n";
             foreach ($this->headers as $key => $value) {
-                $header .= "$key: " . (is_array($value) ? implode(',', $value) : $value) . "\r\n";
+                $header .= "$key: ".(is_array($value) ? implode(',', $value) : $value)."\r\n";
             }
-            if (!empty($cookies)) {
+            if ( ! empty($cookies)) {
                 $header .= "Cookie: {$cookies}\r\n";
             }
             $header .= "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n";
             $header .= "User-Agent: {$ua}\r\n";
             $header .= "\r\n";
 
-            $data = $header . $data;
+            $data = $header.$data;
         }
 
         return $data;
@@ -196,14 +196,15 @@ class Client
      * @param null $httpOnly
      * @return $this
      */
-    public function setCookie($name,
-                              $value = null,
-                              $expire = null,
-                              $path = null,
-                              $domain = null,
-                              $secure = null,
-                              $httpOnly = null)
-    {
+    public function setCookie(
+        $name,
+        $value = null,
+        $expire = null,
+        $path = null,
+        $domain = null,
+        $secure = null,
+        $httpOnly = null
+    ) {
         $this->cookies[] = new Cookie($name, $value, $expire, $path, $domain, $secure, $httpOnly);
 
         return $this;
@@ -305,13 +306,14 @@ class Client
      */
     public function send($data = '')
     {
-        if (!$this->client->connect($this->host, $this->port, $this->timeout)) {
+        if ( ! $this->client->connect($this->host, $this->port, $this->timeout)) {
             throw new \RuntimeException(socket_strerror($this->client->errCode));
         }
 
         $this->client->send($this->wrapBody($data));
         $receive = $this->client->recv();
         $this->client->close();
+
         return $receive;
     }
 
