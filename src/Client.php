@@ -91,6 +91,7 @@ class Client
      * @param $url
      * @param bool $async
      * @param bool $keep
+     * @return $this
      */
     public function createRequest($url, $async = false, $keep = false)
     {
@@ -122,6 +123,8 @@ class Client
         } else {
             $this->client = new swoole_client($this->socketType, $sync);
         }
+
+        return $this;
     }
 
     /**
