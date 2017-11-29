@@ -11,6 +11,8 @@ namespace FastD\Swoole;
 
 
 use FastD\Http\Cookie;
+use LogicException;
+use RuntimeException;
 use swoole_client;
 use swoole_http_client;
 
@@ -109,7 +111,7 @@ class Client
                 $socketType = SWOOLE_SOCK_UDP;
                 break;
             default:
-                throw new \LogicException("Don't support schema ".$info['scheme']);
+                throw new LogicException("Don't support schema ".$info['scheme']);
         }
 
         $this->path = isset($info['path']) ? $info['path'] : '/';
@@ -274,34 +276,26 @@ class Client
      * @param swoole_client $client
      * @return mixed
      */
-    public function connect(swoole_client $client)
-    {
-    }
+    public function onConnect(swoole_client $client) {}
 
     /**
      * @param swoole_client $client
      * @param string $data
      * @return mixed
      */
-    public function receive(swoole_client $client, $data)
-    {
-    }
+    public function onReceive(swoole_client $client, $data) {}
 
     /**
      * @param swoole_client $client
      * @return mixed
      */
-    public function error(swoole_client $client)
-    {
-    }
+    public function onError(swoole_client $client) {}
 
     /**
      * @param swoole_client $client
      * @return mixed
      */
-    public function close(swoole_client $client)
-    {
-    }
+    public function onClose(swoole_client $client) {}
 
     /**
      * @param string|array $data
@@ -309,8 +303,11 @@ class Client
      */
     public function send($data = '')
     {
+        if (null === $this->client) {
+            throw new LogicException('Please call the createRequest method first');
+        }
         if ( ! $this->client->connect($this->host, $this->port, $this->timeout)) {
-            throw new \RuntimeException(socket_strerror($this->client->errCode));
+            throw new RuntimeException(socket_strerror($this->client->errCode));
         }
 
         $this->client->send($this->wrapBody($data));
@@ -326,16 +323,16 @@ class Client
     public function start()
     {
         $this->client->on("connect", function ($client) {
-            call_user_func_array([$this, 'connect'], [$client]);
+            call_user_func_array([$this, 'onConnect'], [$client]);
         });
         $this->client->on("receive", function ($client, $data) {
-            call_user_func_array([$this, 'receive'], [$client, $data]);
+            call_user_func_array([$this, 'onReceive'], [$client, $data]);
         });
         $this->client->on("error", function ($client) {
-            call_user_func_array([$this, 'error'], [$client]);
+            call_user_func_array([$this, 'onError'], [$client]);
         });
         $this->client->on("close", function ($client) {
-            call_user_func_array([$this, 'close'], [$client]);
+            call_user_func_array([$this, 'onClose'], [$client]);
         });
         $this->client->connect($this->host, $this->port, $this->timeout);
     }

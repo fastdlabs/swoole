@@ -11,12 +11,12 @@ include __DIR__ . '/../../vendor/autoload.php';
 
 class Cli extends \FastD\Swoole\Client
 {
-    public function connect(swoole_client $client)
+    public function onConnect(swoole_client $client)
     {
         $client->send('hello');
     }
 
-    public function receive(swoole_client $client, $data)
+    public function onReceive(swoole_client $client, $data)
     {
         echo $data;
         $client->close();
