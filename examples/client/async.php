@@ -24,5 +24,9 @@ class Cli extends \FastD\Swoole\Client
 }
 
 $client = new Cli('tcp://127.0.0.1:9527', true);
-
+$client->configure([
+    'open_eof_check' => true,
+    'package_eof' => "\r\n",
+    'package_max_length' => 1024 * 1024 * 2,
+]);
 $client->start();

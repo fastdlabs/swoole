@@ -77,6 +77,11 @@ class Client
     protected $timeout = 1;
 
     /**
+     * @var array
+     */
+    protected $callbacks = [];
+
+    /**
      * Client constructor.
      * @param $uri
      * @param bool $async
@@ -87,6 +92,11 @@ class Client
         if (null !== $uri) {
             $this->createRequest($uri, $async, $keep);
         }
+
+        $this->on('connect', [$this, 'onConnect']);
+        $this->on('receive', [$this, 'onReceive']);
+        $this->on('error', [$this, 'onError']);
+        $this->on('close', [$this, 'onClose']);
     }
 
     /**
@@ -256,7 +266,7 @@ class Client
      */
     public function on($name, $handler)
     {
-        $this->client->on($name, $handler);
+        $this->callbacks[$name] = $handler;
 
         return $this;
     }
@@ -322,18 +332,9 @@ class Client
      */
     public function start()
     {
-        $this->client->on("connect", function ($client) {
-            call_user_func_array([$this, 'onConnect'], [$client]);
-        });
-        $this->client->on("receive", function ($client, $data) {
-            call_user_func_array([$this, 'onReceive'], [$client, $data]);
-        });
-        $this->client->on("error", function ($client) {
-            call_user_func_array([$this, 'onError'], [$client]);
-        });
-        $this->client->on("close", function ($client) {
-            call_user_func_array([$this, 'onClose'], [$client]);
-        });
+        foreach ($this->callbacks as $event => $callback) {
+            $this->client->on($event, $callback);
+        }
         $this->client->connect($this->host, $this->port, $this->timeout);
     }
 }
