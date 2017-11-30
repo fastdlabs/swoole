@@ -308,21 +308,49 @@ class Client
     public function onClose(swoole_client $client) {}
 
     /**
+     * @return bool
+     */
+    public function isConnected()
+    {
+        return $this->client->isConnected();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function receive()
+    {
+        return $this->client->recv();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function close()
+    {
+        return $this->client->close();
+    }
+
+    /**
      * @param string|array $data
      * @return mixed
      */
     public function send($data = '')
     {
-        if (null === $this->client) {
-            throw new LogicException('Please call the createRequest method first');
-        }
-        if ( ! $this->client->connect($this->host, $this->port, $this->timeout)) {
-            throw new RuntimeException(socket_strerror($this->client->errCode));
-        }
+        if (!$this->isConnected()) {
+            if (null === $this->client) {
+                throw new LogicException('Please call the createRequest method first');
+            }
+            if ( ! $this->client->connect($this->host, $this->port, $this->timeout)) {
+                throw new RuntimeException(socket_strerror($this->client->errCode));
+            }
 
-        $this->client->send($this->wrapBody($data));
-        $receive = $this->client->recv();
-        $this->client->close();
+            $this->client->send($this->wrapBody($data));
+            $receive = $this->receive();
+        } else {
+            $this->client->send($this->wrapBody($data));
+            $receive = $this->receive();
+        }
 
         return $receive;
     }
@@ -336,5 +364,12 @@ class Client
             $this->client->on($event, $callback);
         }
         $this->client->connect($this->host, $this->port, $this->timeout);
+    }
+
+    public function __destruct()
+    {
+        if ($this->isConnected()) {
+            $this->close();
+        }
     }
 }
