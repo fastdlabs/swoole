@@ -292,26 +292,34 @@ class Client
      * @param swoole_client $client
      * @return mixed
      */
-    public function onConnect(swoole_client $client) {}
+    public function onConnect(swoole_client $client)
+    {
+    }
 
     /**
      * @param swoole_client $client
      * @param string $data
      * @return mixed
      */
-    public function onReceive(swoole_client $client, $data) {}
+    public function onReceive(swoole_client $client, $data)
+    {
+    }
 
     /**
      * @param swoole_client $client
      * @return mixed
      */
-    public function onError(swoole_client $client) {}
+    public function onError(swoole_client $client)
+    {
+    }
 
     /**
      * @param swoole_client $client
      * @return mixed
      */
-    public function onClose(swoole_client $client) {}
+    public function onClose(swoole_client $client)
+    {
+    }
 
     /**
      * @return mixed
@@ -351,7 +359,7 @@ class Client
      */
     public function send($data = '')
     {
-        if (!$this->isConnected()) {
+        if ( ! $this->isConnected()) {
             if (null === $this->client) {
                 throw new LogicException('Please call the createRequest method first');
             }
@@ -362,7 +370,7 @@ class Client
 
         $this->client->send($this->wrapBody($data));
 
-        if (!$this->async) {
+        if ( ! $this->async) {
             return $this->receive();
         }
 
@@ -382,7 +390,11 @@ class Client
 
     public function __destruct()
     {
-        if ($this->isConnected()) {
+        if (
+            null !== $this->client
+            && $this->client instanceof swoole_client
+            && $this->isConnected()
+        ) {
             $this->close();
         }
     }
