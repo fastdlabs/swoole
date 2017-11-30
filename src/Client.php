@@ -82,6 +82,11 @@ class Client
     protected $callbacks = [];
 
     /**
+     * @var bool
+     */
+    protected $async = false;
+
+    /**
      * Client constructor.
      * @param $uri
      * @param bool $async
@@ -111,6 +116,7 @@ class Client
         $this->scheme = isset($info['scheme']) ? $info['scheme'] : 'http';
         $this->host = $info['host'];
         $this->port = isset($info['port']) ? $info['port'] : 80;
+        $this->async = $async;
 
         switch ($this->scheme) {
             case 'tcp':
@@ -308,6 +314,14 @@ class Client
     public function onClose(swoole_client $client) {}
 
     /**
+     * @return mixed
+     */
+    public function connect()
+    {
+        return $this->client->connect($this->host, $this->port, $this->timeout);
+    }
+
+    /**
      * @return bool
      */
     public function isConnected()
@@ -341,18 +355,18 @@ class Client
             if (null === $this->client) {
                 throw new LogicException('Please call the createRequest method first');
             }
-            if ( ! $this->client->connect($this->host, $this->port, $this->timeout)) {
+            if ( ! $this->connect()) {
                 throw new RuntimeException(socket_strerror($this->client->errCode));
             }
-
-            $this->client->send($this->wrapBody($data));
-            $receive = $this->receive();
-        } else {
-            $this->client->send($this->wrapBody($data));
-            $receive = $this->receive();
         }
 
-        return $receive;
+        $this->client->send($this->wrapBody($data));
+
+        if (!$this->async) {
+            return $this->receive();
+        }
+
+        return true;
     }
 
     /**
@@ -363,7 +377,7 @@ class Client
         foreach ($this->callbacks as $event => $callback) {
             $this->client->on($event, $callback);
         }
-        $this->client->connect($this->host, $this->port, $this->timeout);
+        $this->connect();
     }
 
     public function __destruct()
