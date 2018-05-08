@@ -601,13 +601,9 @@ abstract class Server
      */
     public function onWorkerStart(swoole_server $server, $worker_id)
     {
-        if ($server->taskworker) {
-            process_rename($this->getName() . ' task');
-            $this->output->write(sprintf('Server Task[<info>%s</info>] is started [<info>%s</info>]', $server->worker_pid, $worker_id) . PHP_EOL);
-        } else {
-            process_rename($this->getName() . ' worker');
-            $this->output->write(sprintf('Server Worker[<info>%s</info>] is started [<info>%s</info>]', $server->worker_pid, $worker_id) . PHP_EOL);
-        }
+        $worker_name = $server->taskworker ? 'task' : 'worker';
+        process_rename($this->getName() . ' ' . $worker_name);
+        $this->output->write(sprintf('Server %s[<info>%s</info>] is started [<info>%s</info>]', ucfirst($worker_name), $server->worker_pid, $worker_id) . PHP_EOL);
     }
 
     /**
