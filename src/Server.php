@@ -254,6 +254,24 @@ abstract class Server
     }
 
     /**
+     * @param null $name
+     * @return Server[]
+     */
+    public function getListeners($name = null)
+    {
+        return $this->listens;
+    }
+
+    /**
+     * @param $name
+     * @return Server
+     */
+    public function getListener($name)
+    {
+        return $this->listens[$name];
+    }
+
+    /**
      * @return $this
      */
     protected function handleCallback()
@@ -320,7 +338,7 @@ abstract class Server
      */
     public function listen(Server $server)
     {
-        $this->listens[] = $server;
+        $this->listens[$server->getName()] = $server;
 
         return $this;
     }
