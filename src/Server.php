@@ -544,11 +544,15 @@ abstract class Server
      */
     public function isRunning()
     {
-        if (file_exists($this->pidFile)) {
-            return process_kill((int) file_get_contents($this->pidFile), 0);
+        if (file_exists($this->config['pid_file'])) {
+            return posix_kill(file_get_contents($this->config['pid_file']), 0);
         }
 
-        return process_is_running("{$this->name} master");
+        if ($is_running = process_is_running("{$this->name} master")) {
+            $is_running = port_is_running($this->port);
+        }
+
+        return $is_running;
     }
 
     /**
