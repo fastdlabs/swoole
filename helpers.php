@@ -149,7 +149,7 @@ function process_is_running($keyword)
 
     exec($command, $output);
 
-    return empty($output) ? false : true;
+    return !empty($output);
 }
 
 /**
@@ -162,5 +162,5 @@ function port_is_running($port)
 
     exec($command, $output);
 
-    return empty($output) ? false : true;
+    return !empty($output);
 }
