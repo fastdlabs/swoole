@@ -152,3 +152,15 @@ function process_is_running($keyword)
     return empty($output) ? false : true;
 }
 
+/**
+ * @param $port
+ * @return bool
+ */
+function port_is_running($port)
+{
+    $command = "lsof -i:{$port}";
+
+    exec($command, $output);
+
+    return empty($output) ? false : true;
+}
