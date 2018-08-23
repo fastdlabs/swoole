@@ -9,6 +9,6 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$client = new \FastD\Swoole\Client('http://127.0.0.1:9527');
+$client = new \FastD\Swoole\Client('http://baidu.com/');
 
-echo $client->setMethod('POST')->send(['foo' => 'bar']);
+echo $client->setMethod('GET')->send();
