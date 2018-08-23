@@ -548,11 +548,7 @@ abstract class Server
             return posix_kill(file_get_contents($this->config['pid_file']), 0);
         }
 
-        if ($is_running = process_is_running("{$this->name} master")) {
-            $is_running = port_is_running($this->port);
-        }
-
-        return $is_running;
+        return process_is_running("{$this->name} master") && port_is_running($this->port);
     }
 
     /**
