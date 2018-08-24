@@ -149,7 +149,7 @@ function process_is_running($keyword)
 
     exec($command, $output);
 
-    return empty($output) ? false : true;
+    return !empty($output);
 }
 
 /**
@@ -158,9 +158,9 @@ function process_is_running($keyword)
  */
 function port_is_running($port)
 {
-    $command = "lsof -i:{$port}";
+    $command = "lsof -i:{$port} | grep LISTEN";
 
     exec($command, $output);
 
-    return empty($output) ? false : true;
+    return !empty($output);
 }
