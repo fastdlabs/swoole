@@ -7,7 +7,7 @@
  * @see      http: //www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole;
 
 use swoole_server;
 

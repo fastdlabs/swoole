@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2016
+ * @copyright 2018
  *
  * @link      https://www.github.com/janhuang
  * @link      http://www.fast-d.cn/
@@ -9,9 +9,8 @@
 
 namespace FastD\Swoole;
 
+
 use Exception;
-use FastD\Swoole\Server\ServerCallbackInterface;
-use FastD\Swoole\Server\ServerInterface;
 use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
@@ -306,10 +305,10 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param $swoole swoole server or swoole server port
+     * @param \swoole_server $swoole swoole server or swoole server port
      * @return $this
      */
-    public function bootstrap($swoole = null): Server
+    public function bootstrap(?swoole_server $swoole = null): Server
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
@@ -372,14 +371,13 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     }
 
     /**
-     * @param $name
      * @param $address
      * @param $config
      * @return static
      */
-    public static function createServer($name, $address, array $config = []): Server
+    public static function createServer(?string $address = null, array $config = []): Server
     {
-        return new static($name, $address, $config);
+        return new static($address, $config);
     }
 
     /**
@@ -392,7 +390,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
         } else {
             try {
                 $this->bootstrap();
-                if (!file_exists($dir = dirname($this->pidFile))) {
+                if (!file_exists($dir = dirname($this->pid_file))) {
                     mkdir($dir, 0755, true);
                 }
                 // 多端口监听
@@ -421,7 +419,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * @return int
      */
-    public function shutdown(): int
+    public function stop(): int
     {
         if (!$this->isRunning()) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
@@ -430,11 +428,11 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
 
         $pid = (int) @file_get_contents($this->getPidFile());
         if (process_kill($pid, SIGTERM)) {
-            unlink($this->pidFile);
+            unlink($this->pid_file);
         }
 
         $this->output->writeln(sprintf('Server <info>%s</info> [<info>#%s</info>] is shutdown...', $this->name, $pid));
-        $this->output->writeln(sprintf('PID file %s is unlink', $this->pidFile), OutputInterface::VERBOSITY_DEBUG);
+        $this->output->writeln(sprintf('PID file %s is unlink', $this->pid_file), OutputInterface::VERBOSITY_DEBUG);
 
         return 0;
     }
@@ -463,7 +461,8 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
      */
     public function restart(): int
     {
-        $this->shutdown();
+        $this->stop();
+
         return $this->start();
     }
 
@@ -474,7 +473,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     {
         if (!$this->isRunning()) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
-            return -1;
+            return [];
         }
 
         exec("ps axu | grep '{$this->name}' | grep -v grep", $output);
@@ -503,7 +502,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
         $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
         $this->output->writeln(sprintf('App version: <info>%s</info>', Server::VERSION));
         $this->output->writeln(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
-        $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pidFile, (int) @file_get_contents($this->pidFile)) . PHP_EOL);
+        $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid_file, (int) @file_get_contents($this->pid_file)) . PHP_EOL);
         $table->render();
 
         unset($table, $headers, $output);
@@ -566,7 +565,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     public function onStart(swoole_server $server): void
     {
         if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
-            file_put_contents($this->pidFile, $server->master_pid);
+            file_put_contents($this->pid_file, $server->master_pid);
             $this->pid = $server->master_pid;
         }
 
@@ -577,7 +576,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
             $this->output->writeln(sprintf(" <info> ></info> Listen: <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
         }
 
-        $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pidFile, $server->master_pid));
+        $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid_file, $server->master_pid));
         $this->output->writeln(sprintf('Server Master[<info>%s</info>] is started', $server->master_pid), OutputInterface::VERBOSITY_DEBUG);
     }
 
@@ -589,8 +588,8 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
      */
     public function onShutdown(swoole_server $server): void
     {
-        if (file_exists($this->pidFile)) {
-            unlink($this->pidFile);
+        if (file_exists($this->pid_file)) {
+            unlink($this->pid_file);
         }
 
         $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>%s</info>] is shutdown ', $this->name, $server->master_pid), OutputInterface::VERBOSITY_DEBUG);
@@ -650,80 +649,4 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     {
         $this->output->writeln(sprintf('Server <info>%s:%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $workerPid, $workerId, $code), OutputInterface::VERBOSITY_DEBUG);
     }
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $workerId
-     * @param $data
-     * @return mixed
-     */
-    public function onTask(swoole_server $server, int $taskId, int $workerId, string $data): void
-    {
-        return $this->doTask($server, $data, $taskId, $workerId);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $taskId
-     * @param $workerId
-     * @return mixed
-     */
-    abstract public function doTask(swoole_server $server, $data, $taskId, $workerId);
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $data
-     * @return mixed
-     */
-    public function onFinish(swoole_server $server, int $taskId, string $data): void
-    {
-        return $this->doFinish($server, $data, $taskId);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $taskId
-     * @return mixed
-     */
-    abstract public function doFinish(swoole_server $server, $data, $taskId);
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
-     */
-    public function onConnect(swoole_server $server, int $fd, int $from_id): void
-    {
-        $this->fd = $fd;
-
-        $this->doConnect($server, $fd, $from_id);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
-     */
-    abstract public function doConnect(swoole_server $server, int $fd, int $from_id);
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $fromId
-     */
-    public function onClose(swoole_server $server, int $fd, int $fromId): void
-    {
-        $this->doClose($server, $fd, $fromId);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $fromId
-     */
-    abstract public function doClose(swoole_server $server, $fd, $fromId);
 }

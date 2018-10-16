@@ -28,7 +28,7 @@ abstract class TCP extends Server
      * @param $data
      * @return void
      */
-    public function onReceive(swoole_server $server, $fd, $from_id, $data)
+    public function onReceive(swoole_server $server, int $fd, int $from_id, string $data): void
     {
         try {
             $this->doWork($server, $fd, $data, $from_id);
@@ -49,7 +49,7 @@ abstract class TCP extends Server
      * @param $fd
      * @param $from_id
      */
-    public function doConnect(swoole_server $server, $fd, $from_id){}
+    public function doConnect(swoole_server $server, int $fd, int $from_id){}
 
     /**
      * @param swoole_server $server
