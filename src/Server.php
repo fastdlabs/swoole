@@ -10,9 +10,8 @@
 namespace FastD\Swoole;
 
 use Exception;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
+use FastD\Swoole\Server\ServerCallbackInterface;
+use FastD\Swoole\Server\ServerInterface;
 use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
@@ -24,19 +23,14 @@ use swoole_http_server;
  * Class Server
  * @package FastD\Swoole
  */
-abstract class Server
+abstract class Server implements ServerInterface, ServerCallbackInterface
 {
-    const VERSION = '2.1.0';
+    const VERSION = '5.0.0';
 
     /**
      * @var $name
      */
     protected $name;
-
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
 
     /**
      * @var swoole_server
@@ -49,13 +43,16 @@ abstract class Server
      * @var array
      */
     protected $config = [
-        'worker_num' => 8,
-        'task_worker_num' => 8,
+        'worker_num' => 1,
+        'task_worker_num' => 1,
         'task_tmpdir' => '/tmp',
         'open_cpu_affinity' => true,
     ];
 
-    const SCHEME = 'tcp';
+    /**
+     * @var string
+     */
+    protected $protocol = 'tcp';
 
     /**
      * @var string
@@ -70,7 +67,7 @@ abstract class Server
     /**
      * @var string
      */
-    protected $pidFile;
+    protected $pid_file;
 
     /**
      * @var int
@@ -106,15 +103,11 @@ abstract class Server
 
     /**
      * Server constructor.
-     * @param $name
-     * @param null $address
+     * @param string $address
      * @param array $config
-     * @param OutputInterface $output
      */
-    public function __construct($name, $address = null, array $config = [], OutputInterface $output = null)
+    public function __construct(string $address = null, array $config = [])
     {
-        $this->name = $name;
-
         if (null !== $address) {
             $info = parse_url($address);
 
@@ -122,26 +115,36 @@ abstract class Server
             $this->port = $info['port'];
         }
 
-        $this->output = null === $output ? new ConsoleOutput() : $output;
-
         $this->configure($config);
     }
+
+    /**
+     * @param string $name
+     * @return Server
+     */
+    public function rename(string $name): ServerInterface
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
 
     /**
      * @param array $config
      * @return $this
      */
-    public function configure(array $config)
+    public function configure(array $config): ServerInterface
     {
         $this->config = array_merge($this->config, $config);
 
-        if (isset($this->config['pid_file'])) {
-            $this->pidFile = $this->config['pid_file'];
-        }
+        isset($config['name']) && $this->rename($config['name']);
+
+        isset($this->config['pid_file']) && $this->pid_file = $this->config['pid_file'];
 
         if (empty($this->pidFile)) {
-            $this->pidFile = '/tmp/' . str_replace(' ', '-', $this->name) . '.pid';
-            $this->config['pid_file'] = $this->pidFile;
+            $this->pid_file = '/tmp/' . str_replace(' ', '-', $this->name) . '.pid';
+            $this->config['pid_file'] = $this->pid_file;
         }
 
         return $this;
@@ -150,7 +153,7 @@ abstract class Server
     /**
      * @return bool
      */
-    public function isBooted()
+    public function isBooted(): bool
     {
         return $this->booted;
     }
@@ -160,7 +163,7 @@ abstract class Server
      *
      * @return $this
      */
-    public function daemon()
+    public function daemon(): ServerInterface
     {
         $this->config['daemonize'] = true;
 
@@ -170,23 +173,23 @@ abstract class Server
     /**
      * @return string
      */
-    public function getScheme()
+    public function getProtocol(): string
     {
-        return static::SCHEME;
+        return $this->protocol;
     }
 
     /**
      * @return string
      */
-    public function getHost()
+    public function getHost(): string
     {
         return $this->host;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getPort()
+    public function getPort(): int
     {
         return $this->port;
     }
@@ -196,7 +199,7 @@ abstract class Server
      *
      * @return int
      */
-    public function getFileDescriptor()
+    public function getFd(): int
     {
         return $this->fd;
     }
@@ -204,9 +207,9 @@ abstract class Server
     /**
      * @return string
      */
-    public function getSocketType()
+    public function getSocketType(): string
     {
-        switch (static::SCHEME) {
+        switch ($this->protocol) {
             case 'udp':
                 $type = SWOOLE_SOCK_UDP;
                 break;
@@ -224,15 +227,15 @@ abstract class Server
     /**
      * @return string
      */
-    public function getPidFile()
+    public function getPidFile(): string
     {
-        return $this->pidFile;
+        return $this->pid_file;
     }
 
     /**
      * @return int
      */
-    public function getPid()
+    public function getPid(): int
     {
         return $this->pid;
     }
@@ -240,7 +243,7 @@ abstract class Server
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -248,16 +251,15 @@ abstract class Server
     /**
      * @return swoole_server
      */
-    public function getSwoole()
+    public function getSwoole(): swoole_server
     {
         return $this->swoole;
     }
 
     /**
-     * @param null $name
      * @return Server[]
      */
-    public function getListeners($name = null)
+    public function getListeners(): array
     {
         return $this->listens;
     }
@@ -266,15 +268,15 @@ abstract class Server
      * @param $name
      * @return Server
      */
-    public function getListener($name)
+    public function getListener(string $name): Server
     {
         return $this->listens[$name];
     }
 
     /**
-     * @return $this
+     * @return Server
      */
-    protected function handleCallback()
+    protected function handleCallback(): Server
     {
         $handles = get_class_methods($this);
         $isListenerPort = false;
@@ -307,7 +309,7 @@ abstract class Server
      * @param $swoole swoole server or swoole server port
      * @return $this
      */
-    public function bootstrap($swoole = null)
+    public function bootstrap($swoole = null): Server
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
@@ -327,7 +329,7 @@ abstract class Server
      *
      * @return swoole_server
      */
-    public function initSwoole()
+    public function initSwoole(): swoole_server
     {
         return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, $this->getSocketType());
     }
@@ -336,7 +338,7 @@ abstract class Server
      * @param Server $server
      * @return $this
      */
-    public function listen(Server $server)
+    public function listen(Server $server): Server
     {
         $this->listens[$server->getName()] = $server;
 
@@ -347,7 +349,7 @@ abstract class Server
      * @param Process $process
      * @return $this
      */
-    public function process(Process $process)
+    public function process(Process $process): Server
     {
         $process->withServer($this);
 
@@ -360,7 +362,7 @@ abstract class Server
      * @param Timer $timer
      * @return $this
      */
-    public function timer(Timer $timer)
+    public function timer(Timer $timer): Server
     {
         $timer->withServer($this);
 
@@ -375,7 +377,7 @@ abstract class Server
      * @param $config
      * @return static
      */
-    public static function createServer($name, $address, array $config = [])
+    public static function createServer($name, $address, array $config = []): Server
     {
         return new static($name, $address, $config);
     }
@@ -383,7 +385,7 @@ abstract class Server
     /**
      * @return int
      */
-    public function start()
+    public function start(): int
     {
         if ($this->isRunning()) {
             $this->output->writeln(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port));
@@ -419,7 +421,7 @@ abstract class Server
     /**
      * @return int
      */
-    public function shutdown()
+    public function shutdown(): int
     {
         if (!$this->isRunning()) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
@@ -440,7 +442,7 @@ abstract class Server
     /**
      * @return int
      */
-    public function reload()
+    public function reload(): int
     {
         if (!$this->isRunning()) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
@@ -459,16 +461,16 @@ abstract class Server
     /**
      * @return int
      */
-    public function restart()
+    public function restart(): int
     {
         $this->shutdown();
         return $this->start();
     }
 
     /**
-     * @return int
+     * @return array
      */
-    public function status()
+    public function status(): array
     {
         if (!$this->isRunning()) {
             $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
@@ -542,7 +544,7 @@ abstract class Server
     /**
      * @return bool
      */
-    public function isRunning()
+    public function isRunning(): bool
     {
         if (file_exists($this->config['pid_file'])) {
             return posix_kill(file_get_contents($this->config['pid_file']), 0);
@@ -561,7 +563,7 @@ abstract class Server
      * @param swoole_server $server
      * @return void
      */
-    public function onStart(swoole_server $server)
+    public function onStart(swoole_server $server): void
     {
         if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
             file_put_contents($this->pidFile, $server->master_pid);
@@ -585,7 +587,7 @@ abstract class Server
      * @param swoole_server $server
      * @return void
      */
-    public function onShutdown(swoole_server $server)
+    public function onShutdown(swoole_server $server): void
     {
         if (file_exists($this->pidFile)) {
             unlink($this->pidFile);
@@ -599,7 +601,7 @@ abstract class Server
      *
      * @return void
      */
-    public function onManagerStart(swoole_server $server)
+    public function onManagerStart(swoole_server $server): void
     {
         process_rename($this->getName() . ' manager');
 
@@ -611,7 +613,7 @@ abstract class Server
      *
      * @return void
      */
-    public function onManagerStop(swoole_server $server)
+    public function onManagerStop(swoole_server $server): void
     {
         $this->output->writeln(sprintf('Server <info>%s</info> Manager[<info>%s</info>] is shutdown.', $this->name, $server->manager_pid), OutputInterface::VERBOSITY_DEBUG);
     }
@@ -621,7 +623,7 @@ abstract class Server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStart(swoole_server $server, $worker_id)
+    public function onWorkerStart(swoole_server $server, int $worker_id): void
     {
         $worker_name = $server->taskworker ? 'task' : 'worker';
         process_rename($this->getName() . ' ' . $worker_name);
@@ -633,7 +635,7 @@ abstract class Server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStop(swoole_server $server, $worker_id)
+    public function onWorkerStop(swoole_server $server, int $worker_id): void
     {
         $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] is shutdown', $this->name, $worker_id), OutputInterface::VERBOSITY_DEBUG);
     }
@@ -644,7 +646,7 @@ abstract class Server
      * @param $workerPid
      * @param $code
      */
-    public function onWorkerError(swoole_server $server, $workerId, $workerPid, $code)
+    public function onWorkerError(swoole_server $server, int $workerId, int $workerPid, int $code): void
     {
         $this->output->writeln(sprintf('Server <info>%s:%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $workerPid, $workerId, $code), OutputInterface::VERBOSITY_DEBUG);
     }
@@ -656,7 +658,7 @@ abstract class Server
      * @param $data
      * @return mixed
      */
-    public function onTask(swoole_server $server, $taskId, $workerId, $data)
+    public function onTask(swoole_server $server, int $taskId, int $workerId, string $data): void
     {
         return $this->doTask($server, $data, $taskId, $workerId);
     }
@@ -676,7 +678,7 @@ abstract class Server
      * @param $data
      * @return mixed
      */
-    public function onFinish(swoole_server $server, $taskId, $data)
+    public function onFinish(swoole_server $server, int $taskId, string $data): void
     {
         return $this->doFinish($server, $data, $taskId);
     }
@@ -694,7 +696,7 @@ abstract class Server
      * @param $fd
      * @param $from_id
      */
-    public function onConnect(swoole_server $server, $fd, $from_id)
+    public function onConnect(swoole_server $server, int $fd, int $from_id): void
     {
         $this->fd = $fd;
 
@@ -706,14 +708,14 @@ abstract class Server
      * @param $fd
      * @param $from_id
      */
-    abstract public function doConnect(swoole_server $server, $fd, $from_id);
+    abstract public function doConnect(swoole_server $server, int $fd, int $from_id);
 
     /**
      * @param swoole_server $server
      * @param $fd
      * @param $fromId
      */
-    public function onClose(swoole_server $server, $fd, $fromId)
+    public function onClose(swoole_server $server, int $fd, int $fromId): void
     {
         $this->doClose($server, $fd, $fromId);
     }
