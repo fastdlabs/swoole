@@ -12,7 +12,7 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Server;
 
-abstract class Unix extends Server
+abstract class UnixServer extends Server
 {
 
 }

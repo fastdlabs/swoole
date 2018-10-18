@@ -9,10 +9,10 @@
 
 
 use FastD\Swoole\Server;
-use FastD\Swoole\Server\TCP;
+use FastD\Swoole\Server\TCPServer;
 
 
-class TcpServer extends TCP
+class TcpServerServer extends TCPServer
 {
     /**
      * @param swoole_server $server
@@ -31,7 +31,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
 {
     public function testNewServer()
     {
-        $server = new TcpServer('foo', '127.0.0.1:9528');
+        $server = new TcpServerServer('foo', '127.0.0.1:9528');
 
         $this->assertEquals('127.0.0.1', $server->getHost());
         $this->assertEquals('9528', $server->getPort());
@@ -42,7 +42,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
 
     public function testServerBootstrap()
     {
-        $server = new TcpServer('foo', '127.0.0.1:9529');
+        $server = new TcpServerServer('foo', '127.0.0.1:9529');
         $this->assertNull($server->getSwoole());
         $server->daemon();
         $server->bootstrap();
@@ -61,7 +61,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
 
     public function testServerBootstrapConfig()
     {
-        $server = new TcpServer('foo', 'tcp://127.0.0.1:9530', [
+        $server = new TcpServerServer('foo', 'tcp://127.0.0.1:9530', [
             'pid_file' => '/tmp/foo.pid',
         ]);
         $server->daemon();

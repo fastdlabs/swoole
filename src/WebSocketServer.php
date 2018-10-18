@@ -21,7 +21,7 @@ use swoole_websocket_frame;
  *
  * @package FastD\Swoole\Server\WebSocket
  */
-abstract class WebSocket extends Server
+abstract class WebSocketServer extends Server
 {
     protected $scheme = 'ws';
 

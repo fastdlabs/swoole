@@ -13,43 +13,59 @@ use FastD\Swoole\Server;
 use swoole_server;
 
 /**
- * Class Udp
+ * Class Tcp
  *
  * @package FastD\Swoole\Server
  */
-abstract class UDP extends Server
+abstract class TCPServer extends Server
 {
-    const SCHEME = 'udp';
-
     /**
      * 服务器同时监听TCP/UDP端口时，收到TCP协议的数据会回调onReceive，收到UDP数据包回调onPacket
      *
      * @param swoole_server $server
-     * @param string $data
-     * @param array $clientInfo
+     * @param $fd
+     * @param $from_id
+     * @param $data
      * @return void
      */
-    public function onPacket(swoole_server $server, $data, array $clientInfo)
+    public function onReceive(swoole_server $server, int $fd, int $from_id, string $data): void
     {
         try {
-            $this->doPacket($server, $data, $clientInfo);
+            $this->doWork($server, $fd, $data, $from_id);
         } catch (\Exception $e) {
-            $content = sprintf("Error: %s\nFile: %s \n Code: %s",
-                $e->getMessage(),
-                $e->getFile(),
-                $e->getCode()
+            $server->send($fd, sprintf("Error: %s\nFile: %s \nCode: %s\nLine: %s\r\n\r\n",
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getCode(),
+                    $e->getLine()
+                )
             );
-            $server->sendto($clientInfo['address'], $clientInfo['port'], $content);
+            $server->close($fd);
         }
     }
 
     /**
      * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function doConnect(swoole_server $server, int $fd, int $from_id){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function doClose(swoole_server $server, $fd, $fromId){}
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
      * @param $data
-     * @param $clientInfo
+     * @param $from_id
      * @return mixed
      */
-    abstract public function doPacket(swoole_server $server, $data, $clientInfo);
+    abstract public function doWork(swoole_server $server, $fd, $data, $from_id);
 
     /**
      * @param swoole_server $server
@@ -67,18 +83,4 @@ abstract class UDP extends Server
      * @return mixed
      */
     public function doFinish(swoole_server $server, $data, $taskId){}
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
-     */
-    public function doConnect(swoole_server $server, $fd, $from_id){}
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $fromId
-     */
-    public function doClose(swoole_server $server, $fd, $fromId){}
 }

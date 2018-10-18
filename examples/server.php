@@ -7,7 +7,7 @@
  * @link      http://www.fast-d.cn/
  */
 
-use FastD\Swoole\Server\TCP;
+use FastD\Swoole\Server\TCPServer;
 
 include __DIR__ . '/../vendor/autoload.php';
 
