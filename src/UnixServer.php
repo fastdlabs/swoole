@@ -7,12 +7,14 @@
  * @see      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole;
 
 
-use FastD\Swoole\Server;
-
-abstract class UnixServer extends Server
+/**
+ * Class UnixServer
+ * @package FastD\Swoole
+ */
+abstract class UnixServer extends ServerAbstract
 {
-
+    protected $protocol = 'unix';
 }

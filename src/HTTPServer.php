@@ -7,13 +7,13 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole\Server;
+namespace FastD\Swoole;
 
 use Exception;
 use FastD\Http\HttpException;
+use FastD\Http\Request;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
-use FastD\Swoole\ServerAbstract;
 use swoole_http_request;
 use swoole_http_response;
 use swoole_http_server;
@@ -48,10 +48,8 @@ abstract class HTTPServer extends ServerAbstract
     {
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
-            $response = $this->doRequest($swooleRequestServer);
-            $this->sendHeader($swooleResponse, $response);
-            $swooleResponse->status($response->getStatusCode());
-            $swooleResponse->end((string) $response->getBody());
+            $response = $this->handleRequest($swooleRequestServer);
+            $this->handleResponse($swooleResponse, $response);
             unset($response);
         } catch (HttpException $e) {
             $swooleResponse->status($e->getStatusCode());
@@ -75,6 +73,24 @@ abstract class HTTPServer extends ServerAbstract
         foreach ($response->getCookieParams() as $key => $cookieParam) {
             $swooleResponse->cookie($key, $cookieParam);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    abstract public function handleRequest(Request $request): Response;
+
+    /**
+     * @param swoole_http_response $swooleResponse
+     * @param Response $response
+     * @return void
+     */
+    public function handleResponse(swoole_http_response $swooleResponse, Response $response): void
+    {
+        $this->sendHeader($swooleResponse, $response);
+        $swooleResponse->status($response->getStatusCode());
+        $swooleResponse->end((string) $response->getBody());
     }
 
     /**

@@ -17,6 +17,7 @@ use swoole_server_port;
 use swoole_websocket_server;
 use swoole_http_server;
 use FastD\Swoole\Support\Watcher;
+use FastD\Swoole\Handlers\ServerHandlerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -24,7 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class Server
  * @package FastD\Swoole
  */
-abstract class ServerAbstract implements ServerInterface, ServerCallbackInterface
+abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
 {
     const VERSION = '5.0.0';
 

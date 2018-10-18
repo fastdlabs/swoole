@@ -7,16 +7,16 @@
  * @see      HTTPServer: //www.fastdlabs.com/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Handlers;
+
 
 use swoole_server;
 
-
 /**
- * Interface ServerCallbackInterface
- * @package FastD\Swoole\Server
+ * Interface ServerHandlerInterface
+ * @package FastD\Swoole\Handlers
  */
-interface ServerCallbackInterface
+interface ServerHandlerInterface
 {
     /**
      * Base start handle. Storage process id.
@@ -85,41 +85,8 @@ interface ServerCallbackInterface
 
     /**
      * @param swoole_server $server
-     * @param int $fd
-     * @param int $reactor_id
-     * @param string $data
-     */
-    public function onReceive(swoole_server $server, int $fd, int $reactor_id, string $data): void;
-
-    /**
-     * @param swoole_server $server
-     * @param string $data
-     * @param array $client_info
-     */
-    public function onPacket(swoole_server $server, string $data, array $client_info): void;
-
-    /**
-     * @param swoole_server $server
      * @param int $src_worker_id
      * @param string $message
      */
     public function onPipeMessage(swoole_server $server, int $src_worker_id, string $message): void;
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $workerId
-     * @param $data
-     * @return mixed
-     */
-    public function onTask(swoole_server $server, int $taskId, int $workerId, string $data):  void;
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $data
-     * @return mixed
-     */
-    public function onFinish(swoole_server $server, int $taskId, string $data): void;
-
 }
