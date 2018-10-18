@@ -10,6 +10,7 @@
 namespace FastD\Swoole;
 
 
+use FastD\Swoole\Handlers\WebSocketServerHandlerInterface;
 use swoole_websocket_server;
 use swoole_server;
 use swoole_http_request;
@@ -19,10 +20,8 @@ use swoole_websocket_frame;
  * Class WebSocketServer
  * @package FastD\Swoole
  */
-abstract class WebSocketServer extends ServerAbstract
+abstract class WebSocketServer extends ServerAbstract implements WebSocketServerHandlerInterface
 {
-    protected $scheme = 'ws';
-
     /**
      * @return swoole_websocket_server
      */

@@ -17,5 +17,4 @@ use FastD\Swoole\Handlers\TCPServerHandlerInterface;
  */
 abstract class TCPServer extends ServerAbstract implements TCPServerHandlerInterface
 {
-    protected $protocol = 'tcp';
 }

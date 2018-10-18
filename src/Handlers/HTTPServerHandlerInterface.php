@@ -7,7 +7,7 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Handlers;
 
 
 use swoole_http_request;
@@ -19,6 +19,8 @@ use swoole_http_response;
  */
 interface HTTPServerHandlerInterface
 {
+    const PROTOCOL = 'http';
+
     /**
      * @param swoole_http_request $swooleRequet
      * @param swoole_http_response $swooleResponse

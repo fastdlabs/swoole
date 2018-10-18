@@ -18,6 +18,8 @@ use swoole_server;
  */
 interface UDPServerHandlerInterface
 {
+    const PROTOCOL = 'udp';
+
     /**
      * @param swoole_server $server
      * @param string $data

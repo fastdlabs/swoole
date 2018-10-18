@@ -21,6 +21,8 @@ use swoole_websocket_frame;
  */
 interface WebSocketServerHandlerInterface
 {
+    const PROTOCOL = 'ws';
+
     /**
      * @param swoole_http_request $request
      * @param swoole_http_response $response

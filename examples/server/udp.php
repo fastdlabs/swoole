@@ -9,7 +9,7 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class Server extends \FastD\Swoole\TCPServer
+class Server extends \FastD\Swoole\UDPServer
 {
     /**
      * @param swoole_server $server
@@ -43,14 +43,12 @@ class Server extends \FastD\Swoole\TCPServer
 
     /**
      * @param swoole_server $server
-     * @param int $fd
-     * @param int $reactor_id
      * @param string $data
+     * @param array $client_info
      */
-    public function onReceive(swoole_server $server, int $fd, int $reactor_id, string $data): void
+    public function onPacket(swoole_server $server, string $data, array $client_info): void
     {
-        $server->send($fd, 'hello world');
-        $server->close($fd);
+        print_r($data);
     }
 }
 

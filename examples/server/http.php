@@ -9,8 +9,19 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class Server extends \FastD\Swoole\TCPServer
+use FastD\Http\Response;
+
+class Server extends \FastD\Swoole\HTTPServer
 {
+    /**
+     * @param \FastD\Http\Request $request
+     * @return \FastD\Http\Response
+     */
+    public function handleRequest(\FastD\Http\Request $request): \FastD\Http\Response
+    {
+        return new Response('hello world');
+    }
+
     /**
      * @param swoole_server $server
      * @param $fd
@@ -40,18 +51,8 @@ class Server extends \FastD\Swoole\TCPServer
     {
         // TODO: Implement onPipeMessage() method.
     }
-
-    /**
-     * @param swoole_server $server
-     * @param int $fd
-     * @param int $reactor_id
-     * @param string $data
-     */
-    public function onReceive(swoole_server $server, int $fd, int $reactor_id, string $data): void
-    {
-        $server->send($fd, 'hello world');
-        $server->close($fd);
-    }
 }
 
-Server::createServer('127.0.0.1:9876')->start();
+Server::createServer('127.0.0.1:9876')
+    ->enableHTTP2()
+    ->start();

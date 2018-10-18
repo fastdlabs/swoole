@@ -18,19 +18,15 @@ use swoole_http_request;
 use swoole_http_response;
 use swoole_http_server;
 use swoole_server;
+use FastD\Swoole\Handlers\HTTPServerHandlerInterface;
 
 /**
  * Class HTTPServer
  * @package FastD\Swoole\Server
  */
-abstract class HTTPServer extends ServerAbstract
+abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInterface
 {
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
-
-    /**
-     * @var string
-     */
-    protected $protocol = 'http';
 
     /**
      * @return \swoole_http_server
@@ -41,10 +37,20 @@ abstract class HTTPServer extends ServerAbstract
     }
 
     /**
+     * @return HTTPServer
+     */
+    public function enableHTTP2(): HTTPServer
+    {
+        $this->config['open_http2_protocol'] = true;
+
+        return $this;
+    }
+
+    /**
      * @param swoole_http_request $swooleRequet
      * @param swoole_http_response $swooleResponse
      */
-    public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse)
+    public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse): void
     {
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
@@ -91,79 +97,5 @@ abstract class HTTPServer extends ServerAbstract
         $this->sendHeader($swooleResponse, $response);
         $swooleResponse->status($response->getStatusCode());
         $swooleResponse->end((string) $response->getBody());
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
-     */
-    public function onConnect(swoole_server $server, int $fd, int $from_id): void
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $fromId
-     */
-    public function onClose(swoole_server $server, int $fd, int $fromId): void
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $fd
-     * @param int $reactor_id
-     * @param string $data
-     */
-    public function onReceive(swoole_server $server, int $fd, int $reactor_id, string $data): void
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param string $data
-     * @param array $client_info
-     */
-    public function onPacket(swoole_server $server, string $data, array $client_info): void
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $src_worker_id
-     * @param string $message
-     */
-    public function onPipeMessage(swoole_server $server, int $src_worker_id, string $message): void
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $workerId
-     * @param $data
-     * @return mixed
-     */
-    public function onTask(swoole_server $server, int $taskId, int $workerId, string $data): void
-    {
-
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $data
-     * @return mixed
-     */
-    public function onFinish(swoole_server $server, int $taskId, string $data): void
-    {
-
     }
 }

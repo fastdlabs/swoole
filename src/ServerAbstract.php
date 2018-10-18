@@ -46,15 +46,9 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
      */
     protected $config = [
         'worker_num' => 1,
-        'task_worker_num' => 1,
         'task_tmpdir' => '/tmp',
         'open_cpu_affinity' => true,
     ];
-
-    /**
-     * @var string
-     */
-    protected $protocol = 'tcp';
 
     /**
      * @var string
@@ -184,7 +178,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
      */
     public function getProtocol(): string
     {
-        return $this->protocol;
+        return static::PROTOCOL;
     }
 
     /**
@@ -218,7 +212,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
      */
     public function getSocketType(): string
     {
-        switch ($this->protocol) {
+        switch (static::PROTOCOL) {
             case 'udp':
                 $type = SWOOLE_SOCK_UDP;
                 break;
