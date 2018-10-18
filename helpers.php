@@ -114,7 +114,7 @@ function timer_clear($timerId)
     return swoole_timer_clear($timerId);
 }
 
-/**
+/*
  * @return string
  */
 function get_local_ip()

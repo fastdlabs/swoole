@@ -11,25 +11,27 @@ namespace FastD\Swoole;
 
 
 use Exception;
-use FastD\Swoole\Support\Watcher;
 use swoole_process;
 use swoole_server;
 use swoole_server_port;
 use swoole_websocket_server;
 use swoole_http_server;
+use FastD\Swoole\Support\Watcher;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class Server
  * @package FastD\Swoole
  */
-abstract class Server implements ServerInterface, ServerCallbackInterface
+abstract class ServerAbstract implements ServerInterface, ServerCallbackInterface
 {
     const VERSION = '5.0.0';
 
     /**
      * @var $name
      */
-    protected $name;
+    protected $name = '';
 
     /**
      * @var swoole_server
@@ -66,12 +68,12 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * @var string
      */
-    protected $pid_file;
+    protected $pid_file = '';
 
     /**
      * @var int
      */
-    protected $pid;
+    protected $pid = 0;
 
     /**
      * @var bool
@@ -81,7 +83,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * 多端口支持
      *
-     * @var Server[]
+     * @var ServerAbstract[]
      */
     protected $listens = [];
 
@@ -101,6 +103,11 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     protected $fd;
 
     /**
+     * @var ConsoleOutput
+     */
+    protected $output;
+
+    /**
      * Server constructor.
      * @param string $address
      * @param array $config
@@ -115,11 +122,13 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
         }
 
         $this->configure($config);
+
+        $this->output = new ConsoleOutput();
     }
 
     /**
      * @param string $name
-     * @return Server
+     * @return ServerAbstract
      */
     public function rename(string $name): ServerInterface
     {
@@ -131,7 +140,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
 
     /**
      * @param array $config
-     * @return $this
+     * @return ServerAbstract
      */
     public function configure(array $config): ServerInterface
     {
@@ -160,7 +169,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * 守護進程
      *
-     * @return $this
+     * @return ServerAbstract
      */
     public function daemon(): ServerInterface
     {
@@ -242,7 +251,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * @return string
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -256,7 +265,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     }
 
     /**
-     * @return Server[]
+     * @return ServerAbstract[]
      */
     public function getListeners(): array
     {
@@ -265,17 +274,17 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
 
     /**
      * @param $name
-     * @return Server
+     * @return ServerAbstract
      */
-    public function getListener(string $name): Server
+    public function getListener(string $name): ServerAbstract
     {
         return $this->listens[$name];
     }
 
     /**
-     * @return Server
+     * @return ServerAbstract
      */
-    protected function handleCallback(): Server
+    protected function handleCallback(): ServerAbstract
     {
         $handles = get_class_methods($this);
         $isListenerPort = false;
@@ -286,7 +295,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
                 if ($isListenerPort) {
-                    if ('udp' === $this->getScheme()) {
+                    if ('udp' === $this->getProtocol()) {
                         $callbacks = ['onPacket',];
                     } else {
                         $callbacks = ['onConnect', 'onClose', 'onReceive',];
@@ -306,9 +315,9 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
      * @param \swoole_server $swoole swoole server or swoole server port
-     * @return $this
+     * @return ServerAbstract
      */
-    public function bootstrap(?swoole_server $swoole = null): Server
+    public function bootstrap(?swoole_server $swoole = null): ServerAbstract
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
@@ -334,10 +343,10 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     }
 
     /**
-     * @param Server $server
-     * @return $this
+     * @param ServerAbstract $server
+     * @return ServerAbstract
      */
-    public function listen(Server $server): Server
+    public function listen(ServerAbstract $server): ServerAbstract
     {
         $this->listens[$server->getName()] = $server;
 
@@ -346,9 +355,9 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
 
     /**
      * @param Process $process
-     * @return $this
+     * @return ServerAbstract
      */
-    public function process(Process $process): Server
+    public function process(Process $process): ServerAbstract
     {
         $process->withServer($this);
 
@@ -359,9 +368,9 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
 
     /**
      * @param Timer $timer
-     * @return $this
+     * @return ServerAbstract
      */
-    public function timer(Timer $timer): Server
+    public function timer(Timer $timer): ServerAbstract
     {
         $timer->withServer($this);
 
@@ -373,9 +382,9 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
     /**
      * @param $address
      * @param $config
-     * @return static
+     * @return ServerAbstract
      */
-    public static function createServer(?string $address = null, array $config = []): Server
+    public static function createServer(?string $address = null, array $config = []): ServerAbstract
     {
         return new static($address, $config);
     }
@@ -404,7 +413,7 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
                 }
 
                 $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
-                $this->output->writeln(sprintf('App version: <info>%s</info>', Server::VERSION));
+                $this->output->writeln(sprintf('App version: <info>%s</info>', ServerAbstract::VERSION));
                 $this->output->writeln(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
 
                 $this->swoole->start();
@@ -571,9 +580,9 @@ abstract class Server implements ServerInterface, ServerCallbackInterface
 
         process_rename($this->name . ' master');
 
-        $this->output->writeln(sprintf("Listen: <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
+        $this->output->writeln(sprintf("Listen: <info>%s://%s:%s</info>", $this->getProtocol(), $this->getHost(), $this->getPort()));
         foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" <info> ></info> Listen: <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
+            $this->output->writeln(sprintf(" <info> ></info> Listen: <info>%s://%s:%s</info>", $listen->getProtocol(), $listen->getHost(), $listen->getPort()));
         }
 
         $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pid_file, $server->master_pid));

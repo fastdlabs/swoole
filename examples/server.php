@@ -11,7 +11,7 @@ use FastD\Swoole\Server\TCP;
 
 include __DIR__ . '/../vendor/autoload.php';
 
-class BaseServer extends \FastD\Swoole\Server
+class BaseServer extends \FastD\Swoole\ServerAbstract
 {
     /**
      * @param swoole_server $server
