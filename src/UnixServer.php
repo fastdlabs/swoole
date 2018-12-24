@@ -16,4 +16,5 @@ namespace FastD\Swoole;
  */
 abstract class UnixServer extends ServerAbstract
 {
+    protected $protocol = 'unix';
 }

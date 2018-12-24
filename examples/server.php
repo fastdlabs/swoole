@@ -6,9 +6,6 @@
  * @link      https://www.github.com/janhuang
  * @link      http://www.fast-d.cn/
  */
-
-use FastD\Swoole\Server\TCPServer;
-
 include __DIR__ . '/../vendor/autoload.php';
 
 use FastD\Http\Request;
@@ -22,6 +19,36 @@ class BaseServer extends \FastD\Swoole\HTTPServer
     public function handleRequest(Request $request): \FastD\Http\Response
     {
         return new \FastD\Http\Response('hello world');
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function onConnect(swoole_server $server, int $fd, int $from_id): void
+    {
+        // TODO: Implement onConnect() method.
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param $fd
+     * @param $fromId
+     */
+    public function onClose(swoole_server $server, int $fd, int $fromId): void
+    {
+        // TODO: Implement onClose() method.
+    }
+
+    /**
+     * @param swoole_server $server
+     * @param int $src_worker_id
+     * @param string $message
+     */
+    public function onPipeMessage(swoole_server $server, int $src_worker_id, string $message): void
+    {
+        // TODO: Implement onPipeMessage() method.
     }
 }
 

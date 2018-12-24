@@ -18,5 +18,5 @@ use FastD\Swoole\Handlers\UDPServerHandlerInterface;
  */
 abstract class UDPServer extends ServerAbstract implements UDPServerHandlerInterface
 {
-
+    protected $protocol = 'udp';
 }

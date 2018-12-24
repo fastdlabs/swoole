@@ -27,6 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
 {
+    protected $protocol = 'tcp';
     const VERSION = '5.0.0';
 
     /**
@@ -178,7 +179,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
      */
     public function getProtocol(): string
     {
-        return static::PROTOCOL;
+        return $this->protocol;
     }
 
     /**
@@ -212,7 +213,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
      */
     public function getSocketType(): string
     {
-        switch (static::PROTOCOL) {
+        switch ($this->protocol) {
             case 'udp':
                 $type = SWOOLE_SOCK_UDP;
                 break;

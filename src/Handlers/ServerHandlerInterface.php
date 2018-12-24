@@ -18,8 +18,6 @@ use swoole_server;
  */
 interface ServerHandlerInterface
 {
-    const PROTOCOL = 'tcp';
-
     /**
      * Base start handle. Storage process id.
      *

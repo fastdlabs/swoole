@@ -19,8 +19,6 @@ use swoole_http_response;
  */
 interface HTTPServerHandlerInterface
 {
-    const PROTOCOL = 'http';
-
     /**
      * @param swoole_http_request $swooleRequet
      * @param swoole_http_response $swooleResponse

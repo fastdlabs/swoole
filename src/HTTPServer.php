@@ -28,6 +28,8 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
 {
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
+    protected $protocol = 'http';
+
     /**
      * @return \swoole_http_server
      */

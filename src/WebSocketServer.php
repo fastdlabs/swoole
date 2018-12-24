@@ -22,6 +22,8 @@ use swoole_websocket_frame;
  */
 abstract class WebSocketServer extends ServerAbstract implements WebSocketServerHandlerInterface
 {
+    protected $protocol = 'ws';
+
     /**
      * @return swoole_websocket_server
      */
