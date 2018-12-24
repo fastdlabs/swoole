@@ -13,9 +13,7 @@ namespace FastD\Swoole;
 use Exception;
 use swoole_process;
 use Swoole\Server;
-use Server_port;
-use swoole_websocket_server;
-use swoole_http_server;
+use Server\Port;
 use FastD\Swoole\Support\Watcher;
 use FastD\Swoole\Handlers\ServerHandlerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -310,7 +308,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param \Server $swoole swoole server or swoole server port
+     * @param Server $swoole
      * @return ServerAbstract
      */
     public function bootstrap(?Server $swoole = null): ServerAbstract

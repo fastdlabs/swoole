@@ -14,8 +14,6 @@ use FastD\Http\HttpException;
 use FastD\Http\Request;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
-use swoole_http_request;
-use swoole_http_response;
 use Swoole\Http\Server;
 use FastD\Swoole\Handlers\HTTPServerHandlerInterface;
 
@@ -93,7 +91,7 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
      * @param Response $response
      * @return void
      */
-    public function handleResponse(swoole_http_response $swooleResponse, Response $response): void
+    public function handleResponse(\Swoole\Http\Response $swooleResponse, Response $response): void
     {
         $this->sendHeader($swooleResponse, $response);
         $swooleResponse->status($response->getStatusCode());
