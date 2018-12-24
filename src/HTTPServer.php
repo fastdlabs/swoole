@@ -46,8 +46,8 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
     }
 
     /**
-     * @param swoole_http_request $swooleRequet
-     * @param swoole_http_response $swooleResponse
+     * @param \Swoole\Http\Request $swooleRequet
+     * @param \Swoole\Http\Response $swooleResponse
      */
     public function onRequest(\Swoole\Http\Request $swooleRequet, \Swoole\Http\Response $swooleResponse): void
     {
