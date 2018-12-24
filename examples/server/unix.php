@@ -20,7 +20,7 @@ class UnixServer extends \FastD\Swoole\UnixServer
      */
     public function onConnect(Server $server, int $fd, int $from_id): void
     {
-        // TODO: Implement onConnect() method.
+        echo 'connect' . PHP_EOL;
     }
 
     /**
@@ -30,7 +30,7 @@ class UnixServer extends \FastD\Swoole\UnixServer
      */
     public function onClose(Server $server, int $fd, int $fromId): void
     {
-        // TODO: Implement onClose() method.
+        echo 'close' . PHP_EOL;
     }
 
     /**
@@ -43,3 +43,5 @@ class UnixServer extends \FastD\Swoole\UnixServer
         // TODO: Implement onPipeMessage() method.
     }
 }
+
+UnixServer::createServer('/tmp/server.sock')->start();

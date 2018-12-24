@@ -28,7 +28,7 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
     const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
     /**
-     * @return \swoole_http_server
+     * @return \Swoole\Server
      */
     public function initSwoole(): \Swoole\Server
     {
@@ -66,10 +66,10 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
     }
 
     /**
-     * @param swoole_http_response $swooleResponse
+     * @param \Swoole\Http\Response $swooleResponse
      * @param Response $response
      */
-    protected function sendHeader(swoole_http_response $swooleResponse, Response $response)
+    protected function sendHeader(\Swoole\Http\Response $swooleResponse, Response $response)
     {
         foreach ($response->getHeaders() as $key => $header) {
             $swooleResponse->header($key, $response->getHeaderLine($key));
@@ -87,7 +87,7 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
     abstract public function handleRequest(Request $request): Response;
 
     /**
-     * @param swoole_http_response $swooleResponse
+     * @param \Swoole\Http\Response $swooleResponse
      * @param Response $response
      * @return void
      */
