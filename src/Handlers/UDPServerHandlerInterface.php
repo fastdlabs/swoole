@@ -10,7 +10,7 @@
 namespace FastD\Swoole\Handlers;
 
 
-use swoole_server;
+use Swoole\Server;
 
 /**
  * Interface UDPServerHandlerInterface
@@ -19,9 +19,9 @@ use swoole_server;
 interface UDPServerHandlerInterface
 {
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param string $data
      * @param array $client_info
      */
-    public function onPacket(swoole_server $server, string $data, array $client_info): void;
+    public function onPacket(Server $server, string $data, array $client_info): void;
 }

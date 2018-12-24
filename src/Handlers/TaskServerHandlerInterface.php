@@ -10,7 +10,7 @@
 namespace FastD\Swoole\Handlers;
 
 
-use swoole_server;
+use Swoole\Server;
 
 /**
  * Interface TaskServerHandlerInterface
@@ -19,19 +19,19 @@ use swoole_server;
 interface TaskServerHandlerInterface
 {
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $taskId
      * @param $workerId
      * @param $data
      * @return mixed
      */
-    public function onTask(swoole_server $server, int $taskId, int $workerId, string $data):  void;
+    public function onTask(Server $server, int $taskId, int $workerId, string $data):  void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $taskId
      * @param $data
      * @return mixed
      */
-    public function onFinish(swoole_server $server, int $taskId, string $data): void;
+    public function onFinish(Server $server, int $taskId, string $data): void;
 }

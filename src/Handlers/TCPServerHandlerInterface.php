@@ -10,7 +10,7 @@
 namespace FastD\Swoole\Handlers;
 
 
-use swoole_server;
+use Swoole\Server;
 
 /**
  * Interface TCPServerCallbackInterface
@@ -19,10 +19,10 @@ use swoole_server;
 interface TCPServerHandlerInterface
 {
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param int $fd
      * @param int $reactor_id
      * @param string $data
      */
-    public function onReceive(swoole_server $server, int $fd, int $reactor_id, string $data): void;
+    public function onReceive(Server $server, int $fd, int $reactor_id, string $data): void;
 }

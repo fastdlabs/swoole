@@ -16,8 +16,7 @@ use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use swoole_http_request;
 use swoole_http_response;
-use swoole_http_server;
-use swoole_server;
+use Swoole\Http\Server;
 use FastD\Swoole\Handlers\HTTPServerHandlerInterface;
 
 /**
@@ -26,16 +25,16 @@ use FastD\Swoole\Handlers\HTTPServerHandlerInterface;
  */
 abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInterface
 {
-    const SERVER_INTERVAL_ERROR = 'Server Interval Error';
-
     protected $protocol = 'http';
+
+    const SERVER_INTERVAL_ERROR = 'Server Interval Error';
 
     /**
      * @return \swoole_http_server
      */
-    public function initSwoole(): swoole_server
+    public function initSwoole(): \Swoole\Server
     {
-        return new swoole_http_server($this->getHost(), $this->getPort());
+        return new Server($this->getHost(), $this->getPort());
     }
 
     /**
@@ -52,7 +51,7 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
      * @param swoole_http_request $swooleRequet
      * @param swoole_http_response $swooleResponse
      */
-    public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse): void
+    public function onRequest(\Swoole\Http\Request $swooleRequet, \Swoole\Http\Response $swooleResponse): void
     {
         try {
             $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);

@@ -12,8 +12,8 @@ namespace FastD\Swoole;
 
 use Exception;
 use swoole_process;
-use swoole_server;
-use swoole_server_port;
+use Swoole\Server;
+use Server_port;
 use swoole_websocket_server;
 use swoole_http_server;
 use FastD\Swoole\Support\Watcher;
@@ -36,7 +36,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     protected $name = '';
 
     /**
-     * @var swoole_server
+     * @var Server
      */
     protected $swoole;
 
@@ -253,9 +253,9 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     }
 
     /**
-     * @return swoole_server
+     * @return Server
      */
-    public function getSwoole(): swoole_server
+    public function getSwoole(): Server
     {
         return $this->swoole;
     }
@@ -285,7 +285,7 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
         $handles = get_class_methods($this);
         $isListenerPort = false;
         $serverClass = get_class($this->getSwoole());
-        if ('Swoole\Server\Port' == $serverClass || 'swoole_server_port' == $serverClass) {
+        if ('Swoole\Server\Port' == $serverClass || 'Server_port' == $serverClass) {
             $isListenerPort = true;
         }
         foreach ($handles as $value) {
@@ -310,10 +310,10 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param \swoole_server $swoole swoole server or swoole server port
+     * @param \Server $swoole swoole server or swoole server port
      * @return ServerAbstract
      */
-    public function bootstrap(?swoole_server $swoole = null): ServerAbstract
+    public function bootstrap(?Server $swoole = null): ServerAbstract
     {
         if (!$this->isBooted()) {
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
@@ -331,11 +331,11 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     /**
      * 如果需要自定义自己的swoole服务器,重写此方法
      *
-     * @return swoole_server
+     * @return Server
      */
-    public function initSwoole(): swoole_server
+    public function initSwoole(): Server
     {
-        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, $this->getSocketType());
+        return new Server($this->host, $this->port, SWOOLE_PROCESS, $this->getSocketType());
     }
 
     /**
@@ -564,10 +564,10 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     /**
      * Base start handle. Storage process id.
      *
-     * @param swoole_server $server
+     * @param Server $server
      * @return void
      */
-    public function onStart(swoole_server $server): void
+    public function onStart(Server $server): void
     {
         if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
             file_put_contents($this->pid_file, $server->master_pid);
@@ -588,10 +588,10 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     /**
      * Shutdown server process.
      *
-     * @param swoole_server $server
+     * @param Server $server
      * @return void
      */
-    public function onShutdown(swoole_server $server): void
+    public function onShutdown(Server $server): void
     {
         if (file_exists($this->pid_file)) {
             unlink($this->pid_file);
@@ -601,11 +601,11 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     }
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      *
      * @return void
      */
-    public function onManagerStart(swoole_server $server): void
+    public function onManagerStart(Server $server): void
     {
         process_rename($this->getName() . ' manager');
 
@@ -613,21 +613,21 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     }
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      *
      * @return void
      */
-    public function onManagerStop(swoole_server $server): void
+    public function onManagerStop(Server $server): void
     {
         $this->output->writeln(sprintf('Server <info>%s</info> Manager[<info>%s</info>] is shutdown.', $this->name, $server->manager_pid), OutputInterface::VERBOSITY_DEBUG);
     }
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStart(swoole_server $server, int $worker_id): void
+    public function onWorkerStart(Server $server, int $worker_id): void
     {
         $worker_name = $server->taskworker ? 'task' : 'worker';
         process_rename($this->getName() . ' ' . $worker_name);
@@ -635,22 +635,22 @@ abstract class ServerAbstract implements ServerInterface, ServerHandlerInterface
     }
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStop(swoole_server $server, int $worker_id): void
+    public function onWorkerStop(Server $server, int $worker_id): void
     {
         $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] is shutdown', $this->name, $worker_id), OutputInterface::VERBOSITY_DEBUG);
     }
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $workerId
      * @param $workerPid
      * @param $code
      */
-    public function onWorkerError(swoole_server $server, int $workerId, int $workerPid, int $code): void
+    public function onWorkerError(Server $server, int $workerId, int $workerPid, int $code): void
     {
         $this->output->writeln(sprintf('Server <info>%s:%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $workerPid, $workerId, $code), OutputInterface::VERBOSITY_DEBUG);
     }

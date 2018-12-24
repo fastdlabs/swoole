@@ -10,7 +10,7 @@
 namespace FastD\Swoole\Handlers;
 
 
-use swoole_server;
+use Swoole\Server;
 
 /**
  * Interface ServerHandlerInterface
@@ -24,69 +24,69 @@ interface ServerHandlerInterface
      * @param swoole_server $server
      * @return void
      */
-    public function onStart(swoole_server $server): void;
+    public function onStart(Server $server): void;
 
     /**
      * Shutdown server process.
      *
-     * @param swoole_server $server
+     * @param Server $server
      * @return void
      */
-    public function onShutdown(swoole_server $server): void;
+    public function onShutdown(Server $server): void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      *
      * @return void
      */
-    public function onManagerStart(swoole_server $server): void;
+    public function onManagerStart(Server $server): void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      *
      * @return void
      */
-    public function onManagerStop(swoole_server $server): void;
+    public function onManagerStop(Server $server): void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStart(swoole_server $server, int $worker_id): void;
+    public function onWorkerStart(Server $server, int $worker_id): void;
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param int $worker_id
      * @return void
      */
-    public function onWorkerStop(swoole_server $server, int $worker_id): void;
+    public function onWorkerStop(Server $server, int $worker_id): void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $workerId
      * @param $workerPid
      * @param $code
      */
-    public function onWorkerError(swoole_server $server, int $workerId, int $workerPid, int $code): void;
+    public function onWorkerError(Server $server, int $workerId, int $workerPid, int $code): void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $fd
      * @param $from_id
      */
-    public function onConnect(swoole_server $server, int $fd, int $from_id): void;
+    public function onConnect(Server $server, int $fd, int $from_id): void;
     
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $fd
      * @param $fromId
      */
-    public function onClose(swoole_server $server, int $fd, int $fromId): void;
+    public function onClose(Server $server, int $fd, int $fromId): void;
 
     /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param int $src_worker_id
      * @param string $message
      */
-    public function onPipeMessage(swoole_server $server, int $src_worker_id, string $message): void;
+    public function onPipeMessage(Server $server, int $src_worker_id, string $message): void;
 }

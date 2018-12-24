@@ -1,29 +1,20 @@
 <?php
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2016
+ * @copyright 2018
  *
- * @link      https://www.github.com/janhuang
- * @link      http://www.fast-d.cn/
+ * @see      https://www.github.com/fastdlabs
+ * @see      http://www.fastdlabs.com/
  */
-include __DIR__ . '/../vendor/autoload.php';
 
-use FastD\Http\Request;
+include __DIR__ . '/../../vendor/autoload.php';
+
 use Swoole\Server;
 
-class BaseServer extends \FastD\Swoole\HTTPServer
+class UnixServer extends \FastD\Swoole\UnixServer
 {
     /**
-     * @param Request $request
-     * @return \FastD\Http\Response
-     */
-    public function handleRequest(Request $request): \FastD\Http\Response
-    {
-        return new \FastD\Http\Response('hello world');
-    }
-
-    /**
-     * @param swoole_server $server
+     * @param Server $server
      * @param $fd
      * @param $from_id
      */
@@ -52,5 +43,3 @@ class BaseServer extends \FastD\Swoole\HTTPServer
         // TODO: Implement onPipeMessage() method.
     }
 }
-
-BaseServer::createServer()->enableHTTP2()->start();

@@ -10,10 +10,10 @@
 namespace FastD\Swoole\Handlers;
 
 
-use swoole_http_request;
-use swoole_http_response;
-use swoole_server;
-use swoole_websocket_frame;
+use Swoole\Http\Request;
+use Swoole\Http\Response;
+use Swoole\WebSocket\Frame;
+use Swoole\WebSocket\Server;
 
 /**
  * Interface WebSocketServerHandlerInterface
@@ -22,23 +22,23 @@ use swoole_websocket_frame;
 interface WebSocketServerHandlerInterface
 {
     /**
-     * @param swoole_http_request $request
-     * @param swoole_http_response $response
+     * @param Request $request
+     * @param Response $response
      * @return mixed
      */
-    public function onHandShake(swoole_http_request $request, swoole_http_response $response);
+    public function onHandShake(Request $request, Response $response);
 
     /**
-     * @param swoole_websocket_server $server
-     * @param swoole_http_request $request
+     * @param Server $server
+     * @param Request $request
      * @return mixed
      */
-    public function onOpen(swoole_websocket_server $server, swoole_http_request $request);
+    public function onOpen(Server $server, Request $request);
 
     /**
-     * @param swoole_server $server
-     * @param swoole_websocket_frame $frame
+     * @param Server $server
+     * @param Frame $frame
      * @return mixed
      */
-    public function onMessage(swoole_server $server, swoole_websocket_frame $frame);
+    public function onMessage(Server $server, Frame $frame);
 }
