@@ -1,7 +1,7 @@
 # FastD Swoole
 
 [![Build Status](https://travis-ci.org/fastdlabs/swoole.svg?branch=master)](https://travis-ci.org/fastdlabs/swoole)
-[![PHP Require Version](https://img.shields.io/badge/php-%3E%3D5.6-8892BF.svg)](https://secure.php.net/)
+[![PHP Require Version](https://img.shields.io/badge/php-%3E%3D7.1-8892BF.svg)](https://secure.php.net/)
 [![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D4.2.0-8892BF.svg)](http://www.swoole.com/)
 [![Latest Stable Version](https://poser.pugx.org/fastd/swoole/v/stable)](https://packagist.org/packages/fastd/swoole)
 [![Total Downloads](https://poser.pugx.org/fastd/swoole/downloads)](https://packagist.org/packages/fastd/swoole) 
@@ -13,8 +13,7 @@
 ## 环境要求
 
 * Linux (不考虑windows)
-* PHP >= 7.2
-* swoole >= 4.2.3
+* swoole >= 4.2.0
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
