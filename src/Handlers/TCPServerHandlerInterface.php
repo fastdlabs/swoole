@@ -16,7 +16,7 @@ use Swoole\Server;
  * Interface TCPServerCallbackInterface
  * @package FastD\Swoole\Handlers
  */
-interface TCPServerHandlerInterface
+interface TCPServerHandlerInterface extends HandlerInterface
 {
     /**
      * @param Server $server

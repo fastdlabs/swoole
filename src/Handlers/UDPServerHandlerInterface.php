@@ -16,7 +16,7 @@ use Swoole\Server;
  * Interface UDPServerHandlerInterface
  * @package FastD\Swoole\Handlers
  */
-interface UDPServerHandlerInterface
+interface UDPServerHandlerInterface extends HandlerInterface
 {
     /**
      * @param Server $server

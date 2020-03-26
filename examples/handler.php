@@ -1,6 +1,6 @@
 <?php
 
-use FastD\Swoole\TCPServer;
+use FastD\Swoole\Handlers\HandlerInterface;
 
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
@@ -10,8 +10,7 @@ use FastD\Swoole\TCPServer;
  * @see      http://www.fastdlabs.com/
  */
 
-class Server extends TCPServer {
-
+class Handler implements HandlerInterface {
     /**
      * @inheritDoc
      */
@@ -96,68 +95,4 @@ class Server extends TCPServer {
     {
         // TODO: Implement onPipeMessage() method.
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function config(array $config): void
-    {
-        // TODO: Implement config() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function on(string $event, object $handle): \FastD\Swoole\Server\ServerInterface
-    {
-        // TODO: Implement on() method.
-    }
-
-    public function close(): bool
-    {
-        // TODO: Implement close() method.
-    }
-
-    public function send(): bool
-    {
-        // TODO: Implement send() method.
-    }
-
-    public function pipeline(): bool
-    {
-        // TODO: Implement pipeline() method.
-    }
-
-    public function check(): bool
-    {
-        // TODO: Implement check() method.
-    }
-
-    public function task(): int
-    {
-        // TODO: Implement task() method.
-    }
-
-    public function finish(): int
-    {
-        // TODO: Implement finish() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function handle(\FastD\Swoole\Handlers\HandlerInterface $handler): \FastD\Swoole\Server\ServerInterface
-    {
-        // TODO: Implement handle() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function onReceive(\Swoole\Server $server, int $fd, int $reactor_id, string $data): void
-    {
-        // TODO: Implement onReceive() method.
-    }
 }
-
-

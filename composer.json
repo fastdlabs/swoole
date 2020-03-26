@@ -11,7 +11,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.2.0",
         "fastd/http": "dev-develop",
         "symfony/console": "^4.1"
     },
@@ -27,7 +27,7 @@
         ]
     },
     "suggests": {
-        "ext-swoole": "Allow php swoole extension.",
-        "ext-inotify": "Allow php inotify extension."
+        "ext-swoole": "allow php swoole extension.",
+        "ext-inotify": "allow php inotify extension."
     }
 }
