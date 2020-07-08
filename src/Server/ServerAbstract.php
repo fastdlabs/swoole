@@ -106,16 +106,17 @@ abstract class ServerAbstract implements ServerInterface
      * @param string $address
      * @param array $config
      */
-    public function __construct(string $address = null, array $config = [])
+    public function __construct(
+        string $host = '0.0.0.0',
+        int $port = 0,
+        int $sock_type = SWOOLE_SOCK_TCP,
+        int $mode = SWOOLE_PROCESS
+    )
     {
-        if (null !== $address) {
-            $info = parse_url($address);
+        $this->host = $host;
+        $this->port = $port;
 
-            $this->host = $info['host'];
-            $this->port = $info['port'];
-        }
-
-        $this->configure($config);
+//        $this->configure($config);
 
         $this->output = new ConsoleOutput();
     }
