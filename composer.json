@@ -11,7 +11,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=7.2.0",
+        "php": ">=7.4.0",
         "ext-swoole": ">4.0",
         "fastd/http": "dev-develop",
         "symfony/console": "^4.1"
