@@ -27,8 +27,7 @@
             "helpers.php"
         ]
     },
-    "suggests": {
-        "ext-swoole": "allow php swoole extension.",
-        "ext-inotify": "allow php inotify extension."
+    "config": {
+        "bin-dir": "bin"
     }
 }

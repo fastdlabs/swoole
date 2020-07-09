@@ -21,11 +21,9 @@ use FastD\Swoole\Handlers\HTTPServerHandlerInterface;
  * Class HTTPServer
  * @package FastD\Swoole\Server
  */
-abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInterface
+abstract class HTTPServer extends ServerAbstract
 {
-    protected $protocol = 'http';
-
-    const SERVER_INTERVAL_ERROR = 'Server Interval Error';
+    protected string $protocol = 'http';
 
     /**
      * @return \Swoole\Server
@@ -36,9 +34,9 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
     }
 
     /**
-     * @return HTTPServer
+     * 开启 http2 需要 ssl配置
      */
-    public function enableHTTP2(): HTTPServer
+    public function enableHTTP2(string $key, string $rem): HTTPServer
     {
         $this->config['open_http2_protocol'] = true;
 
@@ -60,8 +58,8 @@ abstract class HTTPServer extends ServerAbstract implements HTTPServerHandlerInt
             $swooleResponse->status($e->getStatusCode());
             $swooleResponse->end($e->getMessage());
         } catch (Exception $e) {
-            $swooleResponse->status(500);
-            $swooleResponse->end(static::SERVER_INTERVAL_ERROR);
+            $swooleResponse->status(Response::HTTP_INTERNAL_SERVER_ERROR);
+            $swooleResponse->end(Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR]);
         }
     }
 

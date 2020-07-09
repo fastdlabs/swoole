@@ -26,17 +26,17 @@ abstract class ServerAbstract implements ServerInterface
 {
     use Manger;
 
-    protected $protocol = 'tcp';
+    protected string $protocol = 'tcp';
 
     /**
      * @var $name
      */
-    protected $name = '';
+    protected string $name = '';
 
     /**
      * @var Server
      */
-    protected $swoole;
+    protected Server $swoole;
 
     /**
      * Swoole server run configuration.
@@ -52,54 +52,54 @@ abstract class ServerAbstract implements ServerInterface
     /**
      * @var string
      */
-    protected $host = '127.0.0.1';
+    protected string $host = '127.0.0.1';
 
     /**
      * @var string
      */
-    protected $port = '9527';
+    protected int $port = 9527;
 
     /**
      * @var string
      */
-    protected $pid_file = '';
+    protected string $pid_file = '';
 
     /**
      * @var int
      */
-    protected $pid = 0;
+    protected int $pid = 0;
 
     /**
      * @var bool
      */
-    protected $booted = false;
+    protected bool $booted = false;
 
     /**
      * 多端口支持
      *
      * @var ServerAbstract[]
      */
-    protected $listens = [];
+    protected array $listens = [];
 
     /**
      * @var Process[]
      */
-    protected $processes = [];
+    protected array $processes = [];
 
     /**
      * @var Timer[]
      */
-    protected $timers = [];
+    protected array $timers = [];
 
     /**
      * @var int
      */
-    protected $fd;
+    protected int $fd;
 
     /**
      * @var ConsoleOutput
      */
-    protected $output;
+    protected ConsoleOutput $output;
 
     /**
      * Server constructor.

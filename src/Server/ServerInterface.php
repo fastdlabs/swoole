@@ -13,6 +13,10 @@ namespace FastD\Swoole\Server;
 use FastD\Swoole\Handlers\HandlerInterface;
 use Swoole\Process;
 
+/**
+ * Interface ServerInterface
+ * @package FastD\Swoole\Server
+ */
 interface ServerInterface
 {
     const VERSION = '5.0.0';
@@ -25,25 +29,13 @@ interface ServerInterface
      * @param int $sock_type
      * @param int $mode
      */
-    public function __construct(
-        string $host = '0.0.0.0',
-        int $port = 0,
-        int $sock_type = SWOOLE_SOCK_TCP,
-        int $mode = SWOOLE_PROCESS
-    );
+    public function __construct(string $host = '0.0.0.0', int $port = 0, int $sock_type = SWOOLE_SOCK_TCP, int $mode = SWOOLE_PROCESS);
 
     /**
      * @param array $config
      * @return void
      */
     public function config(array $config): void;
-
-    /**
-     * @param string $event
-     * @param object $handle
-     * @return ServerInterface
-     */
-    public function on(string $event, object $handle): ServerInterface;
 
     /**
      * @param string $host
@@ -58,18 +50,6 @@ interface ServerInterface
      * @return ServerInterface
      */
     public function process(Process $process);
-
-    public function close(): bool;
-
-    public function send(): bool;
-
-    public function pipeline(): bool;
-
-    public function check(): bool;
-
-    public function task(): int;
-
-    public function finish(): int;
 
     /**
      * @param HandlerInterface $handler

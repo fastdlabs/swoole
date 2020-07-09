@@ -6,3 +6,4 @@
 *.pid
 *.log
 composer.lock
+/bin
