@@ -10,51 +10,58 @@
 namespace FastD\Swoole\Handlers;
 
 
-use Swoole\Server;
+use FastD\Swoole\Server\ServerAbstract;
 
 /**
- * Interface HandlerInterface
+ * Class Handler
  * @package FastD\Swoole\Handlers
  */
-interface HandlerInterface
+abstract class HandlerAbstract
 {
-    /**
-     * @param Server $server
-     * @return bool
-     */
-    public function onStart(Server $server): bool;
+    protected ServerAbstract $server;
+
+    public function __construct(ServerAbstract $server)
+    {
+        $this->server = $server;
+    }
 
     /**
      * @param Server $server
      * @return bool
      */
-    public function onShutdown(Server $server): bool;
+    abstract public function onStart(Server $server): bool;
 
     /**
      * @param Server $server
      * @return bool
      */
-    public function onManagerStart(Server $server): bool;
+    abstract public function onShutdown(Server $server): bool;
 
     /**
      * @param Server $server
      * @return bool
      */
-    public function onManagerStop(Server $server): bool;
+    abstract public function onManagerStart(Server $server): bool;
+
+    /**
+     * @param Server $server
+     * @return bool
+     */
+    abstract public function onManagerStop(Server $server): bool;
 
     /**
      * @param Server $server
      * @param int $id
      * @return bool
      */
-    public function onWorkerStart(Server $server, int $id): bool;
+    abstract public function onWorkerStart(Server $server, int $id): bool;
 
     /**
      * @param Server $server
      * @param int $id
      * @return bool
      */
-    public function onWorkerStop(Server $server, int $id): bool;
+    abstract public function onWorkerStop(Server $server, int $id): bool;
 
     /**
      * @param Server $server
@@ -64,14 +71,14 @@ interface HandlerInterface
      * @param int $signal
      * @return bool
      */
-    public function onWorkerError(Server $server, int $worker_id, int $worker_pid, int $exit_code, int $signal): bool;
+    abstract public function onWorkerError(Server $server, int $worker_id, int $worker_pid, int $exit_code, int $signal): bool;
 
     /**
      * @param Server $server
      * @param int $id
      * @return bool
      */
-    public function onWorkerExit(Server $server, int $id): bool;
+    abstract public function onWorkerExit(Server $server, int $id): bool;
 
     /**
      * @param Server $server
@@ -79,7 +86,7 @@ interface HandlerInterface
      * @param int $id
      * @return bool
      */
-    public function onClose(Server $server, int $fd, int $id): bool;
+    abstract public function onClose(Server $server, int $fd, int $id): bool;
 
     /**
      * @param Swoole\Server $server
@@ -87,5 +94,5 @@ interface HandlerInterface
      * @param $message
      * @return bool
      */
-    public function onPipeMessage(Server $server, int $src_worker_id, $message): bool;
+    abstract public function onPipeMessage(Server $server, int $src_worker_id, $message): bool;
 }
