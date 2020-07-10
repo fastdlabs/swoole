@@ -17,7 +17,7 @@ use Swoole\Http\Response;
  * Interface HTTPServerHandlerInterface
  * @package FastD\Swoole
  */
-interface HTTPServerHandlerInterface extends HandlerInterface
+interface HTTPHandlerInterface extends HandlerInterface
 {
     /**
      * Handle http request.

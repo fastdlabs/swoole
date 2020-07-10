@@ -19,7 +19,7 @@ use Swoole\WebSocket\Server;
  * Interface WebSocketServerHandlerInterface
  * @package FastD\Swoole\Handlers
  */
-interface WebSocketServerHandlerInterface extends HandlerInterface
+interface WebSocketHandlerInterface extends HandlerInterface
 {
     /**
      * @param Request $request

@@ -12,7 +12,7 @@ namespace FastD\Swoole\Handlers;
 
 use Symfony\Component\Console\Output\OutputInterface;
 
-class DefaultHandler implements TCPServerHandlerInterface
+class DefaultHandler implements TCPHandlerInterface
 {
     /**
      * Base start handle. Storage process id.

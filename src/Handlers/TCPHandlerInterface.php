@@ -13,15 +13,16 @@ namespace FastD\Swoole\Handlers;
 use Swoole\Server;
 
 /**
- * Interface UDPServerHandlerInterface
+ * Interface TCPServerCallbackInterface
  * @package FastD\Swoole\Handlers
  */
-interface UDPServerHandlerInterface extends HandlerInterface
+interface TCPHandlerInterface extends HandlerInterface
 {
     /**
      * @param Server $server
+     * @param int $fd
+     * @param int $reactor_id
      * @param string $data
-     * @param array $client_info
      */
-    public function onPacket(Server $server, string $data, array $client_info): void;
+    public function onReceive(Server $server, int $fd, int $reactor_id, string $data): void;
 }

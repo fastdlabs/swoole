@@ -7,14 +7,14 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handlers\TCPServerHandlerInterface;
+use FastD\Swoole\Handlers\TCPHandlerInterface;
 
 /**
  * Class TCPServer
  * @package FastD\Swoole
  */
-abstract class TCPServer extends ServerAbstract implements TCPServerHandlerInterface
+abstract class TCPServer extends ServerAbstract implements TCPHandlerInterface
 {
 }

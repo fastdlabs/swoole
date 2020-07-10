@@ -1,6 +1,6 @@
 <?php
 
-use FastD\Swoole\TCPServer;
+use FastD\Swoole\TCP;
 
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
@@ -10,7 +10,7 @@ use FastD\Swoole\TCPServer;
  * @see      http://www.fastdlabs.com/
  */
 
-class Server extends TCPServer {
+class Server extends TCP {
 
     /**
      * @inheritDoc

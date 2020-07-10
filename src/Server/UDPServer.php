@@ -7,16 +7,16 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handlers\UDPServerHandlerInterface;
+use FastD\Swoole\Handlers\UDPHandlerInterface;
 
 
 /**
  * Class UDPServer
  * @package FastD\Swoole
  */
-abstract class UDPServer extends ServerAbstract implements UDPServerHandlerInterface
+abstract class UDPServer extends ServerAbstract implements UDPHandlerInterface
 {
     protected $protocol = 'udp';
 }

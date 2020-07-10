@@ -7,15 +7,14 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Server;
 
 use Exception;
 use FastD\Http\HttpException;
-use FastD\Http\Request;
 use FastD\Http\Response;
+use FastD\Http\ServerRequest;
 use FastD\Http\SwooleServerRequest;
 use Swoole\Http\Server;
-use FastD\Swoole\Handlers\HTTPServerHandlerInterface;
 
 /**
  * Class HTTPServer
@@ -30,37 +29,22 @@ abstract class HTTPServer extends ServerAbstract
      */
     public function initSwoole(): \Swoole\Server
     {
-        return new Server($this->getHost(), $this->getPort());
+        return new Server($this->host, $this->port);
     }
 
     /**
      * 开启 http2 需要 ssl配置
+     * @param string $key
+     * @param string $cert
+     * @return HTTPServer
      */
-    public function enableHTTP2(string $key, string $rem): HTTPServer
+    public function enableHTTP2(string $key, string $cert): HTTPServer
     {
         $this->config['open_http2_protocol'] = true;
+        $this->config['ssl_cert_file'] = $cert;
+        $this->config['ssl_key_file'] = $key;
 
         return $this;
-    }
-
-    /**
-     * @param \Swoole\Http\Request $swooleRequet
-     * @param \Swoole\Http\Response $swooleResponse
-     */
-    public function onRequest(\Swoole\Http\Request $swooleRequet, \Swoole\Http\Response $swooleResponse): void
-    {
-        try {
-            $swooleRequestServer = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
-            $response = $this->handleRequest($swooleRequestServer);
-            $this->handleResponse($swooleResponse, $response);
-            unset($response);
-        } catch (HttpException $e) {
-            $swooleResponse->status($e->getStatusCode());
-            $swooleResponse->end($e->getMessage());
-        } catch (Exception $e) {
-            $swooleResponse->status(Response::HTTP_INTERNAL_SERVER_ERROR);
-            $swooleResponse->end(Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR]);
-        }
     }
 
     /**
@@ -79,10 +63,10 @@ abstract class HTTPServer extends ServerAbstract
     }
 
     /**
-     * @param Request $request
+     * @param ServerRequest $request
      * @return Response
      */
-    abstract public function handleRequest(Request $request): Response;
+    abstract public function handleRequest(ServerRequest $request): Response;
 
     /**
      * @param \Swoole\Http\Response $swooleResponse

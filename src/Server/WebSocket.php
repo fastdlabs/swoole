@@ -7,10 +7,10 @@
  * @link      http://www.fast-d.cn/
  */
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Server;
 
 
-use FastD\Swoole\Handlers\WebSocketServerHandlerInterface;
+use FastD\Swoole\Handlers\WebSocketHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\WebSocket\Server;
 use Swoole\WebSocket\Frame;
@@ -19,7 +19,7 @@ use Swoole\WebSocket\Frame;
  * Class WebSocketServer
  * @package FastD\Swoole
  */
-abstract class WebSocketServer extends ServerAbstract implements WebSocketServerHandlerInterface
+abstract class WebSocket extends ServerAbstract implements WebSocketHandlerInterface
 {
     protected $protocol = 'ws';
 
