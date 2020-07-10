@@ -18,6 +18,7 @@ use Swoole\Server;
 use Server\Port;
 use FastD\Swoole\Handlers\ServerHandlerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 /**
  * Class Server
@@ -80,9 +81,9 @@ abstract class ServerAbstract
     protected bool $booted = false;
 
     /**
-     * @var HandlerInterface
+     * @var string
      */
-    protected HandlerInterface $handler;
+    protected string $handler;
 
     /**
      * 多端口支持
@@ -159,14 +160,6 @@ abstract class ServerAbstract
     }
 
     /**
-     * @return int
-     */
-    public function getSocketType(): int
-    {
-        return $this->sock_type;
-    }
-
-    /**
      * @return Server
      */
     public function getSwoole(): Server
@@ -216,10 +209,10 @@ abstract class ServerAbstract
     }
 
     /**
-     * @param HandlerInterface $handler
+     * @param string $handler
      * @return ServerAbstract
      */
-    public function handler(HandlerInterface $handler): ServerAbstract
+    public function handler(string $handler): ServerAbstract
     {
         $this->handler = $handler;
 
@@ -241,7 +234,7 @@ abstract class ServerAbstract
      * @param $config
      * @return ServerAbstract
      */
-    public static function createServer(string $address = null, array $config = []): ServerAbstract
+    public static function createServer(string $address = null): ServerAbstract
     {
         return new static($address);
     }
@@ -255,21 +248,54 @@ abstract class ServerAbstract
     public function bootstrap(?Server $swoole = null): bool
     {
         if (!$this->isBooted()) {
+            if (!is_dir($dir = dirname($this->pid_file))) {
+                mkdir($dir, 0755, true);
+            }
+
             $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
 
             $this->swoole->set($this->config);
 
-            $handles = get_class_methods($this->handler);
+            $handler = new $this->handler($this);
+            $handles = get_class_methods($handler);
             foreach ($handles as $value) {
                 if ('on' == substr($value, 0, 2)) {
-                    $this->swoole->on(lcfirst(substr($value, 2)), [$this->handler, $value]);
+                    $this->swoole->on(lcfirst(substr($value, 2)), [$handler, $value]);
                 }
             }
+            unset($handler);
+
+            // 多端口监听
+            foreach ($this->listens as $listen) {
+                $swoole = $this->swoole->listen($listen->host, $listen->port, $listen->sock_type);
+                $listen->bootstrap($swoole);
+            }
+            // 进程控制
+            foreach ($this->processes as $process) {
+                $this->swoole->addProcess($process->getProcess());
+            }
+
 
             $this->booted = true;
         }
 
         return $this->booted;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRunning(): bool
+    {
+        if (file_exists($this->config['pid_file'])) {
+            return posix_kill(file_get_contents($this->config['pid_file']), 0);
+        }
+
+        if ($is_running = process_is_running("{$this->name} master")) {
+            $is_running = port_is_running($this->port);
+        }
+
+        return $is_running;
     }
 
     /**
@@ -282,19 +308,6 @@ abstract class ServerAbstract
         } else {
             try {
                 $this->bootstrap();
-                if (!is_dir($dir = dirname($this->pid_file))) {
-                    mkdir($dir, 0755, true);
-                }
-
-                // 多端口监听
-                foreach ($this->listens as $listen) {
-                    $swoole = $this->swoole->listen($listen->host, $listen->port, $listen->sock_type);
-                    $listen->bootstrap($swoole);
-                }
-                // 进程控制
-                foreach ($this->processes as $process) {
-                    $this->swoole->addProcess($process->getProcess());
-                }
 
                 output(sprintf("Server: <info>%s</info>", $this->name));
                 output(sprintf('App version: <info>%s</info>', ServerAbstract::VERSION));
@@ -302,7 +315,7 @@ abstract class ServerAbstract
                 output(sprintf("Listen <info>%s://%s:%s</info>", $this->protocol, $this->host, $this->port));
 
                 $this->swoole->start();
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 output("<error>{$e->getMessage()}</error>\n");
             }
         }
@@ -402,51 +415,5 @@ abstract class ServerAbstract
         unset($table, $headers, $output);
 
         return 0;
-    }
-
-    /**
-     * @param array $directories
-     * @return void|int
-     */
-    public function watch(array $directories = ['.'])
-    {
-        $that = $this;
-
-        if (!$this->isRunning()) {
-            $process = new Process('server watch process', function () use ($that) {
-                $that->start();
-            }, true);
-            $process->start();
-        }
-
-        foreach ($directories as $directory) {
-            output(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
-        }
-
-        $watcher = new Watcher($this->output);
-
-        $watcher->watch($directories, function () use ($that) {
-            $that->reload();
-        });
-
-        $watcher->run();
-
-        process_wait();
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRunning(): bool
-    {
-        if (file_exists($this->config['pid_file'])) {
-            return posix_kill(file_get_contents($this->config['pid_file']), 0);
-        }
-
-        if ($is_running = process_is_running("{$this->name} master")) {
-            $is_running = port_is_running($this->port);
-        }
-
-        return $is_running;
     }
 }

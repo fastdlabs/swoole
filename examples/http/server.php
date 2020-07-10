@@ -15,7 +15,7 @@ use FastD\Swoole\Handlers\HTTPHandlerInterface;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$http = new class extends \FastD\Swoole\Server\HTTPServer {
+class Http extends \FastD\Swoole\Server\HTTPServer {
     /**
      * @param \FastD\Http\Request $request
      * @return \FastD\Http\Response
@@ -26,7 +26,7 @@ $http = new class extends \FastD\Swoole\Server\HTTPServer {
     }
 };
 
-$handler = new class implements HTTPHandlerInterface
+class Handler extends \FastD\Swoole\Handlers\HTTPHandler
 {
     /**
      * @param \Swoole\Http\Request $swooleRequet
@@ -34,7 +34,7 @@ $handler = new class implements HTTPHandlerInterface
      */
     public function onRequest(\Swoole\Http\Request $swooleRequet, \Swoole\Http\Response $swooleResponse): void
     {
-        output(sprintf("request: <info>%s</info>", $swooleRequet->server['path_info']));
+        output(sprintf("request: <info>%s</info>", $swooleRequet->server['request_uri']));
         $swooleResponse->end('hello');
     }
 
@@ -145,7 +145,7 @@ $handler = new class implements HTTPHandlerInterface
     }
 };
 
-$server = new $http();
-$server->handler(new $handler());
+$server = new Http();
+$server->handler(Handler::class);
 
 $server->start();
