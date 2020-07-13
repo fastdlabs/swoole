@@ -11,6 +11,7 @@ use FastD\Http\HttpException;
 use FastD\Http\Response;
 use FastD\Http\ServerRequest;
 use FastD\Http\SwooleServerRequest;
+use FastD\Swoole\Handlers\HandlerAbstract;
 use FastD\Swoole\Handlers\HTTPHandlerInterface;
 
 include __DIR__ . '/../../vendor/autoload.php';
@@ -26,7 +27,7 @@ class Http extends \FastD\Swoole\Server\HTTPServer {
     }
 };
 
-class Handler extends \FastD\Swoole\Handlers\HTTPHandler
+class HandlerInterface extends HandlerAbstract implements HTTPHandlerInterface
 {
     /**
      * @param \Swoole\Http\Request $swooleRequet
@@ -146,6 +147,6 @@ class Handler extends \FastD\Swoole\Handlers\HTTPHandler
 };
 
 $server = new Http();
-$server->handler(Handler::class);
+$server->handler(HandlerInterface::class);
 
 $server->start();

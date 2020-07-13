@@ -15,6 +15,6 @@ use FastD\Swoole\Handlers\TCPHandlerInterface;
  * Class TCPServer
  * @package FastD\Swoole
  */
-abstract class TCPServer extends ServerAbstract implements TCPHandlerInterface
+abstract class TCPServerInterface extends ServerAbstract implements TCPHandlerInterface
 {
 }

@@ -13,6 +13,6 @@ include __DIR__ . '/handler.php';
 
 $server = new Server();
 
-$server->handle(new Handler());
+$server->handle(new HandlerInterface());
 
 $server->start();

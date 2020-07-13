@@ -11,7 +11,6 @@ namespace FastD\Swoole\Server;
 
 
 use FastD\Swoole\Handlers\HandlerInterface;
-use FastD\Swoole\Support\Watcher;
 use FastD\Swoole\Traits\Manger;
 use swoole_process;
 use Swoole\Server;

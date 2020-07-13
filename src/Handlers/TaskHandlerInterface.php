@@ -16,7 +16,7 @@ use Swoole\Server;
  * Interface TaskServerHandlerInterface
  * @package FastD\Swoole\Handlers
  */
-interface TaskHandlerInterface extends HandlerInterface
+interface TaskHandlerInterface
 {
     /**
      * @param Server $server

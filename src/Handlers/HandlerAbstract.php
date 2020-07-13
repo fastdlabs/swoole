@@ -11,6 +11,7 @@ namespace FastD\Swoole\Handlers;
 
 
 use FastD\Swoole\Server\ServerAbstract;
+use Swoole\Server;
 
 /**
  * Class Handler
@@ -94,5 +95,8 @@ abstract class HandlerAbstract
      * @param $message
      * @return bool
      */
-    abstract public function onPipeMessage(Server $server, int $src_worker_id, $message): bool;
+    public function onPipeMessage(Server $server, int $src_worker_id, $message): bool
+    {
+        return true;
+    }
 }

@@ -14,7 +14,7 @@ use FastD\Http\HttpException;
 use FastD\Http\Response;
 use FastD\Http\ServerRequest;
 use FastD\Http\SwooleServerRequest;
-use FastD\Swoole\Handlers\HTTPHandler;
+use FastD\Swoole\Handlers\HTTPHandlerInterface;
 use Swoole\Http\Server;
 
 /**
@@ -25,7 +25,7 @@ abstract class HTTPServer extends ServerAbstract
 {
     protected string $protocol = 'http';
 
-    protected string $handler = HTTPHandler::class;
+    protected string $handler = HTTPHandlerInterface::class;
 
     /**
      * @return \Swoole\Server

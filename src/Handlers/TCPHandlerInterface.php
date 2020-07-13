@@ -16,13 +16,11 @@ use Swoole\Server;
  * Interface TCPServerCallbackInterface
  * @package FastD\Swoole\Handlers
  */
-interface TCPHandlerInterface extends HandlerInterface
+interface TCPHandlerInterface
 {
     /**
      * @param Server $server
-     * @param int $fd
-     * @param int $reactor_id
-     * @param string $data
+     * @return bool
      */
-    public function onReceive(Server $server, int $fd, int $reactor_id, string $data): void;
+    public function onReceive(Server $server, int $fd, int $reactorId, string $data): bool;
 }
