@@ -9,12 +9,12 @@
 
 use FastD\Http\Response;
 use FastD\Http\ServerRequest;
-use FastD\Swoole\Handlers\HTTPHandler;
+use FastD\Swoole\Handlers\HTTPHandlerAbstract;
 use FastD\Swoole\Server\HTTPServer;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class HandlerInterface extends HTTPHandler
+class HttpHandler extends HTTPHandlerAbstract
 {
     /**
      * @param ServerRequest $serverRequest
@@ -27,6 +27,6 @@ class HandlerInterface extends HTTPHandler
 };
 
 $server = new HTTPServer();
-$server->handler(HandlerInterface::class);
+$server->handler(HttpHandler::class);
 
 $server->start();

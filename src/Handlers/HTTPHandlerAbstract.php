@@ -16,7 +16,7 @@ use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Server;
 
-abstract class HTTPHandler extends HandlerAbstract implements HTTPHandlerInterface
+abstract class HTTPHandlerAbstract extends HandlerAbstract implements HTTPHandlerInterface
 {
     /**
      * @param ServerRequestInterface $serverRequest
