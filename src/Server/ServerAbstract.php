@@ -46,7 +46,11 @@ abstract class ServerAbstract
         'worker_num' => 1,
         'task_tmpdir' => '/tmp',
         'open_cpu_affinity' => true,
-        'pid_file' => '/tmp/swoole.pid'
+        'pid_file' => '/tmp/swoole.pid',
+        'max_request' => 0,
+        'reload_async' => true,
+        'user' => 'www',
+        'group' => 'www',
     ];
 
     /**
@@ -115,7 +119,7 @@ abstract class ServerAbstract
      * @param string $name
      * @return ServerAbstract
      */
-    public function rename(string $name): ServerInterface
+    public function rename(string $name): ServerAbstract
     {
         $this->name = $name;
 
@@ -127,7 +131,7 @@ abstract class ServerAbstract
      * @param array $config
      * @return ServerAbstract
      */
-    public function configure(array $config): ServerInterface
+    public function configure(array $config): ServerAbstract
     {
         $this->config = array_merge($this->config, $config);
 
@@ -151,7 +155,7 @@ abstract class ServerAbstract
      *
      * @return ServerAbstract
      */
-    public function daemon(): ServerInterface
+    public function daemon(): ServerAbstract
     {
         $this->config['daemonize'] = true;
 
@@ -229,56 +233,56 @@ abstract class ServerAbstract
     }
 
     /**
-     * @param $address
-     * @param $config
+     * @param string|null $address
+     * @param int $mode
+     * @param int $sock_type
      * @return ServerAbstract
      */
-    public static function createServer(string $address = null): ServerAbstract
+    public static function createServer(string $address = null, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): ServerAbstract
     {
-        return new static($address);
+        $info = parse_url($address);
+        return new static($info['host'], $info['port'], $mode, $sock_type);
     }
 
     /**
      * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
      *
-     * @param Server $swoole
      * @return bool
      */
-    public function bootstrap(?Server $swoole = null): bool
+    public function bootstrap(): bool
     {
         if (!$this->isBooted()) {
-            if (!is_dir($dir = dirname($this->pid_file))) {
-                mkdir($dir, 0755, true);
-            }
+            $this->targetDirectory();
 
-            $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
+            $this->swoole = $this->initSwoole();
 
             $this->swoole->set($this->config);
 
-            $handler = new $this->handler($this);
-            $handles = get_class_methods($handler);
-            foreach ($handles as $value) {
-                if ('on' == substr($value, 0, 2)) {
-                    $this->swoole->on(lcfirst(substr($value, 2)), [$handler, $value]);
-                }
-            }
-            unset($handler);
-
-            // 多端口监听
-            foreach ($this->listens as $listen) {
-                $swoole = $this->swoole->listen($listen->host, $listen->port, $listen->sock_type);
-                $listen->bootstrap($swoole);
-            }
-            // 进程控制
-            foreach ($this->processes as $process) {
-                $this->swoole->addProcess($process->getProcess());
-            }
-
+            $this->handleCallback();
 
             $this->booted = true;
         }
 
         return $this->booted;
+    }
+
+    protected function targetDirectory()
+    {
+        if (!is_dir($dir = dirname($this->pid_file))) {
+            mkdir($dir, 0755, true);
+        }
+    }
+
+    protected function handleCallback()
+    {
+        $handler = new $this->handler($this);
+        $handles = get_class_methods($handler);
+        foreach ($handles as $value) {
+            if ('on' == substr($value, 0, 2)) {
+                $this->swoole->on(lcfirst(substr($value, 2)), [$handler, $value]);
+            }
+        }
+        unset($handler, $handles);
     }
 
     /**

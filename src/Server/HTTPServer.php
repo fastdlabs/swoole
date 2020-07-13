@@ -9,11 +9,9 @@
 
 namespace FastD\Swoole\Server;
 
-use Exception;
-use FastD\Http\HttpException;
+
 use FastD\Http\Response;
 use FastD\Http\ServerRequest;
-use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Handlers\HTTPHandlerInterface;
 use Swoole\Http\Server;
 
@@ -21,7 +19,7 @@ use Swoole\Http\Server;
  * Class HTTPServer
  * @package FastD\Swoole\Server
  */
-abstract class HTTPServer extends ServerAbstract
+class HTTPServer extends ServerAbstract
 {
     protected string $protocol = 'http';
 
@@ -48,38 +46,5 @@ abstract class HTTPServer extends ServerAbstract
         $this->config['ssl_key_file'] = $key;
 
         return $this;
-    }
-
-    /**
-     * @param \Swoole\Http\Response $swooleResponse
-     * @param Response $response
-     */
-    protected function sendHeader(\Swoole\Http\Response $swooleResponse, Response $response)
-    {
-        foreach ($response->getHeaders() as $key => $header) {
-            $swooleResponse->header($key, $response->getHeaderLine($key));
-        }
-
-        foreach ($response->getCookieParams() as $key => $cookieParam) {
-            $swooleResponse->cookie($key, $cookieParam);
-        }
-    }
-
-    /**
-     * @param ServerRequest $request
-     * @return Response
-     */
-    abstract public function handleRequest(ServerRequest $request): Response;
-
-    /**
-     * @param \Swoole\Http\Response $swooleResponse
-     * @param Response $response
-     * @return void
-     */
-    public function handleResponse(\Swoole\Http\Response $swooleResponse, Response $response): void
-    {
-        $this->sendHeader($swooleResponse, $response);
-        $swooleResponse->status($response->getStatusCode());
-        $swooleResponse->end((string) $response->getBody());
     }
 }

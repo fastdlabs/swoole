@@ -10,6 +10,7 @@
 namespace FastD\Swoole\Handlers;
 
 
+use FastD\Http\ServerRequest;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
@@ -20,4 +21,10 @@ interface HTTPHandlerInterface
      * @param Response $swooleResponse
      */
     public function onRequest(Request $swooleRequet, Response $swooleResponse): void;
+
+    /**
+     * @param ServerRequestInterface $serverRequest
+     * @return \FastD\Http\Response
+     */
+    public function handleRequest(ServerRequest $serverRequest): \FastD\Http\Response;
 }
