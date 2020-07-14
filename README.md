@@ -14,6 +14,7 @@
 
 * Linux (不考虑windows)
 * swoole >= 4.2.0
+* PHP >= 7.4
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
@@ -56,7 +57,7 @@ Swoole 配置通过实现 `configure` 方法进行配置，具体配置参数请
 #### TCP Server
 
 ```php
-class DemoServer extends \FastD\Swoole\Server\TCPServerInterface
+class DemoServer extends \FastD\Swoole\Server\TCPServer
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
@@ -128,7 +129,7 @@ WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
 #### 多端口支持
 
 ```php
-class Server extends \FastD\Swoole\Server\TCPServerInterface
+class Server extends \FastD\Swoole\Server\TCPServer
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
@@ -136,7 +137,7 @@ class Server extends \FastD\Swoole\Server\TCPServerInterface
     }
 }
 
-class Server2 extends \FastD\Swoole\Server\TCPServerInterface
+class Server2 extends \FastD\Swoole\Server\TCPServer
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
@@ -154,7 +155,7 @@ $server->start();
 #### 服务管理
 
 ```php
-class DemoServer extends \FastD\Swoole\Server\TCPServerInterface
+class DemoServer extends \FastD\Swoole\Server\TCPServer
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
@@ -193,7 +194,7 @@ switch ($argv[1]) {
 
 ```php
 
-class DemoServer extends \FastD\Swoole\Server\TCPServerInterface
+class DemoServer extends \FastD\Swoole\Server\TCPServer
 {
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {

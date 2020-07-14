@@ -32,6 +32,8 @@ abstract class HTTPHandlerAbstract extends HandlerAbstract implements HTTPHandle
     {
         $serverRequest = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
 
+        output(sprintf("Request: {%s}", (string)$serverRequest->getUri()));
+
         $response = $this->handleRequest($serverRequest);
 
         $this->handleResponse($swooleResponse, $response);
@@ -62,95 +64,5 @@ abstract class HTTPHandlerAbstract extends HandlerAbstract implements HTTPHandle
         $this->sendHeader($swooleResponse, $response);
         $swooleResponse->status($response->getStatusCode());
         $swooleResponse->end((string) $response->getBody());
-    }
-
-    /**
-     * @param Server $server
-     * @return bool
-     */
-    public function onStart(Server $server): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @return bool
-     */
-    public function onShutdown(Server $server): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @return bool
-     */
-    public function onManagerStart(Server $server): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @return bool
-     */
-    public function onManagerStop(Server $server): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @param int $id
-     * @return bool
-     */
-    public function onWorkerStart(Server $server, int $id): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @param int $id
-     * @return bool
-     */
-    public function onWorkerStop(Server $server, int $id): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @param int $worker_id
-     * @param int $worker_pid
-     * @param int $exit_code
-     * @param int $signal
-     * @return bool
-     */
-    public function onWorkerError(Server $server, int $worker_id, int $worker_pid, int $exit_code, int $signal): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @param int $id
-     * @return bool
-     */
-    public function onWorkerExit(Server $server, int $id): bool
-    {
-        return true;
-    }
-
-    /**
-     * @param Server $server
-     * @param int $fd
-     * @param int $id
-     * @return bool
-     */
-    public function onClose(Server $server, int $fd, int $id): bool
-    {
-        return true;
     }
 }

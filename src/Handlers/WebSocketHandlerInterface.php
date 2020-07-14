@@ -22,13 +22,6 @@ use Swoole\WebSocket\Server;
 interface WebSocketHandlerInterface
 {
     /**
-     * @param Request $request
-     * @param Response $response
-     * @return mixed
-     */
-    public function onHandShake(Request $request, Response $response);
-
-    /**
      * @param Server $server
      * @param Request $request
      * @return mixed

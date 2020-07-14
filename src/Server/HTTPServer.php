@@ -21,9 +21,15 @@ use Swoole\Http\Server;
  */
 class HTTPServer extends ServerAbstract
 {
+    /**
+     * @var string
+     */
     protected string $protocol = 'http';
 
-    protected string $handler = HTTPHandlerInterface::class;
+    /**
+     * @var string
+     */
+    protected string $handler;
 
     /**
      * @return \Swoole\Server

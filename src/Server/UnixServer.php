@@ -14,16 +14,7 @@ namespace FastD\Swoole\Server;
  * Class UnixServer
  * @package FastD\Swoole
  */
-abstract class UnixServer extends ServerAbstract
+class UnixServer extends ServerAbstract
 {
-    protected $protocol = 'unix';
-
-    protected $port = 0;
-
-    public function __construct(string $address = null, array $config = [])
-    {
-        $this->host = $address;
-
-        parent::__construct(null);
-    }
+    protected string $protocol = 'unix';
 }

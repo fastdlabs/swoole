@@ -13,7 +13,12 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 function output($message)
 {
     $output = new ConsoleOutput();
-    $output->writeln($message);
+    $date = date('Y-m-d H:i:s');
+    $str = sprintf("<info>[%s]</info> %s", $date, $message);
+    $str = str_replace(['[', ']'], ['<info>[', ']</info>'], $str);
+    $str = str_replace(['{', '}'], ['<comment>[', ']</comment>'], $str);
+    $output->writeln($str);
+    unset($output);
 }
 
 /**

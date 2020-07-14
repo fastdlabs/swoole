@@ -12,6 +12,7 @@ namespace FastD\Swoole\Server;
 
 use FastD\Swoole\Handlers\WebSocketHandlerInterface;
 use Swoole\Http\Request;
+use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
 use Swoole\WebSocket\Frame;
 
@@ -19,36 +20,29 @@ use Swoole\WebSocket\Frame;
  * Class WebSocketServer
  * @package FastD\Swoole
  */
-abstract class WebSocket extends ServerAbstract implements WebSocketHandlerInterface
+class WebSocket extends ServerAbstract implements WebSocketHandlerInterface
 {
-    protected $protocol = 'ws';
-
-    /**
-     * @return swoole_websocket_server
-     */
-    public function initSwoole(): \Swoole\Server
-    {
-        return new swoole_websocket_server($this->host, $this->port);
-    }
+    protected string $protocol = 'ws';
 
     /**
      * @param Server $server
      * @param Request $request
      * @return mixed
      */
-    abstract public function onOpen(Server $server, Request $request);
+    public function onOpen(Server $server, Request $request)
+    {
+        output(sprintf('fd [%s]'));
+        $server->push($request->fd, "hello, welcome\n");
+    }
 
     /**
      * @param Server $server
      * @param Frame $frame
      * @return mixed
      */
-    abstract public function onMessage(Server $server, Frame $frame);
-
-    /**
-     * @param Server $server
-     * @param Frame $frame
-     * @return mixed
-     */
-    abstract public function doMessage(Server $server, Frame $frame);
+    public function onMessage(Server $server, Frame $frame)
+    {
+        output(sprintf("Message: [{$frame->data}]"));
+        $server->push($frame->fd, "server: {$frame->data}");
+    }
 }

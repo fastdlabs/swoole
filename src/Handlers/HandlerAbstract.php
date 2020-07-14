@@ -28,75 +28,87 @@ abstract class HandlerAbstract
 
     /**
      * @param Server $server
-     * @return bool
+     * @return void
      */
-    abstract public function onStart(Server $server): bool;
+    public function onStart(Server $server): void
+    {
+        output(sprintf('Server Started, pid: [%d]', $server->master_pid));
+    }
 
     /**
      * @param Server $server
-     * @return bool
+     * @return void
      */
-    abstract public function onShutdown(Server $server): bool;
+    public function onShutdown(Server $server): void
+    {
+        output(sprintf('Server shutdown, pid: [%d]', $server->master_pid));
+    }
 
     /**
      * @param Server $server
-     * @return bool
+     * @return void
      */
-    abstract public function onManagerStart(Server $server): bool;
+    public function onManagerStart(Server $server): void
+    {
+        output(sprintf('Server manager started, pid: [%d]', $server->manager_pid));
+    }
 
     /**
      * @param Server $server
-     * @return bool
+     * @return void
      */
-    abstract public function onManagerStop(Server $server): bool;
+    public function onManagerStop(Server $server): void
+    {
+        output(sprintf('Server manager stop, pid: [%d]', $server->manager_pid));
+    }
 
     /**
      * @param Server $server
      * @param int $id
-     * @return bool
+     * @return void
      */
-    abstract public function onWorkerStart(Server $server, int $id): bool;
+    public function onWorkerStart(Server $server, int $id): void
+    {
+        output(sprintf('Server worker[%d] started', $id));
+    }
 
     /**
      * @param Server $server
      * @param int $id
-     * @return bool
      */
-    abstract public function onWorkerStop(Server $server, int $id): bool;
+    public function onWorkerStop(Server $server, int $id): void
+    {
+        output(sprintf('Server worker[%d] stop', $id));
+    }
 
     /**
      * @param Server $server
-     * @param int $worker_id
+     * @param int $id
      * @param int $worker_pid
      * @param int $exit_code
      * @param int $signal
-     * @return bool
      */
-    abstract public function onWorkerError(Server $server, int $worker_id, int $worker_pid, int $exit_code, int $signal): bool;
+    public function onWorkerError(Server $server, int $id, int $worker_pid, int $exit_code, int $signal): void
+    {
+        output(sprintf('Server worker[%d] error, error code [%d], signal [%d]', $worker_pid, $exit_code, $signal));
+    }
 
     /**
      * @param Server $server
      * @param int $id
-     * @return bool
      */
-    abstract public function onWorkerExit(Server $server, int $id): bool;
+    public function onWorkerExit(Server $server, int $id): void
+    {
+        output(sprintf('Server worker[%d] exit', $id));
+    }
 
     /**
      * @param Server $server
      * @param int $fd
-     * @param int $id
-     * @return bool
+     * @param int $reactorId
      */
-    abstract public function onClose(Server $server, int $fd, int $id): bool;
-
-    /**
-     * @param Swoole\Server $server
-     * @param int $src_worker_id
-     * @param $message
-     * @return bool
-     */
-    public function onPipeMessage(Server $server, int $src_worker_id, $message): bool
+    public function onClose(Server $server, int $fd, int $reactorId): void
     {
-        return true;
+        output(sprintf('[%d] close', $fd));
     }
 }

@@ -312,7 +312,7 @@ abstract class ServerAbstract
             try {
                 $this->bootstrap();
 
-                output(sprintf("Server: <info>%s</info>", $this->name));
+                output(sprintf("Server: <info>%s</info>", 'Swoole'));
                 output(sprintf('App version: <info>%s</info>', ServerAbstract::VERSION));
                 output(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
                 output(sprintf("Listen <info>%s://%s:%s</info>", $this->protocol, $this->host, $this->port));
@@ -416,7 +416,5 @@ abstract class ServerAbstract
         $table->render();
 
         unset($table, $headers, $output);
-
-        return 0;
     }
 }
