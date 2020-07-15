@@ -10,7 +10,7 @@
 
 use FastD\Swoole\Server;
 use FastD\Swoole\Server\TCP;
-
+use PHPUnit\Framework\TestCase;
 
 class TcpServer extends TCP
 {
@@ -27,7 +27,7 @@ class TcpServer extends TCP
     }
 }
 
-class ServerTest extends PHPUnit_Framework_TestCase
+class ServerTest extends TestCase
 {
     public function testNewServer()
     {
