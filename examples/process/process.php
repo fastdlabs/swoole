@@ -13,6 +13,9 @@ include __DIR__ . '/../../vendor/autoload.php';
 
 class P extends Process{
 
+    /**
+     * 进程逻辑处理
+     */
     public function handle(): void
     {
         for ($i = 0; $i <= 3; $i++){
@@ -21,8 +24,11 @@ class P extends Process{
         }
     }
 
+    /**
+     * 进程退出调用
+     */
     public function exit(int $pid, int $code, int $signal): void
     {
-        print_r(func_get_args());
+        $this->start();
     }
 }

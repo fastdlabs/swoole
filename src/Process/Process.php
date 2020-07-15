@@ -65,7 +65,6 @@ abstract class Process
             $process->start(false);
             $this->children[$process->getPid()] = $process;
         }
-
         while($ret = Swoole::wait()){
             $this->exit($ret['pid'], $ret['code'], $ret['signal']);
         }
