@@ -7,10 +7,10 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole;
+include __DIR__ . '/../../vendor/autoload.php';
 
+$server = new \FastD\Swoole\Server\HTTPServer();
 
-class Master
-{
+$status = $server->status();
 
-}
+print_r($status);

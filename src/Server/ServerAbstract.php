@@ -16,6 +16,8 @@ use swoole_process;
 use Swoole\Server;
 use Server\Port;
 use FastD\Swoole\Handlers\ServerHandlerInterface;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
@@ -32,7 +34,7 @@ abstract class ServerAbstract
     /**
      * @var string $name
      */
-    protected string $name = '';
+    protected string $name = 'swoole';
 
     /**
      * @var Server
@@ -116,26 +118,12 @@ abstract class ServerAbstract
     }
 
     /**
-     * @param string $name
-     * @return ServerAbstract
-     */
-    public function rename(string $name): ServerAbstract
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-
-    /**
      * @param array $config
      * @return ServerAbstract
      */
     public function configure(array $config): ServerAbstract
     {
         $this->config = array_merge($this->config, $config);
-
-        isset($config['name']) && $this->rename($config['name']);
 
         isset($this->config['pid_file']) && $this->pid_file = $this->config['pid_file'];
 
@@ -148,6 +136,18 @@ abstract class ServerAbstract
     public function isBooted(): bool
     {
         return $this->booted;
+    }
+
+
+    /**
+     * @param string $name
+     * @return ServerAbstract
+     */
+    public function rename(string $name): ServerAbstract
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -336,7 +336,7 @@ abstract class ServerAbstract
             return -1;
         }
 
-        $pid = (int) @file_get_contents($this->getPidFile());
+        $pid = (int) @file_get_contents($this->pid_file);
         if (process_kill($pid, SIGTERM)) {
             unlink($this->pid_file);
         }
@@ -357,7 +357,7 @@ abstract class ServerAbstract
             return -1;
         }
 
-        $pid = (int)@file_get_contents($this->getPidFile());
+        $pid = (int)@file_get_contents($this->pid_file);
 
         posix_kill($pid, SIGUSR1);
 
@@ -376,14 +376,11 @@ abstract class ServerAbstract
         return $this->start();
     }
 
-    /**
-     * @return array
-     */
-    public function status(): array
+    public function status(): void
     {
         if (!$this->isRunning()) {
             output(sprintf('Server <info>%s</info> is not running...', $this->name));
-            return [];
+            return;
         }
 
         exec("ps axu | grep '{$this->name}' | grep -v grep", $output);
@@ -403,16 +400,11 @@ abstract class ServerAbstract
             $output[$key] = array_combine($headers, $value);
         }
 
-        $table = new Table($this->output);
+        $table = new Table(new ConsoleOutput());
         $table
             ->setHeaders($headers)
             ->setRows($output)
         ;
-
-        output(sprintf("Server: <info>%s</info>", $this->name));
-        output(sprintf('App version: <info>%s</info>', Server::VERSION));
-        output(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
-        output(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pid_file, (int) @file_get_contents($this->pid_file)) . PHP_EOL);
         $table->render();
 
         unset($table, $headers, $output);

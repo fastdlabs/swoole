@@ -21,17 +21,16 @@ use Swoole\WebSocket\Server;
  */
 interface WebSocketHandlerInterface
 {
+
     /**
      * @param Server $server
      * @param Request $request
-     * @return mixed
      */
-    public function onOpen(Server $server, Request $request);
+    public function onOpen(Server $server, Request $request): void;
 
     /**
      * @param Server $server
      * @param Frame $frame
-     * @return mixed
      */
-    public function onMessage(Server $server, Frame $frame);
+    public function onMessage(Server $server, Frame $frame): void ;
 }
