@@ -53,9 +53,4 @@ abstract class Process
     {
 
     }
-
-    public function status(): void
-    {
-
-    }
 }
