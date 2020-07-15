@@ -16,16 +16,30 @@ abstract class Process
 {
     protected string $name;
 
+    protected bool $stdout = false;
+    protected int $pipe = SOCK_DGRAM;
+    protected bool $coroutine = false;
+
     protected Swoole $process;
+
+    protected int $pid;
+
+    protected array $children = [];
 
     public function __construct(string $name, bool $redirect_stdin_stdout = false, int $pipe_type = SOCK_DGRAM, bool $enable_coroutine = false)
     {
         $this->process = new Swoole([$this, 'handle'], $redirect_stdin_stdout, $pipe_type, $enable_coroutine);
-
-        $this->process->name($name);
+        $this->stdout = $redirect_stdin_stdout;
+        $this->pid = $pipe_type;
+        $this->coroutine = $enable_coroutine;
+        $this->name($name);
     }
 
-    abstract public function handle(): void;
+    public function name(string $name) {
+        $this->name = $name;
+//        $this->process->name($name);
+        return $this;
+    }
 
     public function daemon(): Process
     {
@@ -34,23 +48,61 @@ abstract class Process
         return $this;
     }
 
+    public function getPid(): int
+    {
+        return $this->pid;
+    }
+
+    public function getChildren(): array
+    {
+        return $this->children;
+    }
+
     public function fork(int $worker_num)
     {
         for ($i = 0; $i < $worker_num; $i++) {
-            $process = clone $this;
-            $process->start();
+            $process = new static($this->name . ' worker', $this->stdout, $this->pipe, $this->coroutine);
+            $process->start(false);
+            $this->children[$process->getPid()] = $process;
+        }
+
+        while($ret = Swoole::wait()){
+            $this->exit($ret['pid'], $ret['code'], $ret['signal']);
         }
     }
 
-    public function start(): void
+    public function start(bool $wait = true): int
     {
-        $this->process->start();
+        $this->pid = $this->process->start();
 
-        Swoole::wait(true);
+        if ($wait) {
+            $ret = Swoole::wait(true);
+            $this->exit($ret['pid'], $ret['code'], $ret['signal']);
+        }
+
+        return $this->pid;
     }
 
-    public function exit(int $status = 0): void
+    public function recv(): string
     {
-
+        $socket = $this->process->exportSocket();
+        return $socket->recv();
     }
+
+    public function send($data): void
+    {
+        $socket = $this->process->exportSocket();
+        if (false != $socket) {
+            $socket->send($data);
+        }
+    }
+
+    public function close(int $which): bool
+    {
+        return $this->process->close($which);
+    }
+
+    abstract public function handle(): void;
+
+    abstract public function exit(int $pid, int $code, int $signal): void;
 }
