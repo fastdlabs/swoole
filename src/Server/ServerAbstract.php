@@ -238,9 +238,10 @@ abstract class ServerAbstract
      * @param int $sock_type
      * @return ServerAbstract
      */
-    public static function createServer(string $address = null, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): ServerAbstract
+    public static function create(string $address = null, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): ServerAbstract
     {
         $info = parse_url($address);
+
         return new static($info['host'], $info['port'], $mode, $sock_type);
     }
 
