@@ -10,12 +10,8 @@
 namespace FastD\Swoole\Server;
 
 
-use FastD\Swoole\Handlers\HandlerInterface;
-use FastD\Swoole\Traits\Manger;
-use swoole_process;
 use Swoole\Server;
 use Server\Port;
-use FastD\Swoole\Handlers\ServerHandlerInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -88,7 +84,7 @@ abstract class ServerAbstract
     /**
      * @var string
      */
-    protected string $handler;
+    protected string $handle;
 
     /**
      * 多端口支持
@@ -212,12 +208,12 @@ abstract class ServerAbstract
     }
 
     /**
-     * @param string $handler
+     * @param string $handle
      * @return ServerAbstract
      */
-    public function handler(string $handler): ServerAbstract
+    public function handle(string $handle): ServerAbstract
     {
-        $this->handler = $handler;
+        $this->handle = $handle;
 
         return $this;
     }
@@ -276,7 +272,7 @@ abstract class ServerAbstract
 
     protected function handleCallback()
     {
-        $handler = new $this->handler($this);
+        $handler = new $this->handle($this);
         $handles = get_class_methods($handler);
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
