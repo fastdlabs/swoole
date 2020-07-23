@@ -10,12 +10,11 @@
 namespace FastD\Swoole\Server;
 
 
+use Throwable;
 use Swoole\Server;
-use Server\Port;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * Class Server
@@ -41,14 +40,13 @@ abstract class ServerAbstract
      * @var array
      */
     protected $config = [
-        'worker_num' => 1,
-        'task_tmpdir' => '/tmp',
+        'worker_num'        => 1,
         'open_cpu_affinity' => true,
-        'pid_file' => '/tmp/swoole.pid',
-        'max_request' => 0,
-        'reload_async' => true,
-        'user' => 'www',
-        'group' => 'www',
+        'pid_file'          => '/tmp/swoole.pid',
+        'max_request'       => 0,
+        'reload_async'      => true,
+        'user'              => 'www',
+        'group'             => 'www',
     ];
 
     /**
@@ -94,7 +92,7 @@ abstract class ServerAbstract
     protected array $listens = [];
 
     /**
-     * @var Process[]
+     * @var array
      */
     protected array $processes = [];
 
@@ -105,8 +103,10 @@ abstract class ServerAbstract
      * @param int $mode
      * @param int $sock_type
      */
-    public function __construct(string $host = '127.0.0.1', int $port = 9527, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP)
+    public function __construct(string $url = 'http://127.0.0.1:9527', int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP)
     {
+        list('scheme' => $scheme, 'host' => $host, 'port' => $port) = parse_url($url);
+        $this->protocol = $scheme;
         $this->host = $host;
         $this->port = $port;
         $this->mode = $mode;
@@ -133,7 +133,6 @@ abstract class ServerAbstract
     {
         return $this->booted;
     }
-
 
     /**
      * @param string $name
@@ -229,16 +228,14 @@ abstract class ServerAbstract
     }
 
     /**
-     * @param string|null $address
+     * @param string $url
      * @param int $mode
      * @param int $sock_type
      * @return ServerAbstract
      */
-    public static function create(string $address = null, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): ServerAbstract
+    public static function create(string $url, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): ServerAbstract
     {
-        $info = parse_url($address);
-
-        return new static($info['host'], $info['port'], $mode, $sock_type);
+        return new static($url, $mode, $sock_type);
     }
 
     /**
@@ -263,20 +260,20 @@ abstract class ServerAbstract
         return $this->booted;
     }
 
-    protected function targetDirectory()
+    protected function targetDirectory(): void
     {
         if (!is_dir($dir = dirname($this->pid_file))) {
             mkdir($dir, 0755, true);
         }
     }
 
-    protected function handleCallback()
+    protected function handleCallback(): void
     {
         $handler = new $this->handle($this);
         $handles = get_class_methods($handler);
         foreach ($handles as $value) {
             if ('on' == substr($value, 0, 2)) {
-                $this->swoole->on(lcfirst(substr($value, 2)), [$handler, $value]);
+                $this->swoole->on(substr($value, 2), [$handler, $value]);
             }
         }
         unset($handler, $handles);
