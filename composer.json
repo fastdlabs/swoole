@@ -14,7 +14,7 @@
         "php": ">=7.4.0",
         "ext-swoole": ">4.0",
         "fastd/http": "dev-develop",
-        "symfony/console": "^4.1"
+        "symfony/console": "^5.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.0",
