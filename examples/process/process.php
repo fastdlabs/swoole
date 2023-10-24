@@ -7,11 +7,11 @@
  * @see      http://www.fastdlabs.com/
  */
 
-use FastD\Swoole\Process\Process;
+use FastD\Swoole\Process\AbstractProcess;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class P extends Process{
+class Process extends AbstractProcess {
 
     /**
      * 进程逻辑处理
@@ -29,6 +29,6 @@ class P extends Process{
      */
     public function exit(int $pid, int $code, int $signal): void
     {
-        $this->start();
+        output(sprintf('%s exit', $pid));
     }
 }

@@ -8,6 +8,6 @@
  */
 include __DIR__ . '/process.php';
 
-$p = new P('test');
+$p = new Process('test');
 
 $p->fork(3);

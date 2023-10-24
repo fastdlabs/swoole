@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Swoole\Process;
 
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
@@ -10,7 +11,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
  * @link      http://www.fast-d.cn/
  */
 
-function output($message)
+function output(string $message)
 {
     $output = new ConsoleOutput();
     $date = date('Y-m-d H:i:s');
@@ -21,52 +22,26 @@ function output($message)
     unset($output);
 }
 
-/**
- * @param $name
- */
-function process_rename ($name)
+function process_rename(string $name)
 {
     set_error_handler(function () {
     });
-
     if (function_exists('cli_set_process_title')) {
         cli_set_process_title($name);
     } else if (function_exists('swoole_set_process_name')) {
         swoole_set_process_name($name);
     }
-
     restore_error_handler();
 }
 
-/**
- * Kill somebody
- *
- * @param $pid
- * @param int $signo
- * @return int
- */
-function process_kill($pid, $signo = SIGTERM)
+function process_kill(int $pid, int $signo = SIGTERM)
 {
-    return swoole_process::kill($pid, $signo);
+    return Process::kill($pid, $signo);
 }
 
-/**
- * @param bool $blocking
- * @return array
- */
-function process_wait($blocking = true)
+function process_wait(bool $blocking = true)
 {
-    return swoole_process::wait($blocking);
-}
-
-/**
- * @param bool $nochdir
- * @param bool $noclose
- * @return mixed
- */
-function process_daemon($nochdir = true, $noclose = true)
-{
-    return swoole_process::daemon($nochdir, $noclose);
+    return Process::wait($blocking);
 }
 
 /**
@@ -76,7 +51,7 @@ function process_daemon($nochdir = true, $noclose = true)
  */
 function process_signal($signo, callable $callback)
 {
-    return swoole_process::signal($signo, $callback);
+    return Process::signal($signo, $callback);
 }
 
 /**
@@ -86,23 +61,9 @@ function process_signal($signo, callable $callback)
  */
 function process_alarm($interval, $type = ITIMER_REAL)
 {
-    return swoole_process::alarm($interval, $type);
+    return Process::alarm($interval, $type);
 }
 
-/**
- * @param array $cpus
- * @return mixed
- */
-function process_affinity(array $cpus)
-{
-    return swoole_process::setaffinity($cpus);
-}
-
-/**
- * @param $interval
- * @param callable $callback
- * @return mixed
- */
 function timer_tick($interval, $callback, array $params = [])
 {
     return swoole_timer_tick($interval, $callback, $params);
@@ -151,11 +112,7 @@ function get_local_ip()
     return gethostbyname(gethostname());
 }
 
-/**
- * @param $keyword
- * @return bool
- */
-function process_is_running($keyword)
+function process_is_running($keyword): bool
 {
     $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
 
@@ -163,18 +120,18 @@ function process_is_running($keyword)
 
     exec($command, $output);
 
-    return empty($output) ? false : true;
+    return !empty($output);
 }
 
 /**
  * @param $port
  * @return bool
  */
-function port_is_running($port)
+function port_is_running($port): bool
 {
     $command = "lsof -i:{$port}";
 
     exec($command, $output);
 
-    return empty($output) ? false : true;
+    return !empty($output);
 }

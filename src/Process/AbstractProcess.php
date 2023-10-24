@@ -12,7 +12,7 @@ namespace FastD\Swoole\Process;
 
 use Swoole\Process as Swoole;
 
-abstract class Process
+abstract class AbstractProcess
 {
     protected string $name;
 
@@ -26,25 +26,17 @@ abstract class Process
 
     protected array $children = [];
 
-    public function __construct(string $name, bool $redirect_stdin_stdout = false, int $pipe_type = SOCK_DGRAM, bool $enable_coroutine = false)
+    public function __construct(string $name, bool $redirectStdinStdout = false, int $pipeType = SOCK_DGRAM, bool $enableCoroutine = false)
     {
-        $this->process = new Swoole([$this, 'handle'], $redirect_stdin_stdout, $pipe_type, $enable_coroutine);
-        $this->stdout = $redirect_stdin_stdout;
-        $this->pid = $pipe_type;
-        $this->coroutine = $enable_coroutine;
+        $this->process = new Swoole([$this, 'handle'], $redirectStdinStdout, $pipeType, $enableCoroutine);
+        $this->stdout = $redirectStdinStdout;
+        $this->pid = $pipeType;
+        $this->coroutine = $enableCoroutine;
         $this->name($name);
     }
 
     public function name(string $name) {
         $this->name = $name;
-//        $this->process->name($name);
-        return $this;
-    }
-
-    public function daemon(): Process
-    {
-        $this->process->daemon();
-
         return $this;
     }
 
@@ -56,6 +48,20 @@ abstract class Process
     public function getChildren(): array
     {
         return $this->children;
+    }
+
+    public function daemon(): AbstractProcess
+    {
+        $this->process->daemon();
+
+        return $this;
+    }
+
+    public function affinity(array $cpus): AbstractProcess
+    {
+        $this->process->setAffinity($cpus);
+
+        return $this;
     }
 
     public function fork(int $worker_num)
@@ -84,14 +90,15 @@ abstract class Process
 
     public function recv(): string
     {
-        $socket = $this->process->exportSocket();
-        return $socket->recv();
+        if (false !== $socket = $this->process->exportSocket()) {
+            return $socket->recv();
+        }
+        return '';
     }
 
     public function send($data): void
     {
-        $socket = $this->process->exportSocket();
-        if (false != $socket) {
+        if (false !== $socket = $this->process->exportSocket()) {
             $socket->send($data);
         }
     }
