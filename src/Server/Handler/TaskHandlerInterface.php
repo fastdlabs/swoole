@@ -7,7 +7,7 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Handlers;
+namespace FastD\Swoole\Server\Handler;
 
 
 use Swoole\Server;

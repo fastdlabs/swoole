@@ -7,11 +7,10 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Handlers;
+namespace FastD\Swoole\Server\Handler;
 
 
 use Swoole\Http\Request;
-use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 

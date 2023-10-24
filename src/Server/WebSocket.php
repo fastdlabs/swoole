@@ -10,17 +10,16 @@
 namespace FastD\Swoole\Server;
 
 
-use FastD\Swoole\Handlers\WebSocketHandlerInterface;
+use FastD\Swoole\Server\Handler\WebSocketHandlerInterface;
 use Swoole\Http\Request;
-use Swoole\Http\Response;
-use Swoole\WebSocket\Server;
 use Swoole\WebSocket\Frame;
+use Swoole\WebSocket\Server;
 
 /**
  * Class WebSocketServer
  * @package FastD\Swoole
  */
-class WebSocket extends ServerAbstract implements WebSocketHandlerInterface
+class WebSocket extends AbstractServer implements WebSocketHandlerInterface
 {
     protected string $protocol = 'ws';
 

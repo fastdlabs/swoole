@@ -9,7 +9,7 @@
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$server = new \FastD\Swoole\Server\HTTPServer();
+$server = new \FastD\Swoole\Server\HTTP();
 
 $status = $server->status();
 

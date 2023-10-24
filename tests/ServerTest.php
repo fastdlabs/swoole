@@ -8,7 +8,7 @@
  */
 
 use Swoole\Server;
-use FastD\Swoole\Server\TCPServer;
+use FastD\Swoole\Server\TCP;
 use PHPUnit\Framework\TestCase;
 
 

@@ -7,10 +7,10 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Handlers;
+namespace FastD\Swoole\Server\Handler;
 
 
-use FastD\Swoole\Server\ServerAbstract;
+use FastD\Swoole\Server\AbstractServer;
 use Swoole\Server;
 
 /**
@@ -19,9 +19,9 @@ use Swoole\Server;
  */
 abstract class HandlerAbstract
 {
-    protected ServerAbstract $server;
+    protected AbstractServer $server;
 
-    public function __construct(ServerAbstract $server)
+    public function __construct(AbstractServer $server)
     {
         $this->server = $server;
     }

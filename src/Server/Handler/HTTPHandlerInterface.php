@@ -7,7 +7,7 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Handlers;
+namespace FastD\Swoole\Server\Handler;
 
 
 use Swoole\Http\Request;
@@ -16,8 +16,8 @@ use Swoole\Http\Response;
 interface HTTPHandlerInterface
 {
     /**
-     * @param Request $swooleRequet
-     * @param Response $swooleResponse
+     * @param Request $request
+     * @param Response $response
      */
-    public function onRequest(Request $swooleRequet, Response $swooleResponse): void;
+    public function onRequest(Request $request, Response $response): void;
 }

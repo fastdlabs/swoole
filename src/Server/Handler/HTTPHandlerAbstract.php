@@ -7,11 +7,11 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Handlers;
+namespace FastD\Swoole\Server\Handler;
 
 
 use FastD\Http\ServerRequest;
-use FastD\Http\SwooleServerRequest;
+use FastD\Http\SwooleRequest;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
@@ -27,15 +27,13 @@ abstract class HTTPHandlerAbstract extends HandlerAbstract implements HTTPHandle
      * @param Request $swooleRequet
      * @param Response $swooleResponse
      */
-    public function onRequest(Request $swooleRequet, Response $swooleResponse): void
+    public function onRequest(Request $request, Response $response): void
     {
-        $serverRequest = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
+        $serverRequest = SwooleRequest::createServerRequestFromSwoole($request);
 
         output(sprintf("Request: {%s}", (string)$serverRequest->getUri()));
 
-        $response = $this->handleRequest($serverRequest);
-
-        $this->handleResponse($swooleResponse, $response);
+        $this->handleResponse($response, $this->handleRequest($serverRequest));
     }
 
     /**
@@ -48,7 +46,7 @@ abstract class HTTPHandlerAbstract extends HandlerAbstract implements HTTPHandle
             $swooleResponse->header($key, $response->getHeaderLine($key));
         }
 
-        foreach ($response->getCookieParams() as $key => $cookieParam) {
+        foreach ($response->getCookies() as $key => $cookieParam) {
             $swooleResponse->cookie($key, $cookieParam);
         }
     }

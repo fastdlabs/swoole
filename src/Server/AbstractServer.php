@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class Server
  * @package FastD\Swoole
  */
-abstract class ServerAbstract
+abstract class AbstractServer
 {
     const VERSION = '5.0';
 
@@ -87,7 +87,7 @@ abstract class ServerAbstract
     /**
      * 多端口支持
      *
-     * @var ServerAbstract[]
+     * @var AbstractServer[]
      */
     protected array $listens = [];
 
@@ -115,9 +115,9 @@ abstract class ServerAbstract
 
     /**
      * @param array $config
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public function configure(array $config): ServerAbstract
+    public function configure(array $config): AbstractServer
     {
         $this->config = array_merge($this->config, $config);
 
@@ -136,9 +136,9 @@ abstract class ServerAbstract
 
     /**
      * @param string $name
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public function rename(string $name): ServerAbstract
+    public function rename(string $name): AbstractServer
     {
         $this->name = $name;
 
@@ -148,9 +148,9 @@ abstract class ServerAbstract
     /**
      * 守護進程
      *
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public function daemon(): ServerAbstract
+    public function daemon(): AbstractServer
     {
         $this->config['daemonize'] = true;
 
@@ -166,10 +166,10 @@ abstract class ServerAbstract
     }
 
     /**
-     * @param ServerAbstract $server
-     * @return ServerAbstract
+     * @param AbstractServer $server
+     * @return AbstractServer
      */
-    public function listen(ServerAbstract $server): ServerAbstract
+    public function listen(AbstractServer $server): AbstractServer
     {
         $this->listens[$server->getName()] = $server;
 
@@ -178,15 +178,15 @@ abstract class ServerAbstract
 
     /**
      * @param $name
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public function getListener(string $name): ServerAbstract
+    public function getListener(string $name): AbstractServer
     {
         return $this->listens[$name];
     }
 
     /**
-     * @return ServerAbstract[]
+     * @return AbstractServer[]
      */
     public function getListeners(): array
     {
@@ -195,9 +195,9 @@ abstract class ServerAbstract
 
     /**
      * @param Process $process
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public function process(Process $process): ServerAbstract
+    public function process(Process $process): AbstractServer
     {
         $process->withServer($this);
 
@@ -208,9 +208,9 @@ abstract class ServerAbstract
 
     /**
      * @param string $handle
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public function handle(string $handle): ServerAbstract
+    public function handle(string $handle): AbstractServer
     {
         $this->handle = $handle;
 
@@ -231,9 +231,9 @@ abstract class ServerAbstract
      * @param string $url
      * @param int $mode
      * @param int $sock_type
-     * @return ServerAbstract
+     * @return AbstractServer
      */
-    public static function create(string $url, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): ServerAbstract
+    public static function create(string $url, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): AbstractServer
     {
         return new static($url, $mode, $sock_type);
     }
@@ -307,7 +307,7 @@ abstract class ServerAbstract
                 $this->bootstrap();
 
                 output(sprintf("Server: <info>%s</info>", 'Swoole'));
-                output(sprintf('App version: <info>%s</info>', ServerAbstract::VERSION));
+                output(sprintf('App version: <info>%s</info>', AbstractServer::VERSION));
                 output(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
                 output(sprintf("Listen <info>%s://%s:%s</info>", $this->protocol, $this->host, $this->port));
 

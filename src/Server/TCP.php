@@ -9,14 +9,14 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Handlers\TCPHandlerInterface;
+use FastD\Swoole\Server\Handler\TCPHandlerInterface;
 use Swoole\Server;
 
 /**
  * Class TCPServer
  * @package FastD\Swoole
  */
-class TCPServer extends ServerAbstract implements TCPHandlerInterface
+class TCP extends AbstractServer implements TCPHandlerInterface
 {
     /**
      * @param Server $server

@@ -10,16 +10,13 @@
 namespace FastD\Swoole\Server;
 
 
-use FastD\Http\Response;
-use FastD\Http\ServerRequest;
-use FastD\Swoole\Handlers\HTTPHandlerInterface;
 use Swoole\Http\Server;
 
 /**
  * Class HTTPServer
  * @package FastD\Swoole\Server
  */
-class HTTPServer extends ServerAbstract
+class HTTP extends AbstractServer
 {
     /**
      * @var string
@@ -43,9 +40,9 @@ class HTTPServer extends ServerAbstract
      * 开启 http2 需要 ssl配置
      * @param string $key
      * @param string $cert
-     * @return HTTPServer
+     * @return HTTP
      */
-    public function enableHTTP2(string $key, string $cert): HTTPServer
+    public function enableHTTP2(string $key, string $cert): HTTP
     {
         $this->config['open_http2_protocol'] = true;
         $this->config['ssl_cert_file'] = $cert;

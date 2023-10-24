@@ -7,23 +7,21 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Swoole\Handlers;
+namespace FastD\Swoole\Server\Handler;
 
 
 use Swoole\Server;
 
 /**
- * Interface TCPServerCallbackInterface
+ * Interface UDPServerHandlerInterface
  * @package FastD\Swoole\Handlers
  */
-interface TCPHandlerInterface
+interface UDPHandlerInterface
 {
     /**
      * @param Server $server
-     * @param int $fd
-     * @param int $reactorId
      * @param string $data
-     * @return bool
+     * @param array $client_info
      */
-    public function onReceive(Server $server, int $fd, int $reactorId, string $data): bool;
+    public function onPacket(Server $server, string $data, array $client_info): void;
 }
