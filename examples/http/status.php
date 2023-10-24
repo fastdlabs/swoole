@@ -11,6 +11,4 @@ include __DIR__ . '/../../vendor/autoload.php';
 
 $server = new \FastD\Swoole\Server\HTTP();
 
-$status = $server->status();
-
-print_r($status);
+$server->status();

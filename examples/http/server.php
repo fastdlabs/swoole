@@ -27,6 +27,6 @@ class HttpHandler extends HTTPHandlerAbstract
 };
 
 $server = new HTTP();
-$server->handler(HttpHandler::class);
+$server->handle(HttpHandler::class);
 
 $server->start();
