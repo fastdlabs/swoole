@@ -3,25 +3,6 @@
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Swoole\Process;
 
-/**
- * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2020
- *
- * @link      https://www.github.com/janhuang
- * @link      http://www.fast-d.cn/
- */
-
-function output(string $message)
-{
-    $output = new ConsoleOutput();
-    $date = date('Y-m-d H:i:s');
-    $str = sprintf("<info>[%s]</info> %s", $date, $message);
-    $str = str_replace(['[', ']'], ['<info>[', ']</info>'], $str);
-    $str = str_replace(['{', '}'], ['<comment>[', ']</comment>'], $str);
-    $output->writeln($str);
-    unset($output);
-}
-
 function process_rename(string $name)
 {
     set_error_handler(function () {

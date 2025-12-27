@@ -9,7 +9,7 @@
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Server\Handler\UDPHandlerInterface;
+use FastD\Swoole\Server\Callback\UDPCallbackInterface;
 use Swoole\Server;
 
 
@@ -17,12 +17,12 @@ use Swoole\Server;
  * Class UDPServer
  * @package FastD\Swoole
  */
-class UDP extends AbstractServer implements UDPHandlerInterface
+class UDP extends Server implements UDPCallbackInterface
 {
     protected string $protocol = 'udp';
 
     /**
-     * @param Server $server
+     * @param Swoole $server
      * @param string $data
      * @param array $client_info
      */

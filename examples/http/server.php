@@ -9,12 +9,12 @@
 
 use FastD\Http\Response;
 use FastD\Http\ServerRequest;
-use FastD\Swoole\Server\Handler\HTTPHandlerAbstract;
 use FastD\Swoole\Server\HTTP;
+use FastD\Swoole\Server\LIstener\TCPListener;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class HttpHandler extends HTTPHandlerAbstract
+class HttpHandler extends TCPListener
 {
     /**
      * @param ServerRequest $serverRequest
