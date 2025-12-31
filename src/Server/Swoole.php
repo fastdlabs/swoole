@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Server\Callback\CallbackInterface;
+use FastD\Swoole\EventHandler\TCPEventInterface;
+use FastD\Swoole\EventHandler\WorkerEventInterface;
 use RuntimeException;
 use Swoole\Process;
-use Throwable;
 use Swoole\Server;
 
-abstract class Swoole implements CallbackInterface
+abstract class Swoole implements WorkerEventInterface
 {
     protected Server $swoole;
 
@@ -22,7 +22,7 @@ abstract class Swoole implements CallbackInterface
 
     protected int $port = 9527;
 
-    protected string $pid_file = '/tmp/swoole.pid';
+    protected string $pidFile = '/tmp/swoole.pid';
 
     protected array $config = [
         'worker_num'        => 1,
@@ -30,31 +30,35 @@ abstract class Swoole implements CallbackInterface
         'pid_file'          => '/tmp/swoole.pid',
         'max_request'       => 0,
         'reload_async'      => true,
-        'user'              => 'www',
         'group'             => 'www',
+        'user'              => 'www',
     ];
 
-    protected array $listens = [];
-
-    protected array $processes = [];
+    protected array $callbacks = [];
 
     protected bool $booted = false;
 
-    protected string $handle;
-
     public function __construct(string $url = 'http://127.0.0.1:9527', protected int $mode = SWOOLE_PROCESS, protected int $sockType = SWOOLE_SOCK_TCP)
     {
-        ['scheme' => $scheme, 'host' => $host, 'port' => $port] = parse_url($url);
+        $parsed = parse_url($url);
+        if ($parsed === false) {
+            throw new RuntimeException("Invalid URL: {$url}");
+        }
+        
+        ['scheme' => $scheme, 'host' => $host, 'port' => $port] = $parsed;
         $this->protocol = $scheme;
         $this->host = $host;
         $this->port = $port;
+        $this->swoole = $this->createSwooleServer($this->protocol, $this->host, $this->port, $this->mode, $this->sockType);
     }
 
     public function configure(array $config): self
     {
         $this->config = array_merge($this->config, $config);
 
-        isset($this->config['pid_file']) && $this->pid_file = $this->config['pid_file'];
+        isset($this->config['pid_file']) && $this->pidFile = $this->config['pid_file'];
+
+        $this->swoole->set($this->config);
 
         return $this;
     }
@@ -73,54 +77,53 @@ abstract class Swoole implements CallbackInterface
         return $this;
     }
 
-    /**
-     * @return Server
-     */
-    abstract public function createSwooleServer(): \Swoole\Server;
+    abstract public function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): Server;
 
     public function getSwooleServer(): Server
     {
         return $this->swoole;
     }
 
-    public function handle(string $handle): Swoole
+    public function on(string $event, callable $callback): self
     {
-        $this->handle = $handle;
+        $this->callbacks[$event] = $callback;
 
         return $this;
+    }
+
+    protected function handlerCallback(): void
+    {
+        $callbacks = [];
+        $methods = get_class_methods($this);
+        foreach ($methods as $method) {
+            if ($method !== 'on' && str_starts_with($method, 'on')) {
+                $callbacks[strtolower(substr($method, 2))] = [$this, $method];
+            }
+        }
+        $callbacks = array_merge($callbacks, $this->callbacks);
+        foreach ($callbacks as $event => $callback) {
+            $this->swoole->on($event, $callback);
+        }
+    }
+
+    protected function targetPidFile(): bool
+    {
+        if (!is_dir($dir = dirname($this->pidFile))) {
+            if (!mkdir($dir, 0755, true)) {
+                throw new RuntimeException("Create directory {$dir} failed.");
+            }
+        }
+        return touch($this->pidFile);
     }
 
     public function bootstrap(): bool
     {
         if (!$this->isBooted()) {
-            $this->targetDirectory();
-            $this->swoole = $this->createSwooleServer();
-            $this->swoole->set($this->config);
-            $this->handleCallback();
+            $this->targetPidFile();
+            $this->handlerCallback();
             $this->booted = true;
         }
         return $this->booted;
-    }
-
-    protected function targetDirectory(): void
-    {
-        if (!is_dir($dir = dirname($this->pid_file))) {
-            if (!mkdir($dir, 0755, true)) {
-                throw new RuntimeException("Create directory {$dir} failed.");
-            }
-        }
-    }
-
-    protected function handleCallback(): void
-    {
-        foreach (static::CALLBACK as $value) {
-            $this->swoole->on(substr($value, 2), [$this, $value]);
-        }
-    }
-
-    public static function create(string $url, int $mode = SWOOLE_PROCESS, int $sock_type = SWOOLE_SOCK_TCP): Swoole
-    {
-        return new static($url, $mode, $sock_type);
     }
 
     public function isBooted(): bool
@@ -128,49 +131,39 @@ abstract class Swoole implements CallbackInterface
         return $this->booted;
     }
 
-    public function isRunning(): bool
-    {
-        if (file_exists($this->config['pid_file'])) {
-            return posix_kill((int)file_get_contents($this->config['pid_file']), 0);
-        }
-
-        if ($is_running = process_is_running("{$this->name} master")) {
-            $is_running = port_is_running($this->port);
-        }
-
-        return $is_running;
-    }
-
-
     public function start(): bool
     {
+        if (!$this->isBooted()) {
+            $this->bootstrap();
+        }
+
         return $this->swoole->start();
     }
 
     public function stop(): bool
     {
-        if (!$this->isRunning()) {
+        if (!$this->status()) {
             return false;
         }
 
-        $pid = (int) @file_get_contents($this->pid_file);
-        if (($result = process_kill($pid, SIGTERM))) {
-            unlink($this->pid_file);
-            return $result;
+        if (!file_exists($this->pidFile)) {
+            return false;
         }
 
-        return false;
+        $pid = (int)file_get_contents($this->pidFile);
+
+        return Process::kill($pid, SIGTERM);
     }
 
     public function reload(): bool
     {
-        if (!$this->isRunning()) {
+        if (!$this->status()) {
             return false;
         }
 
-        $pid = (int)@file_get_contents($this->pid_file);
+        $pid = (int)@file_get_contents($this->pidFile);
 
-        return posix_kill($pid, SIGUSR1);
+        return Process::kill($pid, SIGUSR1);
     }
 
     public function restart(): bool
@@ -180,27 +173,27 @@ abstract class Swoole implements CallbackInterface
         return $this->start();
     }
 
-    public function status(): int
+    public function status(): bool
     {
-        if (!$this->isRunning()) {
-            return -1;
+        if (!file_exists($this->pidFile)) {
+            return false;
         }
 
-        exec("ps axu | grep '{$this->name}' | grep -v grep", $output);
-
-        // list all process
-        $output = array_map(function ($v) {
-            $status = preg_split('/\s+/', $v);
-            unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
-            $status = array_values($status);
-            $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
-            return array_slice($status, 0, 6);
-        }, $output);
-
-        // combine
-        $headers = ['USER', 'PID', 'RSS', 'STAT', 'START', 'COMMAND'];
-        foreach ($output as $key => $value) {
-            $output[$key] = array_combine($headers, $value);
+        if (file_exists($this->config['pid_file'])) {
+            $pid = (int)file_get_contents($this->pidFile);
+            return Process::kill($pid, 0);
         }
+
+        $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
+
+        $command = "ps axu | grep '{$this->name}' | grep -v grep | grep -v {$scriptName}";
+
+        $output = shell_exec($command);
+
+        if ($output === null) {
+            return false;
+        }
+
+        return !empty(trim($output));
     }
 }

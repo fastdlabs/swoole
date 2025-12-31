@@ -1,23 +1,16 @@
 <?php
 
-namespace FastD\Swoole\Server\Callback;
+declare(strict_types=1);
+
+namespace FastD\Swoole\EventHandler;
 
 use Swoole\Server;
 
-interface CallbackInterface
+interface WorkerEventInterface
 {
-    const CALLBACK = [
-        'onStart',
-        'onShutdown',
-        'onManagerStart',
-        'onManagerStop',
-        'onWorkerStart',
-        'onWorkerStop',
-        'onWorkerError',
-        'onWorkerExit',
-    ];
-
     public function onStart(Server $server): void;
+
+    public function onBeforeShutdown(Server $server):void;
 
     public function onShutdown(Server $server): void;
 
@@ -32,4 +25,8 @@ interface CallbackInterface
     public function onWorkerError(Server $server, int $id, int $workerPid, int $exitCode, int $signal): void;
 
     public function onWorkerExit(Server $server, int $id): void;
+
+    public function onBeforeReload(Server $server): void;
+
+    public function onAfterReload(Server $server): void;
 }

@@ -1,11 +1,4 @@
 <?php
-/**
- * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2020
- *
- * @link      https://www.github.com/janhuang
- * @link      http://www.fast-d.cn/
- */
 
 namespace FastD\Swoole;
 
@@ -21,7 +14,7 @@ use swoole_http_client;
  *
  * @package FastD\Swoole
  */
-class Client
+class HTTP
 {
     const HTTP_VERSION = '1.1';
     const USER_AGENT = 'PHP swoole/2.1 (+https://github.com/fastdlabs/swoole)';

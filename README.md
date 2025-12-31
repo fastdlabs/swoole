@@ -109,7 +109,7 @@ Http::createServer('http', 'http://0.0.0.0:9527')->start();
 #### WebSocket Server
 
 ```php
-class WebSocket extends \FastD\Swoole\Server\WebSocket
+class WebSocket extends \FastD\Swoole\Server\WS
 {
     public function doOpen(swoole_websocket_server $server, swoole_http_request $request)
     {

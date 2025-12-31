@@ -1,23 +1,13 @@
 <?php
-/**
- * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2020
- *
- * @link      https://www.github.com/janhuang
- * @link      http://www.fast-d.cn/
- */
+
+declare(strict_types=1);
 
 namespace FastD\Swoole\Server;
 
-use FastD\Swoole\Server\Callback\UDPCallbackInterface;
+use FastD\Swoole\EventHandler\UDPEventInterface;
 use Swoole\Server;
 
-
-/**
- * Class UDPServer
- * @package FastD\Swoole
- */
-class UDP extends Server implements UDPCallbackInterface
+abstract class UDP extends Swoole implements UDPEventInterface
 {
     protected string $protocol = 'udp';
 
@@ -28,7 +18,11 @@ class UDP extends Server implements UDPCallbackInterface
      */
     public function onPacket(Server $server, string $data, array $client_info): void
     {
-        output(sprintf('Client [%s] port [%s], Receive: %s', $client_info['address'], $client_info['port'], $data));
         $server->sendto($client_info['address'], $client_info['port'], "Server ".$data);
+    }
+
+    public function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): Server
+    {
+        return new Server($host, $port, $mode, $sockType);
     }
 }
