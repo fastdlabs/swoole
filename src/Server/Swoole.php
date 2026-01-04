@@ -38,8 +38,6 @@ abstract class Swoole implements WorkerEventInterface
 //        'log_rotation'      => '日志切割不建议由 swoole 执行，可将切割能力转移到服务器执行',
     ];
 
-    protected array $callbacks = [];
-
     protected bool $booted = false;
 
     public function __construct(string $url = 'http://127.0.0.1:9527', protected int $mode = SWOOLE_PROCESS, protected int $sockType = SWOOLE_SOCK_TCP)
@@ -95,25 +93,14 @@ abstract class Swoole implements WorkerEventInterface
         return $this->swoole;
     }
 
-    public function on(string $event, callable $callback): self
-    {
-        $this->callbacks[$event] = $callback;
-
-        return $this;
-    }
-
     protected function handleCallback(): void
     {
-        $callbacks = [];
         $methods = get_class_methods($this);
+        $ignore = ['on', 'onResponse', 'onException'];
         foreach ($methods as $method) {
-            if (!in_array($method, ['on', 'onResponse', 'onException']) && str_starts_with($method, 'on')) {
-                $callbacks[strtolower(substr($method, 2))] = [$this, $method];
+            if (!in_array($method, $ignore) && str_starts_with($method, 'on')) {
+                $this->swoole->on(strtolower(substr($method, 2)), [$this, $method]);
             }
-        }
-        $callbacks = array_merge($callbacks, $this->callbacks);
-        foreach ($callbacks as $event => $callback) {
-            $this->swoole->on($event, $callback);
         }
     }
 
