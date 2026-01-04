@@ -4,7 +4,7 @@ namespace FastD\Swoole\Process;
 
 use Swoole\Process as Swoole;
 
-abstract class AbstractProcess
+abstract class Process
 {
     protected string $name;
 
@@ -42,14 +42,14 @@ abstract class AbstractProcess
         return $this->children;
     }
 
-    public function daemon(): AbstractProcess
+    public function daemon(): Process
     {
         $this->process->daemon();
 
         return $this;
     }
 
-    public function affinity(array $cpus): AbstractProcess
+    public function affinity(array $cpus): Process
     {
         $this->process->setAffinity($cpus);
 

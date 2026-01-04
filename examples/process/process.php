@@ -7,11 +7,11 @@
  * @see      http://www.fastdlabs.com/
  */
 
-use FastD\Swoole\Process\AbstractProcess;
+use FastD\Swoole\Process\Process;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-class Process extends AbstractProcess {
+class Process extends Process {
 
     /**
      * 进程逻辑处理

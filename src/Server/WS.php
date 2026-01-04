@@ -24,9 +24,4 @@ abstract class WS extends Swoole implements WebSocketEventInterface
     {
         $server->push($frame->fd, "server: {$frame->data}");
     }
-
-    public function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): Server
-    {
-        return new Server($host, $port, $mode, $sockType);
-    }
 }

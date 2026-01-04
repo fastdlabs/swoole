@@ -32,6 +32,10 @@ abstract class Swoole implements WorkerEventInterface
         'reload_async'      => true,
         'group'             => 'www',
         'user'              => 'www',
+        'display_errors'    => true,
+        'log_file'          => '/tmp/swoole.log',
+        'log_date_format'   => '%Y-%m-%d %H:%M:%S',
+//        'log_rotation'      => '日志切割不建议由 swoole 执行，可将切割能力转移到服务器执行',
     ];
 
     protected array $callbacks = [];
@@ -77,7 +81,14 @@ abstract class Swoole implements WorkerEventInterface
         return $this;
     }
 
-    abstract public function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): Server;
+    public function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): Server
+    {
+        return match ($protocol) {
+            'http' => new \Swoole\Http\Server($host, $port, $mode, $sockType),
+            'ws' => new \Swoole\WebSocket\Server($host, $port, $mode, $sockType),
+            default => new Server($host, $port, $mode, $sockType),
+        };
+    }
 
     public function getSwooleServer(): Server
     {
@@ -91,12 +102,12 @@ abstract class Swoole implements WorkerEventInterface
         return $this;
     }
 
-    protected function handlerCallback(): void
+    protected function handleCallback(): void
     {
         $callbacks = [];
         $methods = get_class_methods($this);
         foreach ($methods as $method) {
-            if ($method !== 'on' && str_starts_with($method, 'on')) {
+            if (!in_array($method, ['on', 'onResponse', 'onException']) && str_starts_with($method, 'on')) {
                 $callbacks[strtolower(substr($method, 2))] = [$this, $method];
             }
         }
@@ -120,7 +131,7 @@ abstract class Swoole implements WorkerEventInterface
     {
         if (!$this->isBooted()) {
             $this->targetPidFile();
-            $this->handlerCallback();
+            $this->handleCallback();
             $this->booted = true;
         }
         return $this->booted;
@@ -147,7 +158,7 @@ abstract class Swoole implements WorkerEventInterface
         }
 
         if (!file_exists($this->pidFile)) {
-            return false;
+            throw new RuntimeException("PID file {$this->pidFile} not found.");
         }
 
         $pid = (int)file_get_contents($this->pidFile);
@@ -161,7 +172,11 @@ abstract class Swoole implements WorkerEventInterface
             return false;
         }
 
-        $pid = (int)@file_get_contents($this->pidFile);
+        if (!file_exists($this->pidFile)) {
+            throw new RuntimeException("PID file {$this->pidFile} not found.");
+        }
+
+        $pid = (int)file_get_contents($this->pidFile);
 
         return Process::kill($pid, SIGUSR1);
     }
@@ -176,12 +191,7 @@ abstract class Swoole implements WorkerEventInterface
     public function status(): bool
     {
         if (!file_exists($this->pidFile)) {
-            return false;
-        }
-
-        if (file_exists($this->config['pid_file'])) {
-            $pid = (int)file_get_contents($this->pidFile);
-            return Process::kill($pid, 0);
+            throw new RuntimeException("PID file {$this->pidFile} not found.");
         }
 
         $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
@@ -195,5 +205,98 @@ abstract class Swoole implements WorkerEventInterface
         }
 
         return !empty(trim($output));
+    }
+
+    public function onStart(Server $server): void
+    {
+        echo "\033[32m[START]\033[0m Server started at \033[36m{$this->protocol}://{$this->host}:{$this->port}\033[0m with \033[33m{$this->config['worker_num']}\033[0m worker(s)\n";
+    }
+
+    public function onBeforeShutdown(Server $server): void
+    {
+        echo "\033[33m[SHUTDOWN]\033[0m Preparing to shutdown server at \033[36m{$this->host}:{$this->port}\033[0m\n";
+        echo "       Time: \033[36m" . date('Y-m-d H:i:s') . "\033[0m\n";
+        echo "       Process ID: \033[36m" . getmypid() . "\033[0m\n";
+    }
+
+    public function onShutdown(Server $server): void
+    {
+        echo "\033[31m[MASTER SHUTDOWN]\033[0m Server shutdown completed at \033[36m{$this->protocol}://{$this->host}:{$this->port}\033[0m\n";
+    }
+
+    public function onManagerStart(Server $server): void
+    {
+        echo "\033[35m[MANAGER]\033[0m Manager process started\n";
+    }
+
+    public function onManagerStop(Server $server): void
+    {
+        echo "\033[35m[MANAGER]\033[0m Manager process stopped\n";
+    }
+
+    public function onWorkerStart(Server $server, int $id): void
+    {
+        echo "\033[36m[WORKER]\033[0m Worker \033[33m#{$id}\033[0m started\n";
+    }
+
+    public function onWorkerStop(Server $server, int $id): void
+    {
+        echo "\033[36m[WORKER]\033[0m Worker \033[33m#{$id}\033[0m stopped\n";
+    }
+
+    public function onWorkerError(Server $server, int $id, int $workerPid, int $exitCode, int $signal): void
+    {
+        $exitMessage = match ($exitCode) {
+            0 => 'Normal exit',
+            1 => 'General error',
+            2 => 'Misuse of shell command',
+            126 => 'Command cannot execute',
+            127 => 'Command not found',
+            128 => 'Invalid argument to exit',
+            130 => 'Script terminated by Control-C',
+            132 => 'Illegal instruction',
+            133 => 'Trace/breakpoint trap',
+            134 => 'Aborted',
+            136 => 'Floating point exception',
+            137 => 'Killed (often sent by system when OOM)',
+            139 => 'Segmentation fault',
+            143 => 'Terminated (SIGTERM)',
+            default => 'Unknown exit code'
+        };
+
+        $signalMessage = match ($signal) {
+            0 => 'No signal',
+            1 => 'SIGHUP - Hangup (control terminal)',
+            2 => 'SIGINT - Interrupt (Ctrl+C)',
+            3 => 'SIGQUIT - Quit (Ctrl+\\)',
+            6 => 'SIGABRT - Abort signal',
+            9 => 'SIGKILL - Kill signal',
+            11 => 'SIGSEGV - Invalid memory reference',
+            13 => 'SIGPIPE - Broken pipe',
+            14 => 'SIGALRM - Timer signal',
+            15 => 'SIGTERM - Termination signal',
+            default => "Signal {$signal}"
+        };
+
+        echo "\033[31m[CRITICAL]\033[0m Worker \033[33m#{$id}\033[0m (PID: {$workerPid}) \033[31mUNEXPECTEDLY EXITED\033[0m\n";
+        echo "         Exit Code: \033[31m{$exitCode}\033[0m (\033[31m{$exitMessage}\033[0m)\n";
+        echo "         Signal: \033[31m{$signal}\033[0m (\033[31m{$signalMessage}\033[0m)\n";
+        echo "         Time: \033[36m" . date('Y-m-d H:i:s') . "\033[0m\n";
+        echo "         Server: \033[36m{$this->host}:{$this->port}\033[0m\n";
+    }
+
+    public function onWorkerExit(Server $server, int $id): void
+    {
+        echo "\033[35m[EXIT]\033[0m Worker \033[33m#{$id}\033[0m exited normally at \033[36m" . date('Y-m-d H:i:s') . "\033[0m\n";
+    }
+
+    public function onBeforeReload(Server $server): void
+    {
+        echo "\033[33m[WORKER BEFORE RELOAD]\033[0m Preparing to reload\n";
+    }
+
+    public function onAfterReload(Server $server): void
+    {
+        echo "\033[32m[WORKER AFTER RELOAD]\033[0m Workers reloaded successfully\n";
     }
 }

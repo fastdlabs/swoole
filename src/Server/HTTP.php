@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FastD\Swoole\Server;
 
+use Exception;
 use FastD\Http\Exception\HttpException;
 use FastD\Http\Request\ServerRequest;
 use FastD\Http\Request\SwooleServerRequest;
@@ -15,28 +16,33 @@ use Swoole\Server;
 
 abstract class HTTP extends Swoole implements HTTPEventInterface
 {
-    protected string $protocol = 'http';
-
-    public function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): Server
-    {
-        return new HTTPServer($host, $port, $mode, $sockType);
-    }
-
     public function onRequest(Request $request, Response $response): void
     {
         try {
+            if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
+                $response->end();
+                return;
+            }
             $serverRequest = SwooleServerRequest::createServerRequestFromSwoole($request);
-            $this->handleResponse($response, $this->handleRequest($serverRequest, $response));
-        } catch (HttpException $e) {
-            $this->handleResponse($response, new \FastD\Http\Response\Response($e->getMessage(), $e->getStatusCode()));
-        } catch (\Exception $e){
-            $this->handleResponse($response, new \FastD\Http\Response\Response($e->getMessage(), 500));
+            $this->sendResponse($response, $this->onResponse($serverRequest));
+        } catch (HttpException|Exception $e) {
+            $this->sendResponse($response, $this->onException($e));
         }
     }
 
-    abstract public function handleRequest(ServerRequest $serverRequest): \FastD\Http\Response\Response;
+    abstract public function onResponse(ServerRequest $serverRequest): \FastD\Http\Response\Response;
 
-    protected function handleResponse(Response $swooleResponse, \FastD\Http\Response\Response $response): void
+    public function onException(Exception $exception): \FastD\Http\Response\Response
+    {
+        $errorMessage = "[Exception] " . $exception->getMessage() .
+            " in " . $exception->getFile() .
+            " at line " . $exception->getLine() .
+            "\nStack trace:\n" . $exception->getTraceAsString();
+
+        return new \FastD\Http\Response\Response($errorMessage, $exception instanceof HttpException ? $exception->getStatusCode() : 500);
+    }
+
+    protected function sendResponse(Response $swooleResponse, \FastD\Http\Response\Response $response): void
     {
         $this->sendHeaders($swooleResponse, $response);
         $swooleResponse->status($response->getStatusCode());
