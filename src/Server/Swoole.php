@@ -51,7 +51,6 @@ abstract class Swoole implements WorkerEventInterface
         $this->protocol = $scheme;
         $this->host = $host;
         $this->port = $port;
-        $this->swoole = $this->createSwooleServer($this->protocol, $this->host, $this->port, $this->mode, $this->sockType);
     }
 
     public function configure(array $config): self
@@ -59,8 +58,6 @@ abstract class Swoole implements WorkerEventInterface
         $this->config = array_merge($this->config, $config);
 
         isset($this->config['pid_file']) && $this->pidFile = $this->config['pid_file'];
-
-        $this->swoole->set($this->config);
 
         return $this;
     }
@@ -118,6 +115,8 @@ abstract class Swoole implements WorkerEventInterface
     {
         if (!$this->isBooted()) {
             $this->targetPidFile();
+            $this->swoole = $this->createSwooleServer($this->protocol, $this->host, $this->port, $this->mode, $this->sockType);
+            $this->swoole->set($this->config);
             $this->handleCallback();
             $this->booted = true;
         }
@@ -140,58 +139,32 @@ abstract class Swoole implements WorkerEventInterface
 
     public function stop(): bool
     {
-        if (!$this->status()) {
+        if (!file_exists($this->pidFile) || !$this->status()) {
             return false;
         }
 
-        if (!file_exists($this->pidFile)) {
-            throw new RuntimeException("PID file {$this->pidFile} not found.");
-        }
-
         $pid = (int)file_get_contents($this->pidFile);
-
         return Process::kill($pid, SIGTERM);
     }
 
     public function reload(): bool
     {
-        if (!$this->status()) {
+        if (!file_exists($this->pidFile) || !$this->status()) {
             return false;
         }
 
-        if (!file_exists($this->pidFile)) {
-            throw new RuntimeException("PID file {$this->pidFile} not found.");
-        }
-
         $pid = (int)file_get_contents($this->pidFile);
-
         return Process::kill($pid, SIGUSR1);
-    }
-
-    public function restart(): bool
-    {
-        $this->stop();
-
-        return $this->start();
     }
 
     public function status(): bool
     {
         if (!file_exists($this->pidFile)) {
-            throw new RuntimeException("PID file {$this->pidFile} not found.");
-        }
-
-        $scriptName = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_BASENAME);
-
-        $command = "ps axu | grep '{$this->name}' | grep -v grep | grep -v {$scriptName}";
-
-        $output = shell_exec($command);
-
-        if ($output === null) {
             return false;
         }
 
-        return !empty(trim($output));
+        $pid = (int)file_get_contents($this->pidFile);
+        return Process::kill($pid, 0);
     }
 
     public function onStart(Server $server): void

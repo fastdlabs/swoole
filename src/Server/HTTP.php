@@ -13,33 +13,40 @@ use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server as HTTPServer;
 use Swoole\Server;
+use Throwable;
 
 abstract class HTTP extends Swoole implements HTTPEventInterface
 {
+    const Ignore = '/favicon.ico';
+
     public function onRequest(Request $request, Response $response): void
     {
         try {
-            if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
+            if (HTTP::Ignore == $request->server['path_info'] || HTTP::Ignore == $request->server['request_uri']) {
                 $response->end();
                 return;
             }
             $serverRequest = SwooleServerRequest::createServerRequestFromSwoole($request);
             $this->sendResponse($response, $this->onResponse($serverRequest));
-        } catch (HttpException|Exception $e) {
+        } catch (Throwable $e) {
             $this->sendResponse($response, $this->onException($e));
         }
     }
 
     abstract public function onResponse(ServerRequest $serverRequest): \FastD\Http\Response\Response;
 
-    public function onException(Exception $exception): \FastD\Http\Response\Response
+    public function onException(Throwable $throwable): \FastD\Http\Response\Response
     {
-        $errorMessage = "[Exception] " . $exception->getMessage() .
-            " in " . $exception->getFile() .
-            " at line " . $exception->getLine() .
-            "\nStack trace:\n" . $exception->getTraceAsString();
+        $errorData = [
+            'type' => get_class($throwable),
+            'message' => $throwable->getMessage(),
+            'code' => $throwable->getCode(),
+            'file' => $throwable->getFile(),
+            'line' => $throwable->getLine(),
+            'trace' => explode("\n", $throwable->getTraceAsString())
+        ];
 
-        return new \FastD\Http\Response\Response($errorMessage, $exception instanceof HttpException ? $exception->getStatusCode() : 500);
+        return new \FastD\Http\Response\JsonResponse($errorData, $throwable instanceof HttpException ? $throwable->getStatusCode() : 500);
     }
 
     protected function sendResponse(Response $swooleResponse, \FastD\Http\Response\Response $response): void
