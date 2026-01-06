@@ -14,17 +14,17 @@ abstract class Swoole implements WorkerEventInterface
 {
     protected Server $swoole;
 
-    protected string $protocol = 'tcp';
+    public string $name = 'swoole';
 
-    protected string $name = 'swoole';
+    public string $protocol = 'tcp';
 
-    protected string $host = '127.0.0.1';
+    public string $host = '127.0.0.1';
 
-    protected int $port = 9527;
+    public int $port = 9527;
 
     protected string $pidFile = '/tmp/swoole.pid';
 
-    protected array $config = [
+    public array $config = [
         'worker_num'        => 1,
         'open_cpu_affinity' => true,
         'pid_file'          => '/tmp/swoole.pid',
@@ -40,7 +40,7 @@ abstract class Swoole implements WorkerEventInterface
 
     protected bool $booted = false;
 
-    public function __construct(string $url = 'http://127.0.0.1:9527', protected int $mode = SWOOLE_PROCESS, protected int $sockType = SWOOLE_SOCK_TCP)
+    public function __construct(public string $url = 'http://127.0.0.1:9527', public int $mode = SWOOLE_PROCESS, public int $sockType = SWOOLE_SOCK_TCP)
     {
         $parsed = parse_url($url);
         if ($parsed === false) {
