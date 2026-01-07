@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace FastD\Swoole\Server;
 
-use Exception;
+use Psr\Http\Message\ResponseInterface;
+use FastD\Swoole\EventHandler\HTTPEventInterface;
 use FastD\Http\Exception\HttpException;
 use FastD\Http\Request\ServerRequest;
 use FastD\Http\Request\SwooleServerRequest;
-use FastD\Swoole\EventHandler\HTTPEventInterface;
+use FastD\Http\Response\Json;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server as HTTPServer;
@@ -33,9 +34,9 @@ abstract class HTTP extends Swoole implements HTTPEventInterface
         }
     }
 
-    abstract public function onResponse(ServerRequest $serverRequest): \FastD\Http\Response\Response;
+    abstract public function onResponse(ServerRequest $serverRequest): ResponseInterface;
 
-    public function onException(Throwable $throwable): \FastD\Http\Response\Response
+    public function onException(Throwable $throwable): ResponseInterface
     {
         $errorData = [
             'type' => get_class($throwable),
@@ -46,17 +47,17 @@ abstract class HTTP extends Swoole implements HTTPEventInterface
             'trace' => explode("\n", $throwable->getTraceAsString())
         ];
 
-        return new \FastD\Http\Response\JsonResponse($errorData, $throwable instanceof HttpException ? $throwable->getStatusCode() : 500);
+        return new Json($errorData, $throwable instanceof HttpException ? $throwable->getStatusCode() : 500);
     }
 
-    protected function sendResponse(Response $swooleResponse, \FastD\Http\Response\Response $response): void
+    protected function sendResponse(Response $swooleResponse, ResponseInterface $response): void
     {
         $this->sendHeaders($swooleResponse, $response);
         $swooleResponse->status($response->getStatusCode());
         $swooleResponse->end((string) $response->getBody());
     }
 
-    protected function sendHeaders(Response $swooleResponse, \FastD\Http\Response\Response $response): void
+    protected function sendHeaders(Response $swooleResponse, ResponseInterface $response): void
     {
         foreach ($response->getHeaders() as $key => $header) {
             $swooleResponse->header($key, $response->getHeaderLine($key));

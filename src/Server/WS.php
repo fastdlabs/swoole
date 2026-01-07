@@ -13,8 +13,6 @@ use Swoole\WebSocket\Server;
 
 abstract class WS extends Swoole implements WebSocketEventInterface
 {
-    protected string $protocol = 'ws';
-
     public function onOpen(Server $server, Request $request): void
     {
         $server->push($request->fd, "hello, welcome\n");

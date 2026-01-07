@@ -1,19 +1,13 @@
 <?php
 
-namespace FastD\Swoole;
+declare(strict_types=1);
 
+namespace FastD\Swoole;
 
 use FastD\Http\Cookie;
 use LogicException;
 use RuntimeException;
-use swoole_client;
-use swoole_http_client;
 
-/**
- * Class Client
- *
- * @package FastD\Swoole
- */
 class HTTP
 {
     const HTTP_VERSION = '1.1';
