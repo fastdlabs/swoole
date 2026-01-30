@@ -3,6 +3,7 @@
     "description": "FastD swoole.",
     "type": "library",
     "license": "MIT",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "janhuang",
@@ -14,12 +15,27 @@
         "ext-posix": "*",
         "ext-sockets": "*",
         "fastd/http": "dev-develop",
-        "fastd/routing": "dev-develop"
+        "fastd/routing": "dev-develop",
+        "fastd/event": "dev-develop"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
         "swoole/ide-helper": "@dev"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "/Users/janhuang/PhpstormProjects/fastd/routing"
+        },
+        {
+            "type": "path",
+            "url": "/Users/janhuang/PhpstormProjects/fastd/http"
+        },
+        {
+            "type": "path",
+            "url": "/Users/janhuang/PhpstormProjects/fastd/event"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "FastD\\Swoole\\": "src"

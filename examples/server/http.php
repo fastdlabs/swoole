@@ -1,20 +1,21 @@
 <?php
 
 use FastD\Http\Request\ServerRequest;
-use FastD\Http\Response\Response;
+use FastD\Http\Response\Text as Response;
+use FastD\Swoole\Server\EventListener\HTTPListener;
 use FastD\Swoole\Server\HTTP;
-use Swoole\Server;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 include __DIR__ . '/../../vendor/autoload.php';
 
-$server = new class extends HTTP
-{
-    public function onResponse(ServerRequest $serverRequest): Response
+$server = new class extends HTTP {
+    public function onRequest(ServerRequestInterface $request): ResponseInterface
     {
-        $queryParams = $serverRequest->getQueryParams();
-        $name = $queryParams['name'] ?? 'world';
-        return new Response("hello {$name}");
+        return new Response(200, 'hello powered by swoole');
     }
 };
+
+$server->addEventListener(new HTTPListener());
 
 $server->start();
