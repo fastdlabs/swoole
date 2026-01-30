@@ -7,3 +7,4 @@
 *.log
 composer.lock
 /bin
+.trae
