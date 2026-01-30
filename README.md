@@ -13,8 +13,8 @@
 ## 环境要求
 
 * Linux (不考虑windows)
-* swoole >= 4.2.0
-* PHP >= 7.4
+* swoole >= 6.0
+* PHP >= 8.2
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 

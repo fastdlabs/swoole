@@ -2,37 +2,38 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Process\Communication;
-
-use FastD\Swoole\Process\Communication;
-use FastD\Swoole\Process\CommunicationInterface;
-use FastD\Swoole\Process\Worker;
+namespace FastD\Swoole\Process\IPC;
 
 /**
  * 队列通信实现
  */
-class Queue extends Communication implements CommunicationInterface
+class Queue extends IPC
 {
     protected bool $enabled = false;
     protected int $msgKey;
     protected int $mode;
     protected int $capacity;
+    protected ?\Swoole\Process $process = null;
 
-    public function __construct(Worker $process, int $msgKey = 0, int $mode = SWOOLE_MSGQUEUE_BALANCE, int $capacity = -1)
+    public function __construct(int $msgKey = 0, int $mode = SWOOLE_MSGQUEUE_BALANCE, int $capacity = -1)
     {
-        parent::__construct($process);
         $this->msgKey = $msgKey ?: ftok(__FILE__, 'a');
         $this->mode = $mode;
         $this->capacity = $capacity;
     }
 
+    public function setProcess(\Swoole\Process $process): void
+    {
+        $this->process = $process;
+    }
+
     public function init(): bool
     {
-        if ($this->enabled) {
+        if ($this->enabled || !$this->process) {
             return false;
         }
 
-        $result = $this->process->process->useQueue($this->msgKey, $this->mode, $this->capacity);
+        $result = $this->process->useQueue($this->msgKey, $this->mode, $this->capacity);
         if ($result) {
             $this->enabled = true;
         }
@@ -45,7 +46,7 @@ class Queue extends Communication implements CommunicationInterface
         if (!$this->enabled) {
             $this->init();
         }
-        return $this->process->process->push(serialize($data));
+        return $this->process->push(serialize($data));
     }
 
     public function read(int $length = 65536): mixed
@@ -54,7 +55,7 @@ class Queue extends Communication implements CommunicationInterface
             $this->init();
         }
         
-        $content = $this->process->process->pop($length);
+        $content = $this->process->pop($length);
         if ($content === false) {
             return false;
         }
@@ -63,8 +64,8 @@ class Queue extends Communication implements CommunicationInterface
 
     public function close(): bool
     {
-        if ($this->enabled) {
-            return $this->process->process->freeQueue();
+        if ($this->enabled && $this->process) {
+            return $this->process->freeQueue();
         }
         return true;
     }
@@ -76,6 +77,6 @@ class Queue extends Communication implements CommunicationInterface
 
     public function getIPCType(): int
     {
-        return $this->msgKey;
+        return self::IPC_TYPE_QUEUE;
     }
 }

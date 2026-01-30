@@ -2,29 +2,31 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole;
+namespace FastD\Swoole\Process;
 
-use FastD\Swoole\Process\Communication\CommunicationInterface;
-use FastD\Swoole\Process\Communication\Queue;
+use FastD\Swoole\Process\IPC\IPCInterface;
+use FastD\Swoole\Process\IPC\Queue;
+use Throwable;
 
 /**
  * 只负责具体逻辑
  */
-abstract class Process
+abstract class Worker
 {
     public readonly \Swoole\Process $process;
 
-    const STATUS_INIT = 'unknown';
     const STATUS_RUNNING = 'running';
     const STATUS_STOPPED = 'stopped';
     const STATUS_EXCEPTION = 'exception';
 
-    private string $status = 'unknown'; 
+    protected string $status = 'unknown';
+
+    protected int $pid = 0;
 
     public function __construct(
-        public readonly string $name,
-        public readonly bool $enableCoroutine = false,
-        public readonly ?CommunicationInterface $communication = null // 进程间通信工具
+        public readonly string        $name,
+        public readonly bool          $enableCoroutine = false,
+        public readonly ?IPCInterface $communication = null // 进程间通信工具
     )
     {
     }
@@ -41,7 +43,7 @@ abstract class Process
 
     public function isRunning(): bool
     {
-        if ($this->process->pid <= 0) {
+        if (!isset($this->process) || $this->process->pid <= 0) {
             return false;
         }
         
@@ -66,35 +68,81 @@ abstract class Process
         return null;
     }
 
+    /**
+     * 获取 IPC 实例
+     */
+    public function getIPC(): ?IPCInterface
+    {
+        return $this->communication;
+    }
+
+    /**
+     * 通过 IPC 写入数据
+     */
+    public function ipcWrite(mixed $data): bool
+    {
+        if ($this->communication) {
+            return $this->communication->write($data);
+        }
+        return false;
+    }
+
+    /**
+     * 通过 IPC 读取数据
+     */
+    public function ipcRead(int $length = 65536): mixed
+    {
+        if ($this->communication) {
+            return $this->communication->read($length);
+        }
+        return false;
+    }
+
     protected function bootstrap(): void
     {
-        $pipeType = match (true) {
-            $this->communication instanceof Queue => 1,
-            default => null,
-        };
+        // 确定管道类型
+        $pipeType = $this->communication ? 1 : 0;
 
-        // 通过通信模式判断类型
+        // 创建进程
         $this->process = new \Swoole\Process(
-            function (\Swoole\Process $process) {
-                try {
-                    $this->process($process);
-                } catch (\Throwable $e) {
-                    $this->status = self::STATUS_EXCEPTION;
-                    $process->exit(1);
-                }
-            },
-            !(($this->communication === null)),
-            $this->communication === null ? 0 : $this->communication->getIPCType(), // 获取通信模型
+            fn () => $this->process($this),
+            $this->communication !== null,
+            $pipeType,
             $this->enableCoroutine
         );
+
+        // 初始化 IPC
+        $this->initIPC();
 
         $this->process->name($this->name);
     }
 
-    abstract public function process(\Swoole\Process $process): void;
-
-    public function status(): string
+    /**
+     * 初始化 IPC
+     */
+    protected function initIPC(): void
     {
+        if (!$this->communication) {
+            return;
+        }
+
+        // 对于 Queue 类型，需要设置 Process 实例
+        if ($this->communication instanceof Queue) {
+            $this->communication->setProcess($this->process);
+        }
+
+        // 初始化 IPC
+        $this->communication->init();
+    }
+
+    abstract public function process(Worker $worker): void;
+
+    public function status(string $status = ''): string
+    {
+        if ($status !== '') {
+            $this->status = $status;
+            return $this->status;
+        }
         return $this->status;
     }
 
@@ -107,23 +155,29 @@ abstract class Process
                 throw new \RuntimeException("Failed to start process: {$this->name}");
             }
             $this->status = self::STATUS_RUNNING;
+            $this->pid = $this->process->pid;
             return $pid;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new \RuntimeException("Error starting process: " . $e->getMessage(), 0, $e);
         }
     }
 
-    public function stop(int $signal = SIGTERM): bool
+    public function stop(int $signal = SIGTERM, int $status = 0): bool
     {
         if ($this->isRunning()) {
             \Swoole\Process::kill($this->getPid(), $signal);
         }
-        $this->status = self::STATUS_STOPPED;
-        return true;
-    }
 
-    public function __invoke()
-    {
-        return $this->start();
+        // 关闭 IPC
+        if ($this->communication) {
+            $this->communication->close();
+        }
+
+        if ($status === 0) {
+            $this->status = self::STATUS_STOPPED;
+        } else {
+            $this->status = self::STATUS_EXCEPTION;
+        }
+        return true;
     }
 }

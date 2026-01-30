@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Server\Event;
+namespace FastD\Swoole\Event\Server;
 
-class ReceiveEvent extends SwooleEvent
+class ReceiveEvent extends ServerEvent
 {
 
 }

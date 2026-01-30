@@ -2,27 +2,21 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Process\Communication;
-
-use FastD\Swoole\Process\Communication;
-use FastD\Swoole\Process\CommunicationInterface;
-use FastD\Swoole\Process\Worker;
+namespace FastD\Swoole\Process\IPC;
 
 /**
  * 内存共享通信实现
  */
-class Memory extends Communication implements CommunicationInterface
+class Memory extends IPC
 {
     protected ?\Swoole\Table $table;
     protected string $name;
     protected int $size;
 
-    public function __construct(Worker $process, string $name = '', int $size = 1024)
+    public function __construct(string $name = '', int $size = 1024)
     {
-        parent::__construct($process);
         $this->name = $name ?: uniqid('shared_memory_');
         $this->size = $size;
-        $this->init();
     }
 
     public function init(): bool
@@ -59,11 +53,11 @@ class Memory extends Communication implements CommunicationInterface
 
     public function getMode(): int
     {
-        return IPC_SHARED_MEMORY;
+        return self::IPC_TYPE_MEMORY;
     }
 
     public function getIPCType(): int
     {
-        return IPC_SHARED_MEMORY;
+        return self::IPC_TYPE_MEMORY;
     }
 }

@@ -2,25 +2,20 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Process\Communication;
-
-use FastD\Swoole\Process\Communication;
-use FastD\Swoole\Process\CommunicationInterface;
-use FastD\Swoole\Process\Worker;
+namespace FastD\Swoole\Process\IPC;
 
 /**
  * Socket 通信实现
  */
-class Socket extends Communication implements CommunicationInterface
+class Socket extends IPC
 {
     protected ?\Swoole\Coroutine\Socket $socket = null;
     protected int $port;
     protected string $host;
     protected int $type;
 
-    public function __construct(Worker $process, string $host = '127.0.0.1', int $port = 0, int $type = SWOOLE_SOCK_TCP)
+    public function __construct(string $host = '127.0.0.1', int $port = 0, int $type = SWOOLE_SOCK_TCP)
     {
-        parent::__construct($process);
         $this->host = $host;
         $this->port = $port;
         $this->type = $type;
@@ -80,6 +75,6 @@ class Socket extends Communication implements CommunicationInterface
 
     public function getIPCType(): int
     {
-        return $this->type;
+        return self::IPC_TYPE_SOCKET;
     }
 }

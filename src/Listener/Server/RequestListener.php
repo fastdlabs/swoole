@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Server\Listener;
+namespace FastD\Swoole\Listener\Server;
 
 use FastD\Http\Request\SwooleServerRequest;
 use FastD\Http\Response\Json;
-use FastD\Swoole\Server\Event\RequestEvent;
-use FastD\Swoole\Server\Event\SwooleEvent;
+use FastD\Swoole\Event\Server\RequestEvent;
+use FastD\Swoole\Event\SwooleEvent;
+use FastD\Swoole\Listener\SwooleEventListener;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Swoole\Http\Response;
 use Throwable;
 
-abstract class RequestListener extends SwooleEventListener
+abstract class RequestListener extends ServerEventListener
 {
     const Ignore = '/favicon.ico';
 

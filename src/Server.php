@@ -9,11 +9,10 @@ use FastD\Event\EventListenerInterface;
 use FastD\Event\ListenerProvider;
 use RuntimeException;
 use Swoole\Process;
-use Swoole\Server;
 
-class SwooleServer
+class Server
 {
-    protected Server $swoole;
+    protected \Swoole\Server $swoole;
 
     protected string $name = 'swoole-server';
 
@@ -49,7 +48,7 @@ class SwooleServer
     {
         $this->setting = array_merge($this->setting, $setting);
 
-        isset($this->config['pid_file']) && $this->pidFile = $this->config['pid_file'];
+        isset($this->setting['pid_file']) && $this->pidFile = $this->setting['pid_file'];
 
         return $this;
     }
@@ -78,11 +77,88 @@ class SwooleServer
         return $this->name;
     }
 
-    public function listen(string $host, int $port, EventListenerInterface $eventListener): void
-    {
-        
 
-        $this->eventDispatcher->listenerProvider->addListener($eventListener);
+    public function getPid(): int
+    {
+        if (!file_exists($this->pidFile)) {
+            return 0;
+        }
+
+        return (int)file_get_contents($this->pidFile);
+    }
+
+    public function isBooted(): bool
+    {
+        return $this->booted;
+    }
+
+    /**
+     * 记录监听端口，并且对应事件会同步到事件调度中
+     *
+     * @param string $host
+     * @param int $port
+     * @param EventListenerInterface $eventListener
+     * @param string $protocol
+     * @param int $mode
+     * @param int $sockType
+     * @return void
+     */
+    public function listen(
+        string $host,
+        int $port,
+        EventListenerInterface $eventListener,
+        string $protocol = 'http',
+        int $mode = SWOOLE_PROCESS,
+        int $sockType = SWOOLE_SOCK_TCP,
+    ): void
+    {
+        $this->listens[] = [
+            'protocol' => $protocol,
+            'host' => $host,
+            'port' => $port,
+            'mode' => $mode,
+            'type' => $sockType,
+            'listener' => $eventListener,
+        ];
+
+        $this->addListener($eventListener);
+    }
+
+    /**
+     * 开放事件监听入口
+     *
+     * @param EventListenerInterface ...$listener
+     * @return void
+     */
+    public function addListener(EventListenerInterface ...$listener): void
+    {
+        $this->eventDispatcher->listenerProvider->addListener(...$listener);
+    }
+
+    public function bootstrap(): bool
+    {
+        if (!$this->isBooted()) {
+            $this->touchPidFile();
+            if (empty($this->listens)) {
+                throw new RuntimeException('No listen port configured.');
+            }
+
+            $listens = $this->listens;
+            $master = array_shift($listens);
+
+            [$this->swoole, $events] = $this->createSwooleServer($master['protocol'], $master['host'], $master['port'], $master['mode'], $master['type']);
+            $this->swoole->set($this->setting);
+            foreach ($events as $event) {
+                $this->swoole->on($event, fn (...$args) => $this->eventDispatcher->forward($event, $this, $this->listens, ...$args));
+            }
+
+            foreach ($listens as $listen) {
+                $this->swoole->listen($master['host'], $master['port'], $master['type']);
+            }
+
+            $this->booted = true;
+        }
+        return $this->booted;
     }
 
     protected function touchPidFile(): bool
@@ -102,30 +178,9 @@ class SwooleServer
         return match ($protocol) {
             'http' => [new \Swoole\Http\Server($host, $port, $mode, $sockType), array_merge($events, ['request'])],
             'ws' => [new \Swoole\WebSocket\Server($host, $port, $mode, $sockType), array_merge($events, ['beforeHandshakeResponse', 'handShake', 'open', 'message', 'request', 'disconnect'])],
-            'udp' => [new Server($host, $port, $mode, $sockType), array_merge($events, ['receive', 'packet',])],
-            default => [new Server($host, $port, $mode, $sockType), array_merge($events, ['connect', 'receive', 'close'])],
+            'udp' => [new \Swoole\Server($host, $port, $mode, $sockType), array_merge($events, ['receive', 'packet',])],
+            default => [new \Swoole\Server($host, $port, $mode, $sockType), array_merge($events, ['connect', 'receive', 'close'])],
         };
-    }
-
-    public function isBooted(): bool
-    {
-        return $this->booted;
-    }
-
-    public function bootstrap(): bool
-    {
-        if (!$this->isBooted()) {
-            $this->touchPidFile();
-            [$this->swoole, $events] = $this->createSwooleServer('http', '127.0.0.1', 9527, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
-            $this->swoole->set($this->setting);
-
-            array_map(fn(string $event) => $this->swoole->on($event, function (...$args) use ($event) {
-                $this->eventDispatcher->forward($event, ...$args);
-            }), $events);
-
-            $this->booted = true;
-        }
-        return $this->booted;
     }
 
     public function start(): bool
@@ -139,31 +194,16 @@ class SwooleServer
 
     public function stop(): bool
     {
-        if (!file_exists($this->pidFile) || !$this->status()) {
-            return false;
-        }
-
-        $pid = (int)file_get_contents($this->pidFile);
-        return Process::kill($pid, SIGTERM);
+        return Process::kill($this->getPid(), SIGTERM);
     }
 
     public function reload(): bool
     {
-        if (!file_exists($this->pidFile) || !$this->status()) {
-            return false;
-        }
-
-        $pid = (int)file_get_contents($this->pidFile);
-        return Process::kill($pid, SIGUSR1);
+        return Process::kill($this->getPid(), SIGUSR1);
     }
 
     public function status(): bool
     {
-        if (!file_exists($this->pidFile)) {
-            return false;
-        }
-
-        $pid = (int)file_get_contents($this->pidFile);
-        return Process::kill($pid, 0);
+        return Process::kill($this->getPid(), 0);
     }
 }

@@ -19,7 +19,7 @@
         "fastd/event": "dev-develop"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.0",
+        "phpunit/phpunit": "^10.0",
         "swoole/ide-helper": "@dev"
     },
     "repositories": [
@@ -39,9 +39,6 @@
     "autoload": {
         "psr-4": {
             "FastD\\Swoole\\": "src"
-        },
-        "files": [
-            "helpers.php"
-        ]
+        }
     }
 }

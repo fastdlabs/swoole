@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Server\Listener;
+namespace FastD\Swoole\Listener\Server;
 
-use FastD\Event\EventListenerInterface;
-use FastD\Swoole\Server\Event\MessageEvent;
-use FastD\Swoole\Server\WS;
+use FastD\Swoole\Event\Server\MessageEvent;
 use Swoole\Http\Request;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 
-abstract class MessageListener extends RequestListener
+abstract class MessageListener extends ServerEventListener
 {
     abstract public function onOpen(Server $server, Request $request): void;
 

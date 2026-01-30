@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace FastD\Swoole\Server\Listener;
+namespace FastD\Swoole\Listener\Server;
 
-use FastD\Swoole\Server\Event\SwooleEvent;
-use Swoole\Server;
+use FastD\Swoole\Event\Server\ServerEvent;
+use FastD\Swoole\Event\SwooleEvent;
+use FastD\Swoole\Listener\SwooleEventListener;
 
-class WorkerListener extends SwooleEventListener
+class WorkerListener extends ServerEventListener
 {
     public function listen(): iterable
     {
         return [
-            SwooleEvent::class,
+            ServerEvent::class,
         ];
     }
 
