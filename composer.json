@@ -22,20 +22,6 @@
         "phpunit/phpunit": "^10.0",
         "swoole/ide-helper": "@dev"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "/Users/janhuang/PhpstormProjects/fastd/routing"
-        },
-        {
-            "type": "path",
-            "url": "/Users/janhuang/PhpstormProjects/fastd/http"
-        },
-        {
-            "type": "path",
-            "url": "/Users/janhuang/PhpstormProjects/fastd/event"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "FastD\\Swoole\\": "src"

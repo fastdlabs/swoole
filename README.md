@@ -16,24 +16,19 @@
 * swoole >= 6.0
 * PHP >= 8.2
 
+> 注意：代码使用了 PHP 8.2 的特性（如 readonly 属性）和 Swoole 6.0+ 的 API，确保你的环境满足这些要求。
+
+### 版本兼容性
+
+- PHP 8.2+ 推荐使用最新版本
+- Swoole 6.0+ 提供更好的性能和稳定性
+
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
 pecl 安装
 
 ```shell
 pecl install swoole
-```
-
-### 可选扩展
-
-**如果 PHP >= 7.0 的安装 2.0 版本.**
-
-源码地址: [inotify](http://pecl.php.net/package/inotify)
-
-pecl 安装
-
-```shell
-pecl install inotify
 ```
 
 ### 安装
@@ -48,266 +43,408 @@ composer require fastd/swoole
 
 ## 使用
 
-服务继承 `FastD\Swoole\Server`, 实现 `doWork` 方法, 服务器在接收信息 `onReceive` 回调中会调用 `doWork` 方法, `doWork` 方法接受一个封装好的请求对象。
+FastD Swoole 采用事件驱动架构，使用事件监听器来处理各种服务器事件。以下是使用示例：
 
-具体逻辑在 `doWork` 方法中实现, `doWork` 方法中返回响应客户端的数据, 格式为: **字符串**
-
-Swoole 配置通过实现 `configure` 方法进行配置，具体配置参数请参考: [Swoole 配置选项](http://wiki.swoole.com/wiki/page/274.html)
-
-#### TCP Server
+### HTTP 服务器
 
 ```php
-class DemoServer extends \FastD\Swoole\Server\TCP
+use FastD\Swoole\Server;
+use FastD\Swoole\Listener\Server\RequestListener;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use FastD\Http\Response\Json;
+
+// 创建 HTTP 请求监听器
+class HttpListener extends RequestListener
 {
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    public function onRequest(ServerRequestInterface $serverRequest): ResponseInterface
     {
-        echo $data . PHP_EOL;
-        return 'hello tcp';
-    }
-}
-
-DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527')->start();
-```
-
-#### UDP Server
-
-```php
-class DemoServer extends \FastD\Swoole\Server\UDP
-{
-    public function doPacket(swoole_server $server, $data, $client_info)
-    {
-        echo $data . PHP_EOL;
-        return 'hello tcp';
-    }
-}
-
-DemoServer::createServer('udp swoole', 'udp://127.0.0.1:9527')->start;
-```
-
-#### HTTP Server
-
-同理, `Http` 服务器扩展 `Server` 类, 实现 `doRequest` 方法,实现具体逻辑。
-
-```php
-class Http extends \FastD\Swoole\Server\Http
-{
-    public function doRequest(ServerRequest $serverRequest)
-    {
-        return new JsonResponse([
-            'msg' => 'hello world',
+        // 处理 HTTP 请求
+        $path = $serverRequest->getUri()->getPath();
+        
+        return new Json(200, [
+            'message' => 'Hello, FastD Swoole!',
+            'path' => $path,
+            'method' => $serverRequest->getMethod(),
         ]);
     }
 }
 
-Http::createServer('http', 'http://0.0.0.0:9527')->start();
-```
+// 创建服务器实例
+$server = new Server([
+    'worker_num' => 4,
+    'pid_file' => '/tmp/http_server.pid',
+    'log_file' => '/tmp/http_server.log',
+]);
 
-目前 Http 服务支持 Session 存储，而 Session 存储是基于浏览器 cookie，或者可以自定义实现存储方式。
+// 监听 HTTP 端口
+$server->listen('0.0.0.0', 9527, new HttpListener(), 'http');
 
-目前由 [FastD/Session](https://github.com/JanHuang/http) 提供 session 支持以及 swoole_http_request 对象解释。
-
-#### WebSocket Server
-
-```php
-class WebSocket extends \FastD\Swoole\Server\WS
-{
-    public function doOpen(swoole_websocket_server $server, swoole_http_request $request)
-    {
-        echo "server: handshake success with fd{$request->fd}\n";
-    }
-
-    public function doMessage(swoole_server $server, swoole_websocket_frame $frame)
-    {
-        echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
-        $server->push($frame->fd, "this is server");
-    }
-}
-
-WebSocket::createServer('ws', 'ws://0.0.0.0:9527')->start();
-```
-
-#### 多端口支持
-
-```php
-class Server extends \FastD\Swoole\Server\TCP
-{
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
-    {
-        return 'hello server1';
-    }
-}
-
-class Server2 extends \FastD\Swoole\Server\TCP
-{
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
-    {
-        return 'hello server2';
-    }
-}
-
-$server = new Server('tcp server', 'tcp://127.0.0.1:9527');
-
-$server->listen(new Server2('tcp server2', 'tcp://127.0.0.1:9528'));
-
+// 启动服务器
 $server->start();
 ```
 
-#### 服务管理
+### TCP 服务器
 
 ```php
-class DemoServer extends \FastD\Swoole\Server\TCP
+use FastD\Swoole\Server;
+use FastD\Swoole\Listener\SwooleEventListener;
+use FastD\Swoole\Event\Server\ReceiveEvent;
+use FastD\Swoole\Event\SwooleEvent;
+
+// 创建 TCP 接收监听器
+class TcpListener extends SwooleEventListener
 {
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
+    public function listen(): iterable
     {
-        echo $data . PHP_EOL;
-        return 'hello tcp';
+        return [
+            ReceiveEvent::class,
+        ];
+    }
+    
+    public function process(object $event): void
+    {
+        if ($event instanceof SwooleEvent && $event->event == 'receive') {
+            [$server, $fd, $fromId, $data] = $event->args;
+            
+            // 处理接收到的数据
+            echo "Received: {$data}" . PHP_EOL;
+            
+            // 发送响应
+            $server->send($fd, "Echo: {$data}");
+        }
     }
 }
 
-$server = DemoServer::createServer('tcp swoole', 'tcp://0.0.0.0:9527');
+// 创建服务器实例
+$server = new Server([
+    'worker_num' => 2,
+    'pid_file' => '/tmp/tcp_server.pid',
+]);
 
-$argv = $_SERVER['argv'];
+// 监听 TCP 端口
+$server->listen('0.0.0.0', 9528, new TcpListener(), 'tcp');
 
-$argv[1] = isset($argv[1]) ? $argv[1] : 'status';
+// 启动服务器
+$server->start();
+```
 
-switch ($argv[1]) {
+### WebSocket 服务器
+
+```php
+use FastD\Swoole\Server;
+use FastD\Swoole\Listener\SwooleEventListener;
+use FastD\Swoole\Event\SwooleEvent;
+
+// 创建 WebSocket 监听器
+class WsListener extends SwooleEventListener
+{
+    public function listen(): iterable
+    {
+        return [
+            'open',
+            'message',
+            'close',
+        ];
+    }
+    
+    public function process(object $event): void
+    {
+        if ($event instanceof SwooleEvent) {
+            switch ($event->event) {
+                case 'open':
+                    [$server, $request] = $event->args;
+                    echo "WebSocket connected: {$request->fd}" . PHP_EOL;
+                    break;
+                    
+                case 'message':
+                    [$server, $frame] = $event->args;
+                    echo "WebSocket message from {$frame->fd}: {$frame->data}" . PHP_EOL;
+                    // 广播消息
+                    $server->push($frame->fd, "Server: {$frame->data}");
+                    break;
+                    
+                case 'close':
+                    [$server, $fd] = $event->args;
+                    echo "WebSocket disconnected: {$fd}" . PHP_EOL;
+                    break;
+            }
+        }
+    }
+}
+
+// 创建服务器实例
+$server = new Server([
+    'worker_num' => 2,
+    'pid_file' => '/tmp/ws_server.pid',
+]);
+
+// 监听 WebSocket 端口
+$server->listen('0.0.0.0', 9529, new WsListener(), 'ws');
+
+// 启动服务器
+$server->start();
+```
+
+### 多端口支持
+
+```php
+use FastD\Swoole\Server;
+use FastD\Swoole\Listener\Server\RequestListener;
+use FastD\Swoole\Listener\SwooleEventListener;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use FastD\Http\Response\Json;
+
+// HTTP 监听器
+class HttpListener extends RequestListener
+{
+    public function onRequest(ServerRequestInterface $serverRequest): ResponseInterface
+    {
+        return new Json(200, ['message' => 'HTTP Server']);
+    }
+}
+
+// TCP 监听器
+class TcpListener extends SwooleEventListener
+{
+    public function listen(): iterable
+    {
+        return ['receive'];
+    }
+    
+    public function process(object $event): void
+    {
+        if ($event->event == 'receive') {
+            [$server, $fd, $fromId, $data] = $event->args;
+            $server->send($fd, "TCP Server: {$data}");
+        }
+    }
+}
+
+// 创建服务器实例
+$server = new Server([
+    'worker_num' => 4,
+    'pid_file' => '/tmp/multi_port_server.pid',
+]);
+
+// 监听 HTTP 端口
+$server->listen('0.0.0.0', 9527, new HttpListener(), 'http');
+
+// 监听 TCP 端口
+$server->listen('0.0.0.0', 9528, new TcpListener(), 'tcp');
+
+// 启动服务器
+$server->start();
+```
+
+### 服务管理
+
+```php
+use FastD\Swoole\Server;
+use FastD\Swoole\Listener\Server\RequestListener;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use FastD\Http\Response\Json;
+
+class HttpListener extends RequestListener
+{
+    public function onRequest(ServerRequestInterface $serverRequest): ResponseInterface
+    {
+        return new Json(200, ['message' => 'Hello, FastD Swoole!']);
+    }
+}
+
+$server = new Server([
+    'worker_num' => 4,
+    'pid_file' => '/tmp/http_server.pid',
+]);
+
+$server->listen('0.0.0.0', 9527, new HttpListener(), 'http');
+
+// 处理命令行参数
+$action = $argv[1] ?? 'start';
+
+switch ($action) {
     case 'start':
+        echo "Starting server...\n";
         $server->start();
         break;
     case 'stop':
-        $server->shutdown();
+        echo "Stopping server...\n";
+        $server->stop();
         break;
     case 'reload':
+        echo "Reloading server...\n";
         $server->reload();
         break;
     case 'status':
+        $status = $server->status() ? 'running' : 'stopped';
+        echo "Server status: {$status}\n";
+        break;
     default:
-        $server->status();
+        echo "Unknown action: {$action}\n";
+        echo "Usage: php server.php [start|stop|reload|status]\n";
+        break;
 }
 ```
 
-#### File Listener
 
-因为 swoole 是常驻内存，程序通过首次启动就自动预载到内存当中，所以每次修改都需要重启服务。
-
-所以这里提供监听文件变化来到自动重启服务(建议开发环境中使用)
-
-```php
-
-class DemoServer extends \FastD\Swoole\Server\TCP
-{
-    public function doWork(swoole_server $server, $fd, $data, $from_id)
-    {
-        return 'hello tcp';
-    }
-}
-
-$server = new DemoServer('watch server', 'tcp://0.0.0.0:9527');
-// $server = DemoServer::createServer('watch server', 'tcp://0.0.0.0:9527');
-$server->watch([__DIR__ . '/listen_files']);
-```
-
-#### Sync Client
-
-Client 通过 resolve 执行，通过不同的方法设置不同的回调，同步、异步均使用通用的方法。
-
-```php
-$client = new \FastD\Swoole\Client\Sync\SyncClient('tcp://11.11.11.11:9527');
-
-$client
-    ->connect(function ($client) {
-        $client->send('hello world');
-    })
-    ->receive(function ($client, $data) {
-        echo $data . PHP_EOL;
-        $client->close();
-    })
-    ->resolve()
-;
-```
-
-#### Async Client
-
-```php
-$client = new \FastD\Swoole\Client\Async\AsyncClient('tcp://11.11.11.11:9527');
-
-$client
-    ->connect(function ($client) {
-        $client->send('hello world');
-    })
-    ->receive(function ($client, $data) {
-        echo $data . PHP_EOL;
-    })
-    ->error(function ($client) {
-        print_r($client);
-    })
-    ->close(function ($client) {})
-    ->resolve()
-;
-```
 
 #### Process
 
 ```php
-$process = new Process('single', function () {
-    timer_tick(1000, function ($id) {
-        static $index = 0;
-        $index++;
-        echo $index . PHP_EOL;
-        if ($index === 10) {
-            timer_clear($id);
-        }
-    });
-});
+use FastD\Swoole\Process;
+use FastD\Swoole\Process\Worker;
 
+// 创建一个工作进程
+class MyWorker extends Worker
+{
+    public function __construct()
+    {
+        parent::__construct('my-worker');
+    }
+    
+    public function process(Worker $worker): void
+    {
+        \Swoole\Timer::tick(1000, function ($id) {
+            static $index = 0;
+            $index++;
+            echo $index . PHP_EOL;
+            if ($index === 10) {
+                \Swoole\Timer::clear($id);
+            }
+        });
+        
+        // 保持进程运行
+        \Swoole\Event::wait();
+    }
+}
+
+// 创建进程管理器
+$process = new Process();
+
+// 添加工作进程
+$process->addWorker(new MyWorker());
+
+// 启动进程管理器
 $process->start();
-
-$process->wait(function ($ret) {
-    echo 'PID: ' . $ret['pid'];
-});
 ```
 
 #### Multi Process
 
 ```php
-$process = new Process('multi', function () {
-    timer_tick(1000, function ($id) {
-        static $index = 0;
-        $index++;
-        echo $index . PHP_EOL;
-        if ($index === 10) {
-            timer_clear($id);
-        }
-    });
-});
+use FastD\Swoole\Process;
+use FastD\Swoole\Process\Worker;
 
-$process->fork(5);
-
-$process->wait(function ($ret) {
-    echo 'PID: ' . $ret['pid'] . PHP_EOL;
-});
-```
-
-#### Queue
-
-```php
-$queue = new \FastD\Swoole\Queue('queue', function ($worker) {
-    while (true) {
-        $recv = $worker->pop();
-        echo "From Master: $recv\n";
+// 创建一个工作进程类
+class MyWorker extends Worker
+{
+    public function __construct(string $name)
+    {
+        parent::__construct($name);
     }
-});
-
-$queue->start();
-
-while (true) {
-    $queue->push('hello');
-    sleep(1);
+    
+    public function process(Worker $worker): void
+    {
+        echo "Worker {$worker->name} started with PID: " . $worker->getPid() . PHP_EOL;
+        
+        // 模拟工作
+        \Swoole\Timer::tick(1000, function ($id) use ($worker) {
+            static $index = 0;
+            $index++;
+            echo "Worker {$worker->name}: {$index}" . PHP_EOL;
+            if ($index === 5) {
+                \Swoole\Timer::clear($id);
+            }
+        });
+        
+        // 保持进程运行
+        \Swoole\Event::wait();
+    }
 }
 
+// 创建进程管理器
+$process = new Process();
 
-$queue->wait(function ($ret) {
-    echo 'PID: ' . $ret['pid'];
+// 添加多个工作进程
+for ($i = 1; $i <= 5; $i++) {
+    $process->addWorker(new MyWorker("worker-{$i}"));
+}
+
+// 启动进程管理器
+$process->start();
+```
+
+
+
+#### IPC (Inter-Process Communication)
+
+FastD Swoole 提供了三种 IPC 实现，用于进程间通信：
+
+1. **Memory**: 基于 Swoole\Table 的共享内存实现
+2. **Queue**: 基于 Swoole\Process\useQueue 的消息队列实现
+3. **Socket**: 基于 Swoole\Coroutine\Socket 的套接字实现
+
+##### IPC 使用示例
+
+```php
+// 基本 IPC 使用示例
+// 参考 examples/process/ipc_example.php
+
+// 多进程 IPC 管理示例
+// 参考 examples/process/ipc_process.php
+```
+
+##### 与 Worker 集成
+
+```php
+use FastD\Swoole\Process\Worker;
+use FastD\Swoole\Process\IPC\Memory;
+use FastD\Swoole\Process\IPC\Queue;
+use FastD\Swoole\Process\IPC\Socket;
+use FastD\Swoole\Process\IPC\IPC;
+
+// 创建带 Memory IPC 的 Worker
+$memoryWorker = new Worker('memory-worker', function (Worker $worker) {
+    $ipc = $worker->getIPC();
+    $ipc->write('hello from memory');
+    $data = $ipc->read();
+    echo $data . PHP_EOL;
+}, new Memory());
+
+// 创建带 Queue IPC 的 Worker
+$queueWorker = new Worker('queue-worker', function (Worker $worker) {
+    $ipc = $worker->getIPC();
+    $ipc->write('hello from queue');
+    $data = $ipc->read();
+    echo $data . PHP_EOL;
+}, new Queue());
+
+// 创建带 Socket IPC 的 Worker
+$socketWorker = new Worker('socket-worker', function (Worker $worker) {
+    $ipc = $worker->getIPC();
+    $ipc->write('hello from socket');
+    $data = $ipc->read();
+    echo $data . PHP_EOL;
+}, new Socket());
+
+// 启动 Worker
+$memoryWorker->start();
+$queueWorker->start();
+$socketWorker->start();
+
+// 等待 Worker 结束
+$memoryWorker->wait(function ($ret) {
+    echo 'PID: ' . $ret['pid'] . PHP_EOL;
+});
+
+$queueWorker->wait(function ($ret) {
+    echo 'PID: ' . $ret['pid'] . PHP_EOL;
+});
+
+$socketWorker->wait(function ($ret) {
+    echo 'PID: ' . $ret['pid'] . PHP_EOL;
 });
 ```
 
