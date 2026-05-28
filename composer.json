@@ -3,7 +3,6 @@
     "description": "FastD swoole.",
     "type": "library",
     "license": "MIT",
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "janhuang",
