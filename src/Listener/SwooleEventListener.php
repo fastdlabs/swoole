@@ -9,6 +9,10 @@ use FastD\Swoole\Event\SwooleEvent;
 
 abstract class SwooleEventListener implements EventListenerInterface
 {
+    public string $protocol;
+    public string $host;
+    public int $port;
+
     abstract public function listen(): iterable;
 
     abstract public function process(object $event): void;

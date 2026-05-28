@@ -8,6 +8,7 @@ use FastD\Event\EventDispatcher;
 use FastD\Event\ThrowableEventInterface;
 use FastD\Event\ThrowableListener;
 use FastD\Swoole\Event\SwooleEvent;
+use FastD\Swoole\Listener\SwooleEventListener;
 use Psr\EventDispatcher\StoppableEventInterface;
 
 class SwooleEventDispatcher extends EventDispatcher
@@ -79,7 +80,7 @@ class SwooleEventDispatcher extends EventDispatcher
 
         foreach ($listeners as $listener) {
             try {
-                // 执行监听器
+                // 执行监听器，分别针对端口处理
                 $listener->process($event);
             } catch (\Throwable $throwable) {
                 (new ThrowableListener($listener, $throwable))->process($event);

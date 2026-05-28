@@ -7,14 +7,15 @@ namespace FastD\Swoole;
 use FastD\Event\EventDispatcher;
 use FastD\Event\EventListenerInterface;
 use FastD\Event\ListenerProvider;
+use FastD\Swoole\Listener\SwooleEventListener;
 use RuntimeException;
 use Swoole\Process;
 
 class Server
 {
-    protected \Swoole\Server $swoole;
+    public \Swoole\Server $swoole;
 
-    protected string $name = 'swoole-server';
+    public string $name = 'swoole-server';
 
     protected string $pidFile = '/tmp/swoole.pid';
 
@@ -34,7 +35,7 @@ class Server
 
     protected bool $booted = false;
 
-    protected array $listens = [];
+    public array $listens = [];
 
     public function __construct(
         array $setting = [],
@@ -51,11 +52,6 @@ class Server
         isset($this->setting['pid_file']) && $this->pidFile = $this->setting['pid_file'];
 
         return $this;
-    }
-
-    public function getSetting(): array
-    {
-        return $this->setting;
     }
 
     public function rename(string $name): self
@@ -106,7 +102,7 @@ class Server
     public function listen(
         string $host,
         int $port,
-        EventListenerInterface $eventListener,
+        SwooleEventListener $eventListener,
         string $protocol = 'http',
         int $mode = SWOOLE_PROCESS,
         int $sockType = SWOOLE_SOCK_TCP,
@@ -120,6 +116,9 @@ class Server
             'type' => $sockType,
             'listener' => $eventListener,
         ];
+        $eventListener->protocol = $protocol;
+        $eventListener->host = $host;
+        $eventListener->port = $port;
 
         $this->addListener($eventListener);
     }
@@ -153,7 +152,7 @@ class Server
             }
 
             foreach ($listens as $listen) {
-                $this->swoole->listen($master['host'], $master['port'], $master['type']);
+                $this->swoole->listen($listen['host'], $listen['port'], $listen['type']);
             }
 
             $this->booted = true;

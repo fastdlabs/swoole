@@ -34,8 +34,10 @@ abstract class RequestListener extends ServerEventListener
                     $response->end();
                     return;
                 }
-                $serverRequest = SwooleServerRequest::fromSwoole($request);
-                $this->sendResponse($response, $this->onRequest($serverRequest));
+                if ($event->object->swoole->getClientInfo($request->fd)['server_port'] == $this->port) {
+                    $serverRequest = SwooleServerRequest::fromSwoole($request);
+                    $this->sendResponse($response, $this->onRequest($serverRequest));
+                }
             } catch (Throwable $e) {
                 $this->sendResponse($response, $this->onException($e));
             }

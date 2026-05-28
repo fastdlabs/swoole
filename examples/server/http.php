@@ -3,6 +3,7 @@
 use FastD\Swoole\Event\Server\RequestEvent;
 use FastD\Swoole\Event\SwooleEvent;
 use FastD\Swoole\Listener\Server\RequestListener;
+use FastD\Swoole\Listener\Server\StatsListener;
 use FastD\Swoole\Listener\Server\WorkerListener;
 use FastD\Swoole\Listener\SwooleEventListener;
 
@@ -45,4 +46,5 @@ $http = new \FastD\Swoole\Server();
 $http->addListener(new MyListener());
 $http->addListener(new WorkerListener());
 $http->listen('127.0.0.1', 9527, new MyRequestListener());
+//$http->listen('127.0.0.1', 9528, new StatsListener());
 $http->start();
