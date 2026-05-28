@@ -1,723 +1,209 @@
 <?php
-/**
- * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2016
- *
- * @link      https://www.github.com/janhuang
- * @link      http://www.fast-d.cn/
- */
+
+declare(strict_types=1);
 
 namespace FastD\Swoole;
 
-use Exception;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
-use FastD\Swoole\Support\Watcher;
-use swoole_process;
-use swoole_server;
-use swoole_server_port;
-use swoole_websocket_server;
-use swoole_http_server;
+use FastD\Event\EventDispatcher;
+use FastD\Event\EventListenerInterface;
+use FastD\Event\ListenerProvider;
+use RuntimeException;
+use Swoole\Process;
 
-/**
- * Class Server
- * @package FastD\Swoole
- */
-abstract class Server
+class Server
 {
-    const VERSION = '2.1.0';
+    protected \Swoole\Server $swoole;
 
-    /**
-     * @var $name
-     */
-    protected $name;
+    protected string $name = 'swoole-server';
 
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
+    protected string $pidFile = '/tmp/swoole.pid';
 
-    /**
-     * @var swoole_server
-     */
-    protected $swoole;
-
-    /**
-     * Swoole server run configuration.
-     *
-     * @var array
-     */
-    protected $config = [
-        'worker_num' => 8,
-        'task_worker_num' => 8,
-        'task_tmpdir' => '/tmp',
+    public array $setting = [
+        'worker_num'        => 1,
         'open_cpu_affinity' => true,
+        'pid_file'          => '/tmp/swoole.pid',
+        'max_request'       => 0,
+        'reload_async'      => true,
+        'group'             => 'www',
+        'user'              => 'www',
+        'display_errors'    => true,
+        'log_file'          => '/tmp/swoole.log',
+        'log_date_format'   => '%Y-%m-%d %H:%M:%S',
+//        'log_rotation'      => '日志切割不建议由 swoole 执行，可将切割能力转移到服务器执行',
     ];
 
-    const SCHEME = 'tcp';
+    protected bool $booted = false;
 
-    /**
-     * @var string
-     */
-    protected $host = '127.0.0.1';
+    protected array $listens = [];
 
-    /**
-     * @var string
-     */
-    protected $port = '9527';
-
-    /**
-     * @var string
-     */
-    protected $pidFile;
-
-    /**
-     * @var int
-     */
-    protected $pid;
-
-    /**
-     * @var bool
-     */
-    protected $booted = false;
-
-    /**
-     * 多端口支持
-     *
-     * @var Server[]
-     */
-    protected $listens = [];
-
-    /**
-     * @var Process[]
-     */
-    protected $processes = [];
-
-    /**
-     * @var Timer[]
-     */
-    protected $timers = [];
-
-    /**
-     * @var int
-     */
-    protected $fd;
-
-    /**
-     * Server constructor.
-     * @param $name
-     * @param null $address
-     * @param array $config
-     * @param OutputInterface $output
-     */
-    public function __construct($name, $address = null, array $config = [], OutputInterface $output = null)
+    public function __construct(
+        array $setting = [],
+        public readonly EventDispatcher $eventDispatcher = new SwooleEventDispatcher(new ListenerProvider()) // 引入事件调度进行操作，与 fastd 核心中通用
+    )
     {
-        $this->name = $name;
-
-        if (null !== $address) {
-            $info = parse_url($address);
-
-            $this->host = $info['host'];
-            $this->port = $info['port'];
-        }
-
-        $this->output = null === $output ? new ConsoleOutput() : $output;
-
-        $this->configure($config);
+        $this->setting($setting);
     }
 
-    /**
-     * @param array $config
-     * @return $this
-     */
-    public function configure(array $config)
+    public function setting(array $setting): self
     {
-        $this->config = array_merge($this->config, $config);
+        $this->setting = array_merge($this->setting, $setting);
 
-        if (isset($this->config['pid_file'])) {
-            $this->pidFile = $this->config['pid_file'];
-        }
-
-        if (empty($this->pidFile)) {
-            $this->pidFile = '/tmp/' . str_replace(' ', '-', $this->name) . '.pid';
-            $this->config['pid_file'] = $this->pidFile;
-        }
+        isset($this->setting['pid_file']) && $this->pidFile = $this->setting['pid_file'];
 
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function isBooted()
+    public function getSetting(): array
+    {
+        return $this->setting;
+    }
+
+    public function rename(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function daemon(): self
+    {
+        $this->setting['daemonize'] = true;
+
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+
+    public function getPid(): int
+    {
+        if (!file_exists($this->pidFile)) {
+            return 0;
+        }
+
+        return (int)file_get_contents($this->pidFile);
+    }
+
+    public function isBooted(): bool
     {
         return $this->booted;
     }
 
     /**
-     * 守護進程
+     * 记录监听端口，并且对应事件会同步到事件调度中
      *
-     * @return $this
+     * @param string $host
+     * @param int $port
+     * @param EventListenerInterface $eventListener
+     * @param string $protocol
+     * @param int $mode
+     * @param int $sockType
+     * @return void
      */
-    public function daemon()
+    public function listen(
+        string $host,
+        int $port,
+        EventListenerInterface $eventListener,
+        string $protocol = 'http',
+        int $mode = SWOOLE_PROCESS,
+        int $sockType = SWOOLE_SOCK_TCP,
+    ): void
     {
-        $this->config['daemonize'] = true;
+        $this->listens[] = [
+            'protocol' => $protocol,
+            'host' => $host,
+            'port' => $port,
+            'mode' => $mode,
+            'type' => $sockType,
+            'listener' => $eventListener,
+        ];
 
-        return $this;
+        $this->addListener($eventListener);
     }
 
     /**
-     * @return string
-     */
-    public function getScheme()
-    {
-        return static::SCHEME;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHost()
-    {
-        return $this->host;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPort()
-    {
-        return $this->port;
-    }
-
-    /**
-     * Get client connection server's file descriptor.
+     * 开放事件监听入口
      *
-     * @return int
+     * @param EventListenerInterface ...$listener
+     * @return void
      */
-    public function getFileDescriptor()
+    public function addListener(EventListenerInterface ...$listener): void
     {
-        return $this->fd;
+        $this->eventDispatcher->listenerProvider->addListener(...$listener);
     }
 
-    /**
-     * @return string
-     */
-    public function getSocketType()
-    {
-        switch (static::SCHEME) {
-            case 'udp':
-                $type = SWOOLE_SOCK_UDP;
-                break;
-            case 'unix':
-                $type = SWOOLE_UNIX_STREAM;
-                break;
-            case 'tcp':
-            default :
-                $type = SWOOLE_SOCK_TCP;
-        }
-
-        return $type;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPidFile()
-    {
-        return $this->pidFile;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPid()
-    {
-        return $this->pid;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return swoole_server
-     */
-    public function getSwoole()
-    {
-        return $this->swoole;
-    }
-
-    /**
-     * @param null $name
-     * @return Server[]
-     */
-    public function getListeners($name = null)
-    {
-        return $this->listens;
-    }
-
-    /**
-     * @param $name
-     * @return Server
-     */
-    public function getListener($name)
-    {
-        return $this->listens[$name];
-    }
-
-    /**
-     * @return $this
-     */
-    protected function handleCallback()
-    {
-        $handles = get_class_methods($this);
-        $isListenerPort = false;
-        $serverClass = get_class($this->getSwoole());
-        if ('Swoole\Server\Port' == $serverClass || 'swoole_server_port' == $serverClass) {
-            $isListenerPort = true;
-        }
-        foreach ($handles as $value) {
-            if ('on' == substr($value, 0, 2)) {
-                if ($isListenerPort) {
-                    if ('udp' === $this->getScheme()) {
-                        $callbacks = ['onPacket',];
-                    } else {
-                        $callbacks = ['onConnect', 'onClose', 'onReceive',];
-                    }
-                    if (in_array($value, $callbacks)) {
-                        $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
-                    }
-                } else {
-                    $this->swoole->on(lcfirst(substr($value, 2)), [$this, $value]);
-                }
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * 引导服务，当启动是接收到 swoole server 信息，则默认以这个swoole 服务进行引导
-     *
-     * @param $swoole swoole server or swoole server port
-     * @return $this
-     */
-    public function bootstrap($swoole = null)
+    public function bootstrap(): bool
     {
         if (!$this->isBooted()) {
-            $this->swoole = null === $swoole ? $this->initSwoole() : $swoole;
+            $this->touchPidFile();
+            if (empty($this->listens)) {
+                throw new RuntimeException('No listen port configured.');
+            }
 
-            $this->swoole->set($this->config);
+            $listens = $this->listens;
+            $master = array_shift($listens);
 
-            $this->handleCallback();
+            [$this->swoole, $events] = $this->createSwooleServer($master['protocol'], $master['host'], $master['port'], $master['mode'], $master['type']);
+            $this->swoole->set($this->setting);
+            foreach ($events as $event) {
+                $this->swoole->on($event, fn (...$args) => $this->eventDispatcher->forward($event, $this, $this->listens, ...$args));
+            }
+
+            foreach ($listens as $listen) {
+                $this->swoole->listen($master['host'], $master['port'], $master['type']);
+            }
 
             $this->booted = true;
         }
-
-        return $this;
+        return $this->booted;
     }
 
-    /**
-     * 如果需要自定义自己的swoole服务器,重写此方法
-     *
-     * @return swoole_server
-     */
-    public function initSwoole()
+    protected function touchPidFile(): bool
     {
-        return new swoole_server($this->host, $this->port, SWOOLE_PROCESS, $this->getSocketType());
-    }
-
-    /**
-     * @param Server $server
-     * @return $this
-     */
-    public function listen(Server $server)
-    {
-        $this->listens[$server->getName()] = $server;
-
-        return $this;
-    }
-
-    /**
-     * @param Process $process
-     * @return $this
-     */
-    public function process(Process $process)
-    {
-        $process->withServer($this);
-
-        $this->processes[] = $process;
-
-        return $this;
-    }
-
-    /**
-     * @param Timer $timer
-     * @return $this
-     */
-    public function timer(Timer $timer)
-    {
-        $timer->withServer($this);
-
-        $this->timers[] = $timer;
-
-        return $this;
-    }
-
-    /**
-     * @param $name
-     * @param $address
-     * @param $config
-     * @return static
-     */
-    public static function createServer($name, $address, array $config = [])
-    {
-        return new static($name, $address, $config);
-    }
-
-    /**
-     * @return int
-     */
-    public function start()
-    {
-        if ($this->isRunning()) {
-            $this->output->writeln(sprintf('Server <info>[%s] %s:%s</info> address already in use', $this->name, $this->host, $this->port));
-        } else {
-            try {
-                $this->bootstrap();
-                if (!file_exists($dir = dirname($this->pidFile))) {
-                    mkdir($dir, 0755, true);
-                }
-                // 多端口监听
-                foreach ($this->listens as $listen) {
-                    $swoole = $this->swoole->listen($listen->getHost(), $listen->getPort(), $listen->getSocketType());
-                    $listen->bootstrap($swoole);
-                }
-                // 进程控制
-                foreach ($this->processes as $process) {
-                    $this->swoole->addProcess($process->getProcess());
-                }
-
-                $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
-                $this->output->writeln(sprintf('App version: <info>%s</info>', Server::VERSION));
-                $this->output->writeln(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
-
-                $this->swoole->start();
-            } catch (Exception $e) {
-                $this->output->write("<error>{$e->getMessage()}</error>\n");
+        if (!is_dir($dir = dirname($this->pidFile))) {
+            if (!mkdir($dir, 0755, true)) {
+                throw new RuntimeException("Create directory {$dir} failed.");
             }
         }
-
-        return 0;
+        return touch($this->pidFile);
     }
 
-    /**
-     * @return int
-     */
-    public function shutdown()
+    protected function createSwooleServer(string $protocol, string $host, int $port, int $mode, int $sockType): array
     {
-        if (!$this->isRunning()) {
-            $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
-            return -1;
+        $events = ['start', 'beforeShutdown', 'shutdown', 'workerStart', 'workerStop', 'workerError', 'workerExit', 'pipeMessage', 'managerStart', 'managerStop', 'beforeReload', 'afterReload', 'task', 'finish'];
+        // 返回服务和回调
+        return match ($protocol) {
+            'http' => [new \Swoole\Http\Server($host, $port, $mode, $sockType), array_merge($events, ['request'])],
+            'ws' => [new \Swoole\WebSocket\Server($host, $port, $mode, $sockType), array_merge($events, ['beforeHandshakeResponse', 'handShake', 'open', 'message', 'request', 'disconnect'])],
+            'udp' => [new \Swoole\Server($host, $port, $mode, $sockType), array_merge($events, ['receive', 'packet',])],
+            default => [new \Swoole\Server($host, $port, $mode, $sockType), array_merge($events, ['connect', 'receive', 'close'])],
+        };
+    }
+
+    public function start(): bool
+    {
+        if (!$this->isBooted()) {
+            $this->bootstrap();
         }
 
-        $pid = (int) @file_get_contents($this->getPidFile());
-        if (process_kill($pid, SIGTERM)) {
-            unlink($this->pidFile);
-        }
-
-        $this->output->writeln(sprintf('Server <info>%s</info> [<info>#%s</info>] is shutdown...', $this->name, $pid));
-        $this->output->writeln(sprintf('PID file %s is unlink', $this->pidFile), OutputInterface::VERBOSITY_DEBUG);
-
-        return 0;
+        return $this->swoole->start();
     }
 
-    /**
-     * @return int
-     */
-    public function reload()
+    public function stop(): bool
     {
-        if (!$this->isRunning()) {
-            $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
-            return -1;
-        }
-
-        $pid = (int)@file_get_contents($this->getPidFile());
-
-        posix_kill($pid, SIGUSR1);
-
-        $this->output->writeln(sprintf('Server <info>%s</info> [<info>%s</info>] is reloading...', $this->name, $pid));
-
-        return 0;
+        return Process::kill($this->getPid(), SIGTERM);
     }
 
-    /**
-     * @return int
-     */
-    public function restart()
+    public function reload(): bool
     {
-        $this->shutdown();
-        return $this->start();
+        return Process::kill($this->getPid(), SIGUSR1);
     }
 
-    /**
-     * @return int
-     */
-    public function status()
+    public function status(): bool
     {
-        if (!$this->isRunning()) {
-            $this->output->writeln(sprintf('Server <info>%s</info> is not running...', $this->name));
-            return -1;
-        }
-
-        exec("ps axu | grep '{$this->name}' | grep -v grep", $output);
-
-        // list all process
-        $output = array_map(function ($v) {
-            $status = preg_split('/\s+/', $v);
-            unset($status[2], $status[3], $status[4], $status[6], $status[9]); //
-            $status = array_values($status);
-            $status[5] = $status[5] . ' ' . implode(' ', array_slice($status, 6));
-            return array_slice($status, 0, 6);
-        }, $output);
-
-        // combine
-        $headers = ['USER', 'PID', 'RSS', 'STAT', 'START', 'COMMAND'];
-        foreach ($output as $key => $value) {
-            $output[$key] = array_combine($headers, $value);
-        }
-
-        $table = new Table($this->output);
-        $table
-            ->setHeaders($headers)
-            ->setRows($output)
-        ;
-
-        $this->output->writeln(sprintf("Server: <info>%s</info>", $this->name));
-        $this->output->writeln(sprintf('App version: <info>%s</info>', Server::VERSION));
-        $this->output->writeln(sprintf('Swoole version: <info>%s</info>', SWOOLE_VERSION));
-        $this->output->writeln(sprintf("PID file: <info>%s</info>, PID: <info>%s</info>", $this->pidFile, (int) @file_get_contents($this->pidFile)) . PHP_EOL);
-        $table->render();
-
-        unset($table, $headers, $output);
-
-        return 0;
+        return Process::kill($this->getPid(), 0);
     }
-
-    /**
-     * @param array $directories
-     * @return void|int
-     */
-    public function watch(array $directories = ['.'])
-    {
-        $that = $this;
-
-        if (!$this->isRunning()) {
-            $process = new Process('server watch process', function () use ($that) {
-                $that->start();
-            }, true);
-            $process->start();
-        }
-
-        foreach ($directories as $directory) {
-            $this->output->writeln(sprintf('Watching directory: ["<info>%s</info>"]', realpath($directory)));
-        }
-
-        $watcher = new Watcher($this->output);
-
-        $watcher->watch($directories, function () use ($that) {
-            $that->reload();
-        });
-
-        $watcher->run();
-
-        process_wait();
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRunning()
-    {
-        if (file_exists($this->config['pid_file'])) {
-            return posix_kill(file_get_contents($this->config['pid_file']), 0);
-        }
-
-        return process_is_running("{$this->name} master") && port_is_running($this->port);
-    }
-
-    /**
-     * Base start handle. Storage process id.
-     *
-     * @param swoole_server $server
-     * @return void
-     */
-    public function onStart(swoole_server $server)
-    {
-        if (version_compare(SWOOLE_VERSION, '1.9.5', '<')) {
-            file_put_contents($this->pidFile, $server->master_pid);
-            $this->pid = $server->master_pid;
-        }
-
-        process_rename($this->name . ' master');
-
-        $this->output->writeln(sprintf("Listen: <info>%s://%s:%s</info>", $this->getScheme(), $this->getHost(), $this->getPort()));
-        foreach ($this->listens as $listen) {
-            $this->output->writeln(sprintf(" <info> ></info> Listen: <info>%s://%s:%s</info>", $listen->getScheme(), $listen->getHost(), $listen->getPort()));
-        }
-
-        $this->output->writeln(sprintf('PID file: <info>%s</info>, PID: <info>%s</info>', $this->pidFile, $server->master_pid));
-        $this->output->writeln(sprintf('Server Master[<info>%s</info>] is started', $server->master_pid), OutputInterface::VERBOSITY_DEBUG);
-    }
-
-    /**
-     * Shutdown server process.
-     *
-     * @param swoole_server $server
-     * @return void
-     */
-    public function onShutdown(swoole_server $server)
-    {
-        if (file_exists($this->pidFile)) {
-            unlink($this->pidFile);
-        }
-
-        $this->output->writeln(sprintf('Server <info>%s</info> Master[<info>%s</info>] is shutdown ', $this->name, $server->master_pid), OutputInterface::VERBOSITY_DEBUG);
-    }
-
-    /**
-     * @param swoole_server $server
-     *
-     * @return void
-     */
-    public function onManagerStart(swoole_server $server)
-    {
-        process_rename($this->getName() . ' manager');
-
-        $this->output->writeln(sprintf('Server Manager[<info>%s</info>] is started', $server->manager_pid), OutputInterface::VERBOSITY_DEBUG);
-    }
-
-    /**
-     * @param swoole_server $server
-     *
-     * @return void
-     */
-    public function onManagerStop(swoole_server $server)
-    {
-        $this->output->writeln(sprintf('Server <info>%s</info> Manager[<info>%s</info>] is shutdown.', $this->name, $server->manager_pid), OutputInterface::VERBOSITY_DEBUG);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $worker_id
-     * @return void
-     */
-    public function onWorkerStart(swoole_server $server, $worker_id)
-    {
-        $worker_name = $server->taskworker ? 'task' : 'worker';
-        process_rename($this->getName() . ' ' . $worker_name);
-        $this->output->write(sprintf('Server %s[<info>%s</info>] is started [<info>%s</info>]', ucfirst($worker_name), $server->worker_pid, $worker_id) . PHP_EOL);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param int $worker_id
-     * @return void
-     */
-    public function onWorkerStop(swoole_server $server, $worker_id)
-    {
-        $this->output->writeln(sprintf('Server <info>%s</info> Worker[<info>%s</info>] is shutdown', $this->name, $worker_id), OutputInterface::VERBOSITY_DEBUG);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $workerId
-     * @param $workerPid
-     * @param $code
-     */
-    public function onWorkerError(swoole_server $server, $workerId, $workerPid, $code)
-    {
-        $this->output->writeln(sprintf('Server <info>%s:%s</info> Worker[<info>%s</info>] error. Exit code: [<question>%s</question>]', $this->name, $workerPid, $workerId, $code), OutputInterface::VERBOSITY_DEBUG);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $workerId
-     * @param $data
-     * @return mixed
-     */
-    public function onTask(swoole_server $server, $taskId, $workerId, $data)
-    {
-        return $this->doTask($server, $data, $taskId, $workerId);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $taskId
-     * @param $workerId
-     * @return mixed
-     */
-    abstract public function doTask(swoole_server $server, $data, $taskId, $workerId);
-
-    /**
-     * @param swoole_server $server
-     * @param $taskId
-     * @param $data
-     * @return mixed
-     */
-    public function onFinish(swoole_server $server, $taskId, $data)
-    {
-        return $this->doFinish($server, $data, $taskId);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $data
-     * @param $taskId
-     * @return mixed
-     */
-    abstract public function doFinish(swoole_server $server, $data, $taskId);
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
-     */
-    public function onConnect(swoole_server $server, $fd, $from_id)
-    {
-        $this->fd = $fd;
-
-        $this->doConnect($server, $fd, $from_id);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
-     */
-    abstract public function doConnect(swoole_server $server, $fd, $from_id);
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $fromId
-     */
-    public function onClose(swoole_server $server, $fd, $fromId)
-    {
-        $this->doClose($server, $fd, $fromId);
-    }
-
-    /**
-     * @param swoole_server $server
-     * @param $fd
-     * @param $fromId
-     */
-    abstract public function doClose(swoole_server $server, $fd, $fromId);
 }

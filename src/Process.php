@@ -1,270 +1,137 @@
 <?php
-/**
- * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2016
- *
- * @link      https://www.github.com/janhuang
- * @link      http://www.fast-d.cn/
- */
+
+declare(strict_types=1);
 
 namespace FastD\Swoole;
 
+use FastD\Event\EventDispatcher;
+use FastD\Event\EventListenerInterface;
+use FastD\Event\ListenerProvider;
+use FastD\Swoole\Process\IPC\IPCInterface;
+use FastD\Swoole\Process\Worker;
+use Swoole\Event;
+use Swoole\Timer;
 
-use swoole_process;
-
-/**
- * Process manager
- *
- * Class Process
- * @package FastD\Swoole
- */
-class Process
+class Process extends Worker
 {
-    /**
-     * @var Server
-     */
-    protected $server;
+    protected bool $exit = false;
+    
+    protected bool $daemon = false;
 
-    /**
-     * @var swoole_process
-     */
-    protected $process;
+    protected array $workers = [];
 
-    /**
-     * @var swoole_process[]
-     */
-    protected $processes = [];
+    protected array $workerPids = [];
 
-    /**
-     * @var callable
-     */
-    protected $callback;
+    protected array $workerStatus = [];
 
-    /**
-     * @var bool
-     */
-    protected $redirect = false;
-
-    /**
-     * @var bool
-     */
-    protected $pipe = true;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var bool
-     */
-    protected $daemonize = false;
-
-    /**
-     * Process constructor.
-     * @param $name
-     * @param $callback
-     * @param bool $redirect
-     * @param bool $pipe
-     */
-    public function __construct($name = null, $callback = null, $redirect = false, $pipe = true)
+    public function __construct(
+        public readonly SwooleEventDispatcher $eventDispatcher = new SwooleEventDispatcher(new ListenerProvider()),
+        bool                            $enableCoroutine = false,
+        ?IPCInterface                   $communication = null // 进程间通信工具
+    )
     {
-        $this->name = $name;
-
-        $this->redirect = $redirect;
-
-        $this->pipe = $pipe;
-
-        $this->callback = null === $callback ? [$this, 'handle'] : $callback;
-
-        $this->process = new swoole_process([$this, 'runProcess'], $redirect, $pipe);
+        parent::__construct('worker-manager', $enableCoroutine, $communication);
     }
 
-    /**
-     * @param $name
-     * @return $this
-     */
-    public function name($name)
+    public function addWorker(Worker ...$workers): void
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRedirect()
-    {
-        return $this->redirect;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function daemon()
-    {
-        $this->daemonize = true;
-
-        return $this;
-    }
-
-    /**
-     * @param int $size
-     * @return mixed
-     */
-    public function read($size = 8192)
-    {
-        return $this->process->read($size);
-    }
-
-    /**
-     * @param $data
-     * @return mixed
-     */
-    public function write($data)
-    {
-        return $this->process->write($data);
-    }
-
-    /**
-     * @return Server
-     */
-    public function getServer()
-    {
-        return $this->server;
-    }
-
-    /**
-     * @param Server $server
-     * @return $this
-     */
-    public function withServer(Server $server)
-    {
-        $this->server = $server;
-
-        return $this;
-    }
-
-    /**
-     * @param $signo
-     * @param callable $callback
-     * @return mixed
-     */
-    public function signal($signo, callable $callback)
-    {
-        return process_signal($signo, $callback);
-    }
-
-    /**
-     * @param callable $callback
-     * @param bool $blocking
-     */
-    public function wait(callable $callback, $blocking = true)
-    {
-        while ($ret = process_wait($blocking)) {
-            $callback($ret);
+        foreach ($workers as $worker) {
+            $this->workers[$worker->name] = $worker;
         }
     }
 
-    /**
-     * @param $pid
-     * @param int $signo
-     * @return int
-     */
-    public function kill($pid, $signo = SIGTERM)
+    public function getWorker(string|int $nameOrPid): ?Worker
     {
-        return process_kill($pid, $signo);
-    }
-
-    /**
-     * @param $pid
-     * @return int
-     */
-    public function exists($pid)
-    {
-        return process_is_running($pid);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function start()
-    {
-        if (true === $this->daemonize) {
-            $this->process->daemon();
+        if (is_int($nameOrPid)) {
+            $nameOrPid = $this->workerPids[$nameOrPid] ?? '';
         }
-
-        return $this->process->start();
+        return $this->workers[$nameOrPid] ?? null;
     }
 
-    /**
-     * @param int $length
-     * @return int
-     */
-    public function fork($length = 1)
+    public function getWorkers(): array
     {
-        // run parent process
-        $this->start();
-        // new sub process
-        for ($i = 0; $i < $length; $i++) {
-            $process = new static($this->name, $this->callback, $this->redirect, $this->pipe);
-            if (!empty($this->name)) {
-                $process->name($this->name . ' worker');
-            }
-            if (true === $this->daemonize) {
-                $process->daemon();
-            }
-            $pid = $process->start();
-            if (false === $pid) {
-                return -1;
-            }
-            $this->processes[$pid] = $process;
-        }
-
-        return 0;
+        return $this->workers;
     }
 
     /**
-     * @return swoole_process[]
-     */
-    public function getChildProcesses()
-    {
-        return $this->processes;
-    }
-
-    /**
-     * @return swoole_process
-     */
-    public function getProcess()
-    {
-        return $this->process;
-    }
-
-    /**
-     * Process handle
+     * 开放事件监听入口
      *
-     * @param swoole_process $swoole_process
-     * @return callable
-     */
-    public function handle(swoole_process $swoole_process){}
-
-    /**
-     * @param swoole_process $worker
+     * @param EventListenerInterface ...$listener
      * @return void
      */
-    public function runProcess(swoole_process $worker)
+    public function addListener(EventListenerInterface ...$listener): void
     {
-        process_rename($this->name);
+        $this->eventDispatcher->listenerProvider->addListener(...$listener);
+    }
 
-        call_user_func($this->callback, $worker);
+    public function process(Worker $worker): void
+    {
+        // 统一注册信号处理器
+        $this->registerSignalListener();
+
+        $this->pid = getmypid();
+
+        // 创建子进程
+        foreach ($this->workers as $name => $worker) {
+            $pid = $worker->start();
+            $this->workerPids[$pid] = $name;
+            $this->workerStatus[$worker->status()][$pid] = $name;
+        }
+
+        Timer::tick(100, function () {
+            // 检查是否应该退出（收到退出信号）并且将自身信号事件投递出去
+            if ($this->exit) {
+                $this->eventDispatcher->forward('SIGUSR1', $this, SIGUSR1, ...['pid' => $this->pid, 'code' => 0, 'signal' => SIGUSR1]);
+                Timer::clearAll();
+            }
+        });
+
+        Event::wait();
+    }
+
+    /**
+     * 注册所有信号处理器
+     */
+    private function registerSignalListener(): void
+    {
+        // 监听子进程相关信号
+        foreach ([SIGPIPE => 'SIGPIPE', SIGTERM => 'SIGTERM', SIGCHLD => 'SIGCHLD'] as $signo => $eventName) {
+            \Swoole\Process::signal($signo, function ($signo) use ($eventName) {
+                while ($ret = \Swoole\Process::wait(false)) {
+                    $childWorker = $this->getWorker($ret['pid']);
+                    if ($childWorker !== null) {
+                        $this->eventDispatcher->forward($eventName, $childWorker, $signo, ...$ret);
+                        // 更新工作进程状态
+                        if (isset($this->workerStatus[Worker::STATUS_RUNNING][$ret['pid']])) {
+                            unset($this->workerStatus[Worker::STATUS_RUNNING][$ret['pid']]);
+                        }
+                        $this->workerStatus[$childWorker->status()][$ret['pid']] = $childWorker->name;
+                    }
+                }
+            });
+        }
+
+        // 监听终止信号
+        foreach ([SIGTERM => 'SIGTERM', SIGINT => 'SIGINT'] as $signo => $eventName) {
+            \Swoole\Process::signal($signo, function ($signo) use ($eventName) {
+                $this->exit = true;
+                $this->eventDispatcher->forward($eventName, $this, $signo, ...['pid' => $this->pid, 'code' => 0, 'signal' => $signo]);
+            });
+        }
+    }
+
+    public function daemon(): void
+    {
+        parent::daemon();
+        $this->daemon = true;
+    }
+
+    public function start(): int
+    {
+        $pid = parent::start();
+        if (!$this->daemon) {
+            \Swoole\Process::wait(true);
+        }
+        return $pid;
     }
 }
