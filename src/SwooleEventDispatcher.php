@@ -15,7 +15,7 @@ class SwooleEventDispatcher extends EventDispatcher
     protected array $events = [
         // server 事件
         'start'             => "\\FastD\\Swoole\\Event\\Server\\ServerEvent",
-        'beforeShutdown'    => "\\FastD\\Swoole\\Even\\Server\\ServerEvent",
+        'beforeShutdown'    => "\\FastD\\Swoole\\Event\\Server\\ServerEvent",
         'shutdown'          => "\\FastD\\Swoole\\Event\\Server\\ServerEvent",
         'workerStart'       => "\\FastD\\Swoole\\Event\\Server\\ServerEvent",
         'workerStop'        => "\\FastD\\Swoole\\Event\\Server\\ServerEvent",
