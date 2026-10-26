@@ -19,7 +19,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",
-        "swoole/ide-helper": "@dev"
+        "swoole/ide-helper": "@dev",
+        "phpstan/phpstan": "^1.12.24"
     },
     "autoload": {
         "psr-4": {

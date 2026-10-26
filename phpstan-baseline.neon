@@ -1,0 +1,86 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to an undefined method object\\:\\:getDomain\\(\\)\\.$#"
+			count: 1
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getExpire\\(\\)\\.$#"
+			count: 2
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getPath\\(\\)\\.$#"
+			count: 1
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getSameSite\\(\\)\\.$#"
+			count: 1
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getValue\\(\\)\\.$#"
+			count: 1
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:isHttpOnly\\(\\)\\.$#"
+			count: 1
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:isSecure\\(\\)\\.$#"
+			count: 1
+			path: src/Listener/Server/RequestListener.php
+
+		-
+			message: "#^Access to an undefined property FastD\\\\Swoole\\\\Event\\\\SwooleEvent\\:\\:\\$ports\\.$#"
+			count: 4
+			path: src/Listener/Server/WorkerListener.php
+
+		-
+			message: "#^Call to an undefined method Psr\\\\EventDispatcher\\\\ListenerProviderInterface\\:\\:addListener\\(\\)\\.$#"
+			count: 1
+			path: src/Process.php
+
+		-
+			message: "#^Call to an undefined method Swoole\\\\Coroutine\\\\Socket\\:\\:isConnected\\(\\)\\.$#"
+			count: 2
+			path: src/Process/IPC/Socket.php
+
+		-
+			message: "#^Class Swoole\\\\Coroutine\\\\Socket constructor invoked with 1 parameter, 2\\-3 required\\.$#"
+			count: 1
+			path: src/Process/IPC/Socket.php
+
+		-
+			message: "#^Class FastD\\\\Swoole\\\\Process\\\\Worker has an uninitialized readonly property \\$process\\. Assign it in the constructor\\.$#"
+			count: 1
+			path: src/Process/Worker.php
+
+		-
+			message: "#^Readonly property FastD\\\\Swoole\\\\Process\\\\Worker\\:\\:\\$process is assigned outside of the constructor\\.$#"
+			count: 1
+			path: src/Process/Worker.php
+
+		-
+			message: "#^Call to an undefined method FastD\\\\Event\\\\EventDispatcher\\:\\:forward\\(\\)\\.$#"
+			count: 1
+			path: src/Server.php
+
+		-
+			message: "#^Call to an undefined method Psr\\\\EventDispatcher\\\\ListenerProviderInterface\\:\\:addListener\\(\\)\\.$#"
+			count: 1
+			path: src/Server.php
+
+		-
+			message: "#^PHPDoc tag @param for parameter \\$eventListener with type FastD\\\\Event\\\\EventListenerInterface is not subtype of native type FastD\\\\Swoole\\\\Listener\\\\SwooleEventListener\\.$#"
+			count: 1
+			path: src/Server.php
+
+		-
+			message: "#^Property FastD\\\\Swoole\\\\Sse\\\\SwooleEmitter\\:\\:\\$response is never read, only written\\.$#"
+			count: 1
+			path: src/Sse/SwooleEmitter.php
