@@ -6,9 +6,11 @@ namespace FastD\Swoole\Listener\Server;
 
 use FastD\Http\Request\SwooleServerRequest;
 use FastD\Http\Response\Json;
+use FastD\Http\Response\SseResponse;
 use FastD\Swoole\Event\Server\RequestEvent;
 use FastD\Swoole\Event\SwooleEvent;
 use FastD\Swoole\Listener\SwooleEventListener;
+use FastD\Swoole\Sse\SwooleEmitter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Swoole\Http\Response;
@@ -34,7 +36,10 @@ abstract class RequestListener extends ServerEventListener
                     $response->end();
                     return;
                 }
-                if ($event->object->swoole->getClientInfo($request->fd)['server_port'] == $this->port) {
+
+                $clientInfo = $event->object->swoole->getClientInfo($request->fd);
+
+                if (is_array($clientInfo) && ($clientInfo['server_port'] ?? null) == $this->port) {
                     $serverRequest = SwooleServerRequest::fromSwoole($request);
                     $this->sendResponse($response, $this->onRequest($serverRequest));
                 }
@@ -59,7 +64,24 @@ abstract class RequestListener extends ServerEventListener
 
     protected function sendResponse(Response $swooleResponse, ResponseInterface $response): void
     {
-        // send headers
+        $this->sendHeaders($swooleResponse, $response);
+
+        if ($response instanceof SseResponse) {
+            // SSE：逐帧写出，由 SwooleEmitter 负责心跳、背压、断连取消与结束前的收尾
+            SwooleEmitter::fromResponse($swooleResponse)->run($response);
+
+            return;
+        }
+
+        // send contents
+        $swooleResponse->end((string) $response->getBody());
+    }
+
+    /**
+     * 发送状态行、响应头与 Cookie。
+     */
+    protected function sendHeaders(Response $swooleResponse, ResponseInterface $response): void
+    {
         foreach ($response->getHeaders() as $name => $values) {
             if (0 === strcasecmp($name, 'Set-Cookie')) {
                 // Swoole header() keeps only the last value for a given name,
@@ -78,9 +100,7 @@ abstract class RequestListener extends ServerEventListener
             $swooleResponse->cookie(...$cookie);
         }
 
-        // send contents
         $swooleResponse->status($response->getStatusCode());
-        $swooleResponse->end((string) $response->getBody());
     }
 
     /**
