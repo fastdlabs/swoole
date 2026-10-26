@@ -16,7 +16,7 @@ class SwooleEmitterTest extends TestCase
     /** @var list<string> */
     private array $frames = [];
 
-    private function emitter(?\Closure $writable = null, ?\Closure $sleep = null): SwooleEmitter
+    private function emitter(?\Closure $writable = null, ?\Closure $sleep = null, ?\Closure $end = null): SwooleEmitter
     {
         $this->frames = [];
 
@@ -31,6 +31,7 @@ class SwooleEmitterTest extends TestCase
             $sleep ?? static function (float $seconds): void {
                 Coroutine::sleep($seconds);
             },
+            $end,
         );
     }
 
@@ -142,6 +143,41 @@ class SwooleEmitterTest extends TestCase
 
         $this->assertSame([], $this->frames);
         $this->assertTrue($emitter->isClosed());
+    }
+
+    public function testRunEndsResponseWhenProducerCompletes(): void
+    {
+        $ended = 0;
+        $emitter = $this->emitter(null, null, function () use (&$ended): void {
+            $ended++;
+        });
+        $response = new SseResponse(function (EmitterInterface $emitter): void {
+            $emitter->send('x');
+        }, ['heartbeat' => 0]);
+
+        Coroutine\run(function () use ($emitter, $response): void {
+            $emitter->run($response);
+        });
+
+        $this->assertSame(1, $ended);
+    }
+
+    public function testRunEndsResponseOnProducerError(): void
+    {
+        $ended = 0;
+        $emitter = $this->emitter(null, null, function () use (&$ended): void {
+            $ended++;
+        });
+        $response = new SseResponse(function (): void {
+            throw new RuntimeException('boom');
+        }, ['heartbeat' => 0]);
+
+        Coroutine\run(function () use ($emitter, $response): void {
+            $emitter->run($response);
+        });
+
+        $this->assertSame(1, $ended);
+        $this->assertStringContainsString("event: error\n", $this->frames[0]);
     }
 
     public function testRunOutsideCoroutineThrows(): void

@@ -39,18 +39,23 @@ final class SwooleEmitter implements EmitterInterface
     /** @var \Closure(float): void */
     private \Closure $sleep;
 
+    /** @var \Closure(): void */
+    private \Closure $end;
+
     /**
      * 注入 writer/writable/sleep 便于单元测试（默认走 Swoole\Http\Response）。
      *
      * @param \Closure(string): bool|null $writer
      * @param \Closure(): bool|null       $writable
      * @param \Closure(float): void|null  $sleep
+     * @param \Closure(): void|null       $end
      */
     public function __construct(
         private ?Response $response = null,
         ?\Closure $writer = null,
         ?\Closure $writable = null,
         ?\Closure $sleep = null,
+        ?\Closure $end = null,
     ) {
         $this->channel = new Channel(self::CHANNEL_SIZE);
 
@@ -58,6 +63,17 @@ final class SwooleEmitter implements EmitterInterface
         $this->writable = $writable ?? static fn (): bool => $response->isWritable();
         $this->sleep = $sleep ?? static function (float $seconds): void {
             Coroutine::sleep($seconds);
+        };
+        $this->end = $end ?? static function () use ($response): void {
+            if ($response === null) {
+                return;
+            }
+
+            try {
+                $response->end();
+            } catch (Throwable) {
+                // 连接已断开
+            }
         };
     }
 
@@ -124,6 +140,10 @@ final class SwooleEmitter implements EmitterInterface
             }
         });
 
+        if ($producerCid === false) {
+            throw new RuntimeException('Unable to create the SSE producer coroutine.');
+        }
+
         try {
             while (true) {
                 $timeout = $heartbeat > 0 ? $heartbeat : 0.5;
@@ -138,7 +158,7 @@ final class SwooleEmitter implements EmitterInterface
                         break;
                     }
 
-                    if (!Coroutine::exists($producerCid) && $this->channel->isEmpty()) {
+                    if ($producerCid !== false && !Coroutine::exists($producerCid) && $this->channel->isEmpty()) {
                         break;
                     }
 
@@ -161,6 +181,13 @@ final class SwooleEmitter implements EmitterInterface
                     break;
                 }
             }
+        } catch (Throwable $e) {
+            // 写帧/协程异常：尽力下发错误事件，避免抛出到 RequestListener 造成二次响应
+            try {
+                $this->handleProducerError($e, $response);
+            } catch (Throwable) {
+                // 忽略二次异常
+            }
         } finally {
             $this->closed = true;
 
@@ -177,6 +204,9 @@ final class SwooleEmitter implements EmitterInterface
             } catch (Throwable) {
                 // channel 已关闭
             }
+
+            // 关键：结束响应，否则 Swoole 连接会一直保持打开
+            ($this->end)();
         }
     }
 
