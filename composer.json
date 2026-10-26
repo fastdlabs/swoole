@@ -13,7 +13,7 @@
         "php": ">=8.2",
         "ext-posix": "*",
         "ext-sockets": "*",
-        "fastd/http": "^8.2",
+        "fastd/http": "^8.0",
         "fastd/routing": "^8.0",
         "fastd/event": "^8.0"
     },
