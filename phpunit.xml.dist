@@ -5,7 +5,6 @@
          colors="true"
          failOnRisky="true"
          failOnWarning="true"
-         verbose="true"
 >
     
   <source>
