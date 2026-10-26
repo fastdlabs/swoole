@@ -14,7 +14,6 @@
         "ext-posix": "*",
         "ext-sockets": "*",
         "fastd/http": "^8.1",
-        "fastd/routing": "^8.0",
         "fastd/event": "^8.0"
     },
     "require-dev": {
