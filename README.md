@@ -14,13 +14,13 @@
 
 * Linux (不考虑windows)
 * swoole >= 6.0
-* PHP >= 8.2
+* PHP >= 8.4
 
-> 注意：代码使用了 PHP 8.2 的特性（如 readonly 属性）和 Swoole 6.0+ 的 API，确保你的环境满足这些要求。
+> 注意：代码使用了 PHP 8.4 的特性（如 readonly 属性）和 Swoole 6.0+ 的 API，确保你的环境满足这些要求。
 
 ### 版本兼容性
 
-- PHP 8.2+ 推荐使用最新版本
+- PHP 8.4+ 推荐使用最新版本
 - Swoole 6.0+ 提供更好的性能和稳定性
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)

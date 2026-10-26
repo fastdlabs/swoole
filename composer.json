@@ -10,9 +10,10 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4",
         "ext-posix": "*",
         "ext-sockets": "*",
+        "ext-swoole": "*",
         "fastd/http": "^8.1",
         "fastd/event": "^8.0"
     },
