@@ -8,3 +8,29 @@
 composer.lock
 /bin
 .trae
+# --- OS generated ---
+.DS_Store
+Thumbs.db
+
+# --- IDE / editor ---
+.vscode/
+.fleet/
+.trae/
+.history/
+
+# --- PHP test / build artifacts ---
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
+build/
+
+# --- local runtime ---
+runtime/
+
+# --- environment ---
+.env
+.env.local
+.env.*.local
+
+# --- agent workspace ---
+.qoder/

@@ -60,16 +60,73 @@ abstract class RequestListener extends ServerEventListener
     protected function sendResponse(Response $swooleResponse, ResponseInterface $response): void
     {
         // send headers
-        foreach ($response->getHeaders() as $key => $header) {
-            $swooleResponse->header($key, $response->getHeaderLine($key));
+        foreach ($response->getHeaders() as $name => $values) {
+            if (0 === strcasecmp($name, 'Set-Cookie')) {
+                // Swoole header() keeps only the last value for a given name,
+                // so cookies must go through Response::cookie() instead.
+                foreach ($values as $value) {
+                    $swooleResponse->header('Set-Cookie', $value);
+                }
+                continue;
+            }
+            $swooleResponse->header($name, implode(', ', $values));
         }
 
-        foreach ($response->getCookies() as $key => $cookieParam) {
-            $swooleResponse->cookie($key, (string) $cookieParam);
+        // FastD responses keep cookies as objects; map them to Swoole's
+        // structured cookie API (name, value, absolute expiry, attributes).
+        foreach ($this->extractCookies($response) as $cookie) {
+            $swooleResponse->cookie(...$cookie);
         }
 
         // send contents
         $swooleResponse->status($response->getStatusCode());
         $swooleResponse->end((string) $response->getBody());
+    }
+
+    /**
+     * Map cookie objects carried by the response to Swoole cookie arguments.
+     *
+     * FastD\Http\Cookie treats `expire` as a relative number of seconds and an
+     * empty value as "delete this cookie"; Swoole expects an absolute
+     * timestamp, so both rules are translated here.
+     *
+     * @return list<array{0: string, 1: string, 2: int, 3: string, 4: string, 5: bool, 6: bool, 7: string}>
+     */
+    protected function extractCookies(ResponseInterface $response): array
+    {
+        if (!method_exists($response, 'getCookies')) {
+            return [];
+        }
+
+        $cookies = [];
+
+        foreach ($response->getCookies() as $cookie) {
+            if (!is_object($cookie) || !method_exists($cookie, 'getName')) {
+                continue;
+            }
+
+            $value = (string) $cookie->getValue();
+
+            if ('' === $value) {
+                $expires = time() - 31536001;
+            } elseif ($cookie->getExpire() > 0) {
+                $expires = time() + (int) $cookie->getExpire();
+            } else {
+                $expires = 0;
+            }
+
+            $cookies[] = [
+                (string) $cookie->getName(),
+                $value,
+                $expires,
+                (string) $cookie->getPath(),
+                (string) $cookie->getDomain(),
+                (bool) $cookie->isSecure(),
+                (bool) $cookie->isHttpOnly(),
+                (string) $cookie->getSameSite(),
+            ];
+        }
+
+        return $cookies;
     }
 }
