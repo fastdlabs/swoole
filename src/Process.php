@@ -125,12 +125,6 @@ class Process extends Worker
         }
     }
 
-    public function daemon(): void
-    {
-        parent::daemon();
-        $this->daemon = true;
-    }
-
     public function start(): int
     {
         $pid = parent::start();

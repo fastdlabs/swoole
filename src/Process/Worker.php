@@ -35,7 +35,7 @@ abstract class Worker
 
     public function getPid(): int
     {
-        return $this->process->pid;
+        return isset($this->process) ? $this->process->pid : 0;
     }
 
     public function daemon(): void
