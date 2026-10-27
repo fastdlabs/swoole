@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use FastD\Swoole\Process\IPC\Queue;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,6 +29,7 @@ class QueueTest extends TestCase
         $this->assertNotNull($customQueue);
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function testSetProcess()
     {
         // 创建模拟的 Swoole\Process
