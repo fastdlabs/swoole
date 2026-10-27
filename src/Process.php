@@ -15,8 +15,6 @@ use Swoole\Timer;
 class Process extends Worker
 {
     protected bool $exit = false;
-    
-    protected bool $daemon = false;
 
     protected array $workers = [];
 
@@ -81,6 +79,10 @@ class Process extends Worker
         Timer::tick(100, function () {
             // 检查是否应该退出（收到退出信号）并且将自身信号事件投递出去
             if ($this->exit) {
+                foreach ($this->workers as $worker) {
+                    $worker->stop();
+                }
+
                 $this->eventDispatcher->forward('SIGUSR1', $this, SIGUSR1, ...['pid' => $this->pid, 'code' => 0, 'signal' => SIGUSR1]);
                 Timer::clearAll();
             }
@@ -94,18 +96,21 @@ class Process extends Worker
      */
     private function registerSignalListener(): void
     {
-        // 监听子进程相关信号
-        foreach ([SIGPIPE => 'SIGPIPE', SIGTERM => 'SIGTERM', SIGCHLD => 'SIGCHLD'] as $signo => $eventName) {
+        // 监听子进程相关信号（SIGTERM 在下方单独注册，避免覆盖）
+        foreach ([SIGPIPE => 'SIGPIPE', SIGCHLD => 'SIGCHLD'] as $signo => $eventName) {
             \Swoole\Process::signal($signo, function ($signo) use ($eventName) {
                 while ($ret = \Swoole\Process::wait(false)) {
                     $childWorker = $this->getWorker($ret['pid']);
                     if ($childWorker !== null) {
+                        $status = (($ret['code'] ?? 0) === 0 && ($ret['signal'] ?? 0) === 0)
+                            ? Worker::STATUS_STOPPED
+                            : Worker::STATUS_EXCEPTION;
+
+                        $childWorker->status($status);
                         $this->eventDispatcher->forward($eventName, $childWorker, $signo, ...$ret);
-                        // 更新工作进程状态
-                        if (isset($this->workerStatus[Worker::STATUS_RUNNING][$ret['pid']])) {
-                            unset($this->workerStatus[Worker::STATUS_RUNNING][$ret['pid']]);
-                        }
-                        $this->workerStatus[$childWorker->status()][$ret['pid']] = $childWorker->name;
+
+                        unset($this->workerStatus[Worker::STATUS_RUNNING][$ret['pid']]);
+                        $this->workerStatus[$status][$ret['pid']] = $childWorker->name;
                     }
                 }
             });

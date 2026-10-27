@@ -29,20 +29,36 @@ class Memory extends IPC
 
     public function write(mixed $data): bool
     {
+        if (!isset($this->table)) {
+            $this->init();
+        }
+
         $key = md5(serialize($data));
+
         return $this->table->set($key, ['data' => serialize($data)]);
     }
 
     public function read(int $length = 65536): mixed
     {
-        // 从表中获取第一行数据作为示例
-        foreach ($this->table as $key => $row) {
-            $data = unserialize($row['data']);
-            // 删除已读取的数据
-            $this->table->del($key);
-            return $data;
+        if (!isset($this->table)) {
+            return false;
         }
-        return false;
+
+        // 先读取，再删除；Swoole Table 遍历期间删除是不安全的
+        $selectedKey = null;
+        $data = false;
+
+        foreach ($this->table as $key => $row) {
+            $selectedKey = $key;
+            $data = unserialize($row['data']);
+            break;
+        }
+
+        if ($selectedKey !== null) {
+            $this->table->del($selectedKey);
+        }
+
+        return $data;
     }
 
     public function close(): bool

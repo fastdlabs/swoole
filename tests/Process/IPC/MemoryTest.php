@@ -56,6 +56,21 @@ class MemoryTest extends TestCase
         $this->assertEquals($testData, $readResult);
     }
 
+    public function testReadDeletesOnlyReturnedRow(): void
+    {
+        $this->memory->init();
+        $this->memory->write(['first' => 1]);
+        $this->memory->write(['second' => 2]);
+
+        $first = $this->memory->read();
+        $second = $this->memory->read();
+
+        $this->assertIsArray($first);
+        $this->assertIsArray($second);
+        $this->assertNotSame($first, $second);
+        $this->assertFalse($this->memory->read());
+    }
+
     public function testClose()
     {
         // 测试关闭
