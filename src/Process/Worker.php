@@ -23,6 +23,8 @@ abstract class Worker
 
     protected int $pid = 0;
 
+    protected bool $daemon = false;
+
     public function __construct(
         public readonly string        $name,
         public readonly bool          $enableCoroutine = false,
@@ -38,7 +40,7 @@ abstract class Worker
 
     public function daemon(): void
     {
-        $this->process->daemon();
+        $this->daemon = true;
     }
 
     public function isRunning(): bool
@@ -148,6 +150,10 @@ abstract class Worker
 
     public function start(): int
     {
+        if ($this->daemon) {
+            \Swoole\Process::daemon();
+        }
+
         try {
             $this->bootstrap();
             $pid = $this->process->start();

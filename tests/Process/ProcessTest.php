@@ -64,6 +64,17 @@ class ProcessTest extends TestCase
         $this->assertNull($pidWorker);
     }
 
+    public function testDaemonCanBeConfiguredBeforeStart(): void
+    {
+        $process = new Process();
+        $process->daemon();
+
+        $property = new ReflectionProperty(Worker::class, 'daemon');
+        $property->setAccessible(true);
+
+        $this->assertTrue($property->getValue($process));
+    }
+
     public function testGetWorkers()
     {
         // 创建多个 Worker

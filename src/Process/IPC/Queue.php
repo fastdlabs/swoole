@@ -43,22 +43,32 @@ class Queue extends IPC
 
     public function write(mixed $data): bool
     {
-        if (!$this->enabled) {
-            $this->init();
+        if (!$this->process) {
+            return false;
         }
+
+        if (!$this->enabled && !$this->init()) {
+            return false;
+        }
+
         return $this->process->push(serialize($data));
     }
 
     public function read(int $length = 65536): mixed
     {
-        if (!$this->enabled) {
-            $this->init();
+        if (!$this->process) {
+            return false;
         }
-        
+
+        if (!$this->enabled && !$this->init()) {
+            return false;
+        }
+
         $content = $this->process->pop($length);
         if ($content === false) {
             return false;
         }
+
         return unserialize($content);
     }
 

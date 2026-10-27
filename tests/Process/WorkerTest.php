@@ -54,6 +54,20 @@ class WorkerTest extends TestCase
         $this->assertEquals(Worker::STATUS_RUNNING, $getStatus);
     }
 
+    public function testDaemonCanBeConfiguredBeforeStart(): void
+    {
+        $worker = new class('daemon_worker') extends Worker {
+            public function process(Worker $worker): void {}
+        };
+
+        $worker->daemon();
+
+        $property = new ReflectionProperty(Worker::class, 'daemon');
+        $property->setAccessible(true);
+
+        $this->assertTrue($property->getValue($worker));
+    }
+
     public function testGetIPC()
     {
         // 测试获取 IPC 实例
