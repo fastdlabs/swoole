@@ -30,6 +30,8 @@ abstract class RequestListener extends ServerEventListener
     public function process(object $event): void
     {
         if ($event instanceof SwooleEvent && $event->event == 'request') {
+            $response = null;
+
             try {
                 [$request, $response] = $event->args;
                 if (static::Ignore == $request->server['path_info'] || static::Ignore == $request->server['request_uri']) {
@@ -44,7 +46,9 @@ abstract class RequestListener extends ServerEventListener
                     $this->sendResponse($response, $this->onRequest($serverRequest));
                 }
             } catch (Throwable $e) {
-                $this->sendResponse($response, $this->onException($e));
+                if ($response instanceof Response) {
+                    $this->sendResponse($response, $this->onException($e));
+                }
             }
         }
     }
