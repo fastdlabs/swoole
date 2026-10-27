@@ -158,7 +158,7 @@ final class SwooleEmitter implements EmitterInterface
                         break;
                     }
 
-                    if ($producerCid !== false && !Coroutine::exists($producerCid) && $this->channel->isEmpty()) {
+                    if (!Coroutine::exists($producerCid) && $this->channel->isEmpty()) {
                         break;
                     }
 
@@ -191,7 +191,7 @@ final class SwooleEmitter implements EmitterInterface
         } finally {
             $this->closed = true;
 
-            if ($producerCid !== false && Coroutine::exists($producerCid)) {
+            if (Coroutine::exists($producerCid)) {
                 try {
                     Coroutine::cancel($producerCid);
                 } catch (Throwable) {
