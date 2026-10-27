@@ -21,7 +21,7 @@
 ### 版本兼容性
 
 - PHP >= 8.4.1 推荐使用最新版本
-- Swoole 6.0+ 提供更好的性能和稳定性
+- 最低要求 Swoole 6.0，推荐使用最新稳定版
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
