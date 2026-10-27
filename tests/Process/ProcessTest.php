@@ -84,4 +84,19 @@ class ProcessTest extends TestCase
         $this->assertArrayHasKey('worker1', $workers);
         $this->assertArrayHasKey('worker2', $workers);
     }
+
+    public function testAddWorkerWithSameNameOverwritesPreviousWorker(): void
+    {
+        $first = new class('same_name') extends Worker {
+            public function process(Worker $worker): void {}
+        };
+        $second = new class('same_name') extends Worker {
+            public function process(Worker $worker): void {}
+        };
+
+        $this->process->addWorker($first, $second);
+
+        $this->assertSame($second, $this->process->getWorker('same_name'));
+        $this->assertCount(1, $this->process->getWorkers());
+    }
 }
