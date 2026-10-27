@@ -1,6 +1,6 @@
 {
     "name": "fastd/swoole",
-    "description": "FastD swoole.",
+    "description": "Swoole HTTP server, coroutine, IPC and client component for FastD, requiring Swoole >= 6.0.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -13,7 +13,7 @@
         "php": ">=8.4.1",
         "ext-posix": "*",
         "ext-sockets": "*",
-        "ext-swoole": "*",
+        "ext-swoole": ">=6.0",
         "fastd/http": "^8.1",
         "fastd/event": "^8.0"
     },

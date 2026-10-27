@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/fastdlabs/swoole/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/fastdlabs/swoole/actions/workflows/ci.yml)
 [![PHP Require Version](https://img.shields.io/badge/php-%3E%3D8.4.1-8892BF.svg)](https://secure.php.net/)
-[![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D4.2.0-8892BF.svg)](http://www.swoole.com/)
+[![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D6.0-8892BF.svg)](http://www.swoole.com/)
 [![Latest Stable Version](https://poser.pugx.org/fastd/swoole/v/stable)](https://packagist.org/packages/fastd/swoole)
 [![Total Downloads](https://poser.pugx.org/fastd/swoole/downloads)](https://packagist.org/packages/fastd/swoole) 
 [![Latest Unstable Version](https://poser.pugx.org/fastd/swoole/v/unstable)](https://packagist.org/packages/fastd/swoole) 
@@ -21,7 +21,7 @@
 ### 版本兼容性
 
 - PHP >= 8.4.1 推荐使用最新版本
-- Swoole 6.0+ 提供更好的性能和稳定性
+- 最低要求 Swoole 6.0，推荐使用最新稳定版
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
 
@@ -454,7 +454,7 @@ $socketWorker->wait(function ($ret) {
 
 如果你乐于此，却又不知如何开始，可以试试下面这些事情：
 
-* 在你的系统中使用，将遇到的问题 [反馈](https://github.com/JanHuang/fastD/issues)。
+* 在你的系统中使用，将遇到的问题 [反馈](https://github.com/fastdlabs/swoole/issues)。
 * 有更好的建议？欢迎联系 [bboyjanhuang@gmail.com](mailto:bboyjanhuang@gmail.com) 或 [新浪微博:编码侠](http://weibo.com/ecbboyjan)。
 
 ### 联系
