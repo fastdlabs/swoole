@@ -93,4 +93,13 @@ class WorkerTest extends TestCase
         $readResult = $this->worker->ipcRead();
         $this->assertEquals($testData, $readResult);
     }
+
+    public function testGetPidBeforeStartReturnsZero(): void
+    {
+        $worker = new class('not_started') extends Worker {
+            public function process(Worker $worker): void {}
+        };
+
+        $this->assertSame(0, $worker->getPid());
+    }
 }
