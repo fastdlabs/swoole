@@ -31,7 +31,7 @@ final class Parallel
     }
 
     /**
-     * 执行一组任务并保持键名。
+     * 聚合执行，返回与输入键一致的结果数组。
      *
      * @template T
      * @param array<array-key, callable(): T> $tasks
@@ -41,46 +41,94 @@ final class Parallel
      */
     public static function all(array $tasks, ?float $timeout = null): array
     {
+        $results = [];
+
+        self::each($tasks, $timeout, static function (int|string $key, mixed $value) use (&$results): void {
+            $results[$key] = $value;
+        });
+
+        $ordered = [];
+        foreach (array_keys($tasks) as $key) {
+            $ordered[$key] = $results[$key];
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * 执行一组任务。
+     *
+     * - 不传回调：收集结果并返回
+     * - 传回调：完成一个回调一个，不保存结果，返回空数组
+     *
+     * @param array<array-key, callable(): mixed> $tasks
+     * @param callable(int|string, mixed): void|null $onResult
+     * @return array<array-key, mixed>
+     *
+     * @throws ParallelTimeoutException
+     */
+    public static function each(
+        array $tasks,
+        ?float $timeout = null,
+        ?callable $onResult = null
+    ): array {
+        $results = [];
+        $collect = $onResult === null;
+
+        $consumer = $collect
+            ? static function (int|string $key, mixed $value) use (&$results): void {
+                $results[$key] = $value;
+            }
+            : $onResult;
+
+        (new self())->execute($tasks, $consumer, $timeout);
+
+        return $collect ? $results : [];
+    }
+
+    /**
+     * @param array<array-key, callable(): mixed> $tasks
+     * @param callable(int|string, mixed): void $onResult
+     */
+    private function execute(array $tasks, callable $onResult, ?float $timeout): void
+    {
         if ($tasks === []) {
-            return [];
+            return;
         }
 
         if ($timeout !== null && $timeout < 0) {
             throw new InvalidArgumentException('Timeout must be null or >= 0.');
         }
 
-        $executor = new self();
-
-        return self::isConcurrent()
-            ? $executor->runConcurrent($tasks, $timeout)
-            : $executor->runSerial($tasks, $timeout);
+        if (self::isConcurrent()) {
+            $this->runConcurrent($tasks, $onResult, $timeout);
+        } else {
+            $this->runSerial($tasks, $onResult, $timeout);
+        }
     }
 
     /**
      * @param array<array-key, callable(): mixed> $tasks
-     * @return array<array-key, mixed>
+     * @param callable(int|string, mixed): void $onResult
      */
-    private function runSerial(array $tasks, ?float $timeout): array
+    private function runSerial(array $tasks, callable $onResult, ?float $timeout): void
     {
         $startedAt = microtime(true);
-        $results = [];
 
         foreach ($tasks as $key => $task) {
             if ($timeout !== null && microtime(true) - $startedAt > $timeout) {
                 throw new ParallelTimeoutException(sprintf('Parallel tasks exceeded %.3fs.', $timeout));
             }
 
-            $results[$key] = $task();
+            $onResult($key, $task());
         }
-
-        return $results;
     }
 
     /**
      * @param array<array-key, callable(): mixed> $tasks
-     * @return array<array-key, mixed>
+     * @param callable(int|string, mixed): void $onResult
      */
-    private function runConcurrent(array $tasks, ?float $timeout): array
+    private function runConcurrent(array $tasks, callable $onResult, ?float $timeout): void
     {
         $channel = new Channel(count($tasks));
         $deadline = $timeout === null ? null : microtime(true) + $timeout;
@@ -110,9 +158,9 @@ final class Parallel
             $cids[$key] = $cid;
         }
 
-        $results = [];
+        $pending = count($cids);
 
-        for ($i = 0, $count = count($tasks); $i < $count; $i++) {
+        while ($pending > 0) {
             $remaining = $deadline === null ? -1 : max(0.0, $deadline - microtime(true));
             $message = $channel->pop($remaining);
 
@@ -123,21 +171,21 @@ final class Parallel
                 );
             }
 
+            $pending--;
+            unset($cids[$message['key']]);
+
             if (($message['error'] ?? null) instanceof Throwable) {
                 $this->cancel($cids);
                 throw $message['error'];
             }
 
-            $results[$message['key']] = $message['value'];
-            unset($cids[$message['key']]);
+            try {
+                $onResult($message['key'], $message['value']);
+            } catch (Throwable $throwable) {
+                $this->cancel($cids);
+                throw $throwable;
+            }
         }
-
-        $ordered = [];
-        foreach (array_keys($tasks) as $key) {
-            $ordered[$key] = $results[$key];
-        }
-
-        return $ordered;
     }
 
     /**
