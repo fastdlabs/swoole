@@ -37,6 +37,31 @@ pecl install swoole
 composer require fastd/swoole
 ```
 
+## 并发编排
+
+`FastD\Swoole\Concurrency\Parallel` 提供运行时自适应的并发执行器：
+
+- Swoole 协程上下文：并发执行
+- CGI / 非协程上下文：自动串行执行
+- 调用方代码无需判断运行环境
+- 支持整体超时
+- 保留输入键名与顺序
+
+```php
+use FastD\Swoole\Concurrency\Parallel;
+
+$result = Parallel::all([
+    'user' => fn () => $userClient->get('/users/1'),
+    'orders' => fn () => $orderClient->get('/orders?user_id=1'),
+    'notifications' => fn () => $notificationClient->get('/notifications?user_id=1'),
+], 0.2);
+
+// CGI：按顺序串行执行
+// Swoole：并发执行，总耗时接近最慢的任务
+```
+
+典型场景：`/dashboard` 并发聚合多个上游接口，避免串行等待。任务应为 I/O 型，避免在任务间共享可变状态；超时会取消剩余协程。
+
 ## 文档
 
 [中文文档](docs/zh_CN/readme.md)
