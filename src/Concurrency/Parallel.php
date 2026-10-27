@@ -49,16 +49,18 @@ final class Parallel
             throw new InvalidArgumentException('Timeout must be null or >= 0.');
         }
 
+        $executor = new self();
+
         return self::isConcurrent()
-            ? self::runConcurrent($tasks, $timeout)
-            : self::runSerial($tasks, $timeout);
+            ? $executor->runConcurrent($tasks, $timeout)
+            : $executor->runSerial($tasks, $timeout);
     }
 
     /**
      * @param array<array-key, callable(): mixed> $tasks
      * @return array<array-key, mixed>
      */
-    private static function runSerial(array $tasks, ?float $timeout): array
+    private function runSerial(array $tasks, ?float $timeout): array
     {
         $startedAt = microtime(true);
         $results = [];
@@ -78,7 +80,7 @@ final class Parallel
      * @param array<array-key, callable(): mixed> $tasks
      * @return array<array-key, mixed>
      */
-    private static function runConcurrent(array $tasks, ?float $timeout): array
+    private function runConcurrent(array $tasks, ?float $timeout): array
     {
         $channel = new Channel(count($tasks));
         $deadline = $timeout === null ? null : microtime(true) + $timeout;
@@ -105,7 +107,7 @@ final class Parallel
                 throw new RuntimeException(sprintf('Unable to create coroutine for task "%s".', (string) $key));
             }
 
-            $cids[] = $cid;
+            $cids[$key] = $cid;
         }
 
         $results = [];
@@ -115,18 +117,19 @@ final class Parallel
             $message = $channel->pop($remaining);
 
             if ($message === false) {
-                self::cancel($cids);
+                $this->cancel($cids);
                 throw new ParallelTimeoutException(
                     $timeout === null ? 'Parallel task channel closed.' : sprintf('Parallel tasks exceeded %.3fs.', $timeout)
                 );
             }
 
             if (($message['error'] ?? null) instanceof Throwable) {
-                self::cancel($cids);
+                $this->cancel($cids);
                 throw $message['error'];
             }
 
             $results[$message['key']] = $message['value'];
+            unset($cids[$message['key']]);
         }
 
         $ordered = [];
@@ -138,9 +141,9 @@ final class Parallel
     }
 
     /**
-     * @param array<int, int|false> $cids
+     * @param array<array-key, int|false> $cids
      */
-    private static function cancel(array $cids): void
+    private function cancel(array $cids): void
     {
         foreach ($cids as $cid) {
             if (is_int($cid) && $cid > 0) {
