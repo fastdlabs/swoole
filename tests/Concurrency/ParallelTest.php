@@ -96,4 +96,40 @@ class ParallelTest extends TestCase
 
         $this->assertInstanceOf(ParallelTimeoutException::class, $caught);
     }
+
+    public function testEmptyTasksReturnsEmptyArray(): void
+    {
+        $this->assertSame([], Parallel::all([]));
+    }
+
+    public function testNegativeTimeoutIsRejected(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Parallel::all([
+            'task' => static fn (): string => 'ok',
+        ], -0.1);
+    }
+
+    public function testSerialTaskExceptionIsPropagated(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('serial task failed');
+
+        Parallel::all([
+            'fail' => static fn (): string => throw new RuntimeException('serial task failed'),
+        ]);
+    }
+
+    public function testSerialTimeoutIsEnforcedBetweenTasks(): void
+    {
+        $this->expectException(ParallelTimeoutException::class);
+
+        Parallel::all([
+            'first' => static function (): void {
+                usleep(30_000);
+            },
+            'second' => static fn (): string => 'never',
+        ], 0.01);
+    }
 }
