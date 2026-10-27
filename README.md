@@ -1,7 +1,7 @@
 # FastD Swoole
 
 [![CI](https://github.com/fastdlabs/swoole/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/fastdlabs/swoole/actions/workflows/ci.yml)
-[![PHP Require Version](https://img.shields.io/badge/php-%3E%3D7.1-8892BF.svg)](https://secure.php.net/)
+[![PHP Require Version](https://img.shields.io/badge/php-%3E%3D8.4.1-8892BF.svg)](https://secure.php.net/)
 [![Swoole Require Version](https://img.shields.io/badge/swoole-%3E%3D4.2.0-8892BF.svg)](http://www.swoole.com/)
 [![Latest Stable Version](https://poser.pugx.org/fastd/swoole/v/stable)](https://packagist.org/packages/fastd/swoole)
 [![Total Downloads](https://poser.pugx.org/fastd/swoole/downloads)](https://packagist.org/packages/fastd/swoole) 
@@ -14,13 +14,13 @@
 
 * Linux (不考虑windows)
 * swoole >= 6.0
-* PHP >= 8.4
+* PHP >= 8.4.1
 
 > 注意：代码使用了 PHP 8.4 的特性（如 readonly 属性）和 Swoole 6.0+ 的 API，确保你的环境满足这些要求。
 
 ### 版本兼容性
 
-- PHP 8.4+ 推荐使用最新版本
+- PHP >= 8.4.1 推荐使用最新版本
 - Swoole 6.0+ 提供更好的性能和稳定性
 
 源码地址: [swoole](https://github.com/swoole/swoole-src)
