@@ -41,7 +41,7 @@ class SwooleEmitterTest extends TestCase
         $response = new SseResponse(function (EmitterInterface $emitter): void {
             $emitter->send('hello');
             $emitter->send(['name' => 'fastd']);
-            $emitter->send((object) ['source' => 'object']);
+            $emitter->sendObject((object) ['source' => 'object']);
             $emitter->comment('ping');
         }, ['heartbeat' => 0]);
 
