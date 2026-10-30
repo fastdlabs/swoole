@@ -41,6 +41,7 @@ class SwooleEmitterTest extends TestCase
         $response = new SseResponse(function (EmitterInterface $emitter): void {
             $emitter->send('hello');
             $emitter->send(['name' => 'fastd']);
+            $emitter->send((object) ['source' => 'object']);
             $emitter->comment('ping');
         }, ['heartbeat' => 0]);
 
@@ -51,8 +52,27 @@ class SwooleEmitterTest extends TestCase
         $this->assertSame([
             "data: hello\n\n",
             "data: {\"name\":\"fastd\"}\n\n",
+            "data: {\"source\":\"object\"}\n\n",
             ": ping\n\n",
         ], $this->frames);
+    }
+
+    public function testCloseWakesRunWithoutHeartbeat(): void
+    {
+        $emitter = $this->emitter();
+        $response = new SseResponse(function (EmitterInterface $emitter): void {
+            $emitter->close();
+            Coroutine::sleep(0.3);
+        }, ['heartbeat' => 0]);
+
+        $started = microtime(true);
+
+        Coroutine\run(function () use ($emitter, $response): void {
+            $emitter->run($response);
+        });
+
+        $this->assertLessThan(0.2, microtime(true) - $started);
+        $this->assertTrue($emitter->isClosed());
     }
 
     public function testRetryFrameIsWrittenFirst(): void
