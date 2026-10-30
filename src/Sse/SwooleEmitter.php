@@ -82,7 +82,16 @@ final class SwooleEmitter implements EmitterInterface
         return new self($response);
     }
 
-    public function send(string|array|object $event): void
+    public function send(Event|string|array $event): void
+    {
+        if ($this->closed) {
+            return;
+        }
+
+        $this->pushControl($this->normalize($event)->format());
+    }
+
+    public function sendObject(object $event): void
     {
         if ($this->closed) {
             return;
