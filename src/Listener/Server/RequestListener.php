@@ -13,6 +13,7 @@ use FastD\Swoole\Listener\SwooleEventListener;
 use FastD\Swoole\Sse\SwooleEmitter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Swoole\Coroutine;
 use Swoole\Http\Response;
 use Throwable;
 
@@ -68,6 +69,13 @@ abstract class RequestListener extends ServerEventListener
 
     protected function sendResponse(Response $swooleResponse, ResponseInterface $response): void
     {
+        // SSE 需要协程；必须在发送 SSE 头之前判断，否则异常后无法再返回普通 JSON。
+        if ($response instanceof SseResponse && Coroutine::getCid() <= 0) {
+            $response = new Json(500, [
+                'message' => 'SSE requires a coroutine context. Set "enable_coroutine" => true on the Swoole server.',
+            ]);
+        }
+
         $this->sendHeaders($swooleResponse, $response);
 
         if ($response instanceof SseResponse) {

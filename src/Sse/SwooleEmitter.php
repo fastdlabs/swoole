@@ -82,23 +82,31 @@ final class SwooleEmitter implements EmitterInterface
         return new self($response);
     }
 
-    public function send(Event|string|array $event): void
+    public function send(string|array|object $event): void
     {
-        $this->push($this->normalize($event)->format());
+        if ($this->closed) {
+            return;
+        }
+
+        $this->pushControl($this->normalize($event)->format());
     }
 
     public function comment(string $text): void
     {
-        $this->push(': ' . str_replace(["\r", "\n"], ' ', $text) . "\n\n");
+        if ($this->closed) {
+            return;
+        }
+
+        $this->pushControl(': ' . str_replace(["\r", "\n"], ' ', $text) . "\n\n");
     }
 
     public function retry(int $milliseconds): void
     {
-        if ($milliseconds < 0) {
+        if ($milliseconds < 0 || $this->closed) {
             return;
         }
 
-        $this->push('retry: ' . $milliseconds . "\n\n");
+        $this->pushControl('retry: ' . $milliseconds . "\n\n");
     }
 
     public function isClosed(): bool
@@ -108,7 +116,14 @@ final class SwooleEmitter implements EmitterInterface
 
     public function close(): void
     {
+        if ($this->closed) {
+            return;
+        }
+
         $this->closed = true;
+
+        // 唤醒主循环，避免 heartbeat=0 时 close() 后仍等待生产者退出。
+        $this->pushControl(['done' => true]);
     }
 
     /**
@@ -150,7 +165,7 @@ final class SwooleEmitter implements EmitterInterface
                 $frame = $this->channel->pop($timeout);
 
                 if ($frame === false) {
-                    if ($this->reachedDeadline($deadline)) {
+                    if ($this->closed || $this->reachedDeadline($deadline)) {
                         break;
                     }
 
@@ -210,15 +225,6 @@ final class SwooleEmitter implements EmitterInterface
         }
     }
 
-    private function push(string $frame): void
-    {
-        if ($this->closed) {
-            return;
-        }
-
-        $this->pushControl($frame);
-    }
-
     private function pushControl(mixed $value): void
     {
         try {
@@ -270,7 +276,7 @@ final class SwooleEmitter implements EmitterInterface
         return $deadline !== null && microtime(true) >= $deadline;
     }
 
-    private function normalize(Event|string|array $event): Event
+    private function normalize(string|array|object $event): Event
     {
         return $event instanceof Event ? $event : Event::data($event);
     }
